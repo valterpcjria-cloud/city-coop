@@ -1,0 +1,44 @@
+import {
+    Loader2,
+    Github,
+    Chrome,
+    User,
+    Mail,
+    Lock,
+    ArrowRight,
+    Check,
+    ChevronLeft,
+    ChevronRight,
+    MoreVertical,
+    Trash,
+    Plus,
+    Settings,
+    LogOut,
+    Menu,
+    X,
+    Calendar,
+    type Icon as LucideIcon,
+} from 'lucide-react'
+
+export type Icon = typeof LucideIcon
+
+export const Icons = {
+    spinner: Loader2,
+    google: Chrome, // Using Chrome icon as proxy for Google for now
+    gitHub: Github,
+    user: User,
+    mail: Mail,
+    lock: Lock,
+    arrowRight: ArrowRight,
+    check: Check,
+    chevronLeft: ChevronLeft,
+    chevronRight: ChevronRight,
+    ellipsis: MoreVertical,
+    trash: Trash,
+    add: Plus,
+    settings: Settings,
+    logout: LogOut,
+    menu: Menu,
+    close: X,
+    calendar: Calendar,
+}

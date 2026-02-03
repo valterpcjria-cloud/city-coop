@@ -1,0 +1,57 @@
+import React from 'react'
+import { Sidebar } from '@/components/dashboard/professor/sidebar'
+import { DashboardHeader } from '@/components/dashboard/professor/header'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+export default async function ProfessorDashboardLayout({
+    children,
+}: {
+    children: React.ReactNode
+}) {
+    const supabase = await createClient()
+    const adminAuth = await createAdminClient()
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/login')
+    }
+
+    // Verify if user is actually a teacher (Use Admin Client to bypass RLS)
+    const { data: teacher } = await adminAuth
+        .from('teachers')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+    if (!teacher) {
+        // If not teacher, CHECK if it is a student before redirecting
+        const { data: student } = await adminAuth
+            .from('students')
+            .select('id')
+            .eq('user_id', user.id)
+            .single()
+
+        if (student) {
+            redirect('/estudante')
+        }
+
+        // If neither, go to error page
+        redirect('/onboarding-error')
+    }
+
+    return (
+        <div className="flex min-h-screen">
+            <Sidebar className="w-64 hidden md:block" />
+            <div className="flex-1 flex flex-col min-h-screen">
+                <DashboardHeader user={{ name: teacher.name, email: teacher.email }} />
+                <main className="flex-1 p-6 bg-slate-50/50">
+                    {children}
+                </main>
+            </div>
+        </div>
+    )
+}
