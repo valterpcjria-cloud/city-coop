@@ -88,9 +88,31 @@ export function Sidebar({ className }: SidebarProps) {
                         Ferramentas IA
                     </h2>
                     <div className="space-y-1">
-                        <Button variant="ghost" className="w-full justify-start text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                            <Icons.spinner className="mr-2 h-4 w-4" /> {/* Placeholder for Robot icon */}
-                            Coop Assistant
+                        <Button
+                            variant={pathname === '/professor/ia' ? 'secondary' : 'ghost'}
+                            className={cn(
+                                "w-full justify-start",
+                                pathname === '/professor/ia' ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100" : "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                            )}
+                            asChild
+                        >
+                            <Link href="/professor/ia">
+                                <Icons.ai className={cn("mr-2 h-4 w-4", pathname === '/professor/ia' ? "text-indigo-600" : "text-indigo-500")} />
+                                Coop Assistant
+                            </Link>
+                        </Button>
+                        <Button
+                            variant={pathname === '/professor/ia/avaliacoes' ? 'secondary' : 'ghost'}
+                            className={cn(
+                                "w-full justify-start",
+                                pathname === '/professor/ia/avaliacoes' ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100" : "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                            )}
+                            asChild
+                        >
+                            <Link href="/professor/ia/avaliacoes">
+                                <Icons.add className={cn("mr-2 h-4 w-4", pathname === '/professor/ia/avaliacoes' ? "text-indigo-600" : "text-indigo-500")} />
+                                Criar Avaliação IA
+                            </Link>
                         </Button>
                     </div>
                 </div>

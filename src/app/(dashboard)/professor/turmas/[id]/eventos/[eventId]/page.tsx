@@ -10,15 +10,15 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { EventApprovalActions } from '@/components/events/event-approval-actions'
 
-export default async function EventDetailsPage({ params }: { params: { id: string; eventId: string } }) {
+export default async function EventDetailsPage({ params }: { params: Promise<{ id: string; eventId: string }> }) {
     const supabase = await createClient()
-    const { id: classId, eventId } = await (params as any)
+    const { id: classId, eventId } = await params
 
     const { data: plan } = await supabase
         .from('event_plans')
         .select('*')
         .eq('id', eventId)
-        .single()
+        .single() as any
 
     if (!plan) notFound()
 
@@ -108,7 +108,7 @@ export default async function EventDetailsPage({ params }: { params: { id: strin
                         <Card className="bg-purple-50 border-purple-100">
                             <CardHeader>
                                 <CardTitle className="text-purple-700 flex items-center gap-2">
-                                    <Icons.bot className="h-5 w-5" /> Análise IA
+                                    <Icons.ai className="h-5 w-5" /> Análise IA
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm text-purple-800">

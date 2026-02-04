@@ -13,22 +13,15 @@ import { AssessmentsList } from '@/components/assessments/assessments-list'
 import { IndicatorsDashboard } from '@/components/indicators/indicators-dashboard'
 import { getClassAverageIndicators } from '@/lib/indicators'
 
-interface ClassDetailsPageProps {
-    params: {
-        id: string
-    }
-}
-
-export default async function ClassDetailsPage({ params }: ClassDetailsPageProps) {
+export default async function ClassDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
-
-    const { id } = await (params as any)
+    const { id } = await params
 
     const { data: turma } = await supabase
         .from('classes')
         .select('*')
         .eq('id', id)
-        .single() as { data: any, error: any }
+        .single() as any
 
     if (!turma) {
         notFound()
@@ -153,7 +146,7 @@ export default async function ClassDetailsPage({ params }: ClassDetailsPageProps
                         <CardContent>
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                                 {['Entretenimento', 'Logística', 'Operacional', 'Financeiro', 'Comunicação', 'Parcerias'].map((nucleusName) => {
-                                    const nucleus = nuclei?.find((n: any) => n.name === nucleusName)
+                                    const nucleus = nuclei?.find((n: any) => n.name === nucleusName) as any
                                     return (
                                         <Card key={nucleusName} className="relative overflow-hidden">
                                             <div className={`absolute top-0 left-0 w-1 h-full 

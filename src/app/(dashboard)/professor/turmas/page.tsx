@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
@@ -8,22 +8,29 @@ import { ptBR } from 'date-fns/locale'
 
 export default async function ClassesPage() {
     const supabase = await createClient()
+    const adminAuth = await createAdminClient()
 
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) return null
 
-    const { data: teacher } = await supabase
+    // Use Admin Client to ensure we find the teacher profile even if RLS is tricky
+    const { data: teacher, error: teacherError } = await adminAuth
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
         .single()
 
-    const { data: classes } = await supabase
+    if (teacherError) console.error('Error fetching teacher:', teacherError)
+
+    // Also use Admin Client for classes if the teacher profile was found
+    const { data: classes, error: classesError } = teacher ? await adminAuth
         .from('classes')
-        .select('*, students(count)')
-        .eq('teacher_id', teacher?.id)
-        .order('created_at', { ascending: false })
+        .select('*, class_students(count)')
+        .eq('teacher_id', teacher.id)
+        .order('created_at', { ascending: false }) : { data: [], error: null }
+
+    if (classesError) console.error('Error fetching classes:', classesError)
 
     return (
         <div className="space-y-6">
@@ -77,7 +84,7 @@ export default async function ClassesPage() {
                                 <div className="space-y-3">
                                     <div className="flex items-center text-sm text-slate-600">
                                         <Icons.user className="mr-2 h-4 w-4 text-slate-400" />
-                                        {turma.students[0]?.count || 0} estudantes
+                                        {turma.class_students?.[0]?.count || 0} estudantes
                                     </div>
                                     <div className="flex items-center text-sm text-slate-600">
                                         <Icons.calendar className="mr-2 h-4 w-4 text-slate-400" />

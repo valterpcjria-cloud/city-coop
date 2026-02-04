@@ -64,30 +64,19 @@ export function ClassForm() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true)
         try {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) throw new Error('Usuário não autenticado')
-
-            const { data: teacher } = await supabase
-                .from('teachers')
-                .select('id, school_id')
-                .eq('user_id', user.id)
-                .single()
-
-            if (!teacher) throw new Error('Professor não encontrado')
-
-            const { error } = await supabase.from('classes').insert({
-                name: values.name,
-                code: values.code,
-                grade_level: values.grade_level,
-                modality: values.modality,
-                start_date: values.start_date,
-                end_date: values.end_date,
-                teacher_id: teacher.id,
-                school_id: teacher.school_id,
-                status: 'active'
+            const response = await fetch('/api/classes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(values),
             })
 
-            if (error) throw error
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Erro ao criar turma')
+            }
 
             toast.success('Turma criada com sucesso!')
             router.push('/professor/turmas')

@@ -10,10 +10,10 @@ import { GradingForm } from '@/components/assessments/grading-form'
 export default async function StudentResponsePage({
     params
 }: {
-    params: { id: string; assessmentId: string; studentId: string }
+    params: Promise<{ id: string; assessmentId: string; studentId: string }>
 }) {
     const supabase = await createClient()
-    const { id: classId, assessmentId, studentId } = await (params as any)
+    const { id: classId, assessmentId, studentId } = await params
 
     const { data: response } = await supabase
         .from('assessment_responses')

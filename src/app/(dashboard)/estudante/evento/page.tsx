@@ -29,9 +29,9 @@ export default function EventPage() {
                 .from('students')
                 .select('id, classes:class_students(class_id)')
                 .eq('user_id', user.id)
-                .single()
+                .single() as any
 
-            const classId = student?.classes[0]?.class_id
+            const classId = student?.classes?.[0]?.class_id
             setStudentClassId(classId)
 
             if (classId) {
@@ -42,18 +42,18 @@ export default function EventPage() {
                     .eq('class_id', classId)
                     .order('created_at', { ascending: false })
                     .limit(1)
-                    .single()
+                    .single() as any
 
                 if (plan) setEventPlan(plan)
             }
             setLoading(false)
         }
         fetchData()
-    }, [])
+    }, [supabase.auth])
 
     if (loading) return <div>Carregando...</div>
 
-    if (!studentClassId) return <div>Você não está em uma turma.</div>
+    if (!studentClassId) return <div className="p-8 text-center text-muted-foreground">Você não está vinculado a nenhuma turma.</div>
 
     return (
         <div className="space-y-8 max-w-4xl mx-auto py-8">
@@ -116,7 +116,7 @@ export default function EventPage() {
                                 <Separator />
                                 <div>
                                     <h4 className="font-semibold mb-2 flex items-center gap-2 text-purple-600">
-                                        <Icons.bot className="h-4 w-4" /> Análise da IA
+                                        <Icons.ai className="h-4 w-4" /> Análise da IA
                                     </h4>
                                     <p className="text-sm text-slate-600 italic">
                                         {eventPlan.ai_evaluation.feedback || "Análise pendente..."}

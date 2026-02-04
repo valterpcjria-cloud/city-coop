@@ -1,14 +1,39 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-export async function POST(
+export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const supabase = await createClient()
-        // Await params if needed
-        const { id: classId } = params
+        const { id: classId } = await params
+
+        const { data, error } = await supabase
+            .from('nuclei')
+            .select(`
+                *,
+                members:nucleus_members(
+                    *,
+                    student:students(*)
+                )
+            `)
+            .eq('class_id', classId)
+
+        if (error) throw error
+        return NextResponse.json(data)
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+}
+
+export async function POST(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const supabase = await createClient()
+        const { id: classId } = await params
         const body = await request.json()
         const { nucleusName, action, studentId, role } = body
 

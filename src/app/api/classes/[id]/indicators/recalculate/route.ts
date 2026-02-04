@@ -4,11 +4,11 @@ import { calculateStudentIndicators } from '@/lib/indicators'
 
 export async function POST(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const supabase = await createClient()
-        const { id: classId } = params
+        const { id: classId } = await params
 
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

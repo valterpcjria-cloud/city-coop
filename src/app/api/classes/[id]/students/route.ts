@@ -1,14 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-export async function POST(
+export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const supabase = await createClient()
-        // Await params if needed in Next 15, though for now standard access
-        const { id } = params
+        const { id: classId } = await params
+
+        const { data, error } = await supabase
+            .from('class_students')
+            .select(`
+                *,
+                student:students(*)
+            `)
+            .eq('class_id', classId)
+
+        if (error) throw error
+        return NextResponse.json(data)
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+}
+
+export async function POST(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const supabase = await createClient()
+        const { id } = await params
         const body = await request.json()
         const { students } = body
 
@@ -19,8 +41,6 @@ export async function POST(
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-        // Check if class belongs to teacher
-        // We cast to any to avoid TypeScript inference issues with Supabase generated types
         const teacherResult = await supabase.from('teachers').select('id').eq('user_id', user.id).single()
         const teacherId = (teacherResult.data as any)?.id
 
@@ -39,7 +59,6 @@ export async function POST(
 
         for (const studentData of students) {
             if (studentData.id) {
-                // Add existing student by ID
                 const { data, error } = await supabase
                     .from('class_students')
                     .insert({
@@ -54,7 +73,6 @@ export async function POST(
                     results.push({ ...studentData, status: 'success' })
                 }
             } else if (studentData.email) {
-
                 let { data: existingStudent } = await supabase
                     .from('students')
                     .select('id')
@@ -62,7 +80,6 @@ export async function POST(
                     .single()
 
                 if (!existingStudent) {
-                    // Create new unlinked student
                     const { data: newStudent, error: createError } = await supabase
                         .from('students')
                         .insert({

@@ -4,11 +4,11 @@ import { NextResponse } from 'next/server'
 
 export async function POST(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const supabase = await createClient()
-        const { id } = params // Event Plan ID
+        const { id } = await params // Event Plan ID
 
         // Fetch Plan
         const { data: plan } = await supabase

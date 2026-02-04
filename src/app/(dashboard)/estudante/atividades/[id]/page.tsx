@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import { TakeAssessmentForm } from '@/components/assessments/take-assessment-form'
 
-export default async function TakeAssessmentPage({ params }: { params: { id: string } }) {
+export default async function TakeAssessmentPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
-    const { id } = await (params as any)
+    const { id } = await params
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) redirect('/login')
@@ -16,12 +16,12 @@ export default async function TakeAssessmentPage({ params }: { params: { id: str
         .from('assessments')
         .select('*')
         .eq('id', id)
-        .single()
+        .single() as any
 
     if (!assessment) notFound()
 
     // Verify if already submitted
-    const { data: student } = await supabase.from('students').select('id').eq('user_id', user.id).single()
+    const { data: student } = await supabase.from('students').select('id').eq('user_id', user.id).single() as any
 
     if (student) {
         const { data: existingResponse } = await supabase

@@ -285,6 +285,11 @@ ALTER TABLE maturity_indicators ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_researches ENABLE ROW LEVEL SECURITY;
 
+-- Policies de Leitura Básica
+CREATE POLICY "authenticated_view_schools" ON schools FOR SELECT TO authenticated USING (true);
+CREATE POLICY "teachers_view_self" ON teachers FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "students_view_self" ON students FOR SELECT TO authenticated USING (user_id = auth.uid());
+
 -- Policies para PROFESSORES
 
 -- Professores podem ver/gerenciar suas próprias turmas
@@ -325,6 +330,19 @@ CREATE POLICY "teachers_class_assessments" ON assessment_responses
     )
   );
 
+-- Professores podem gerenciar avaliações, pautas, planos e núcleos de suas turmas
+CREATE POLICY "teachers_manage_class_data" ON assessments
+  FOR ALL TO authenticated USING (class_id IN (SELECT id FROM classes WHERE teacher_id IN (SELECT id FROM teachers WHERE user_id = auth.uid())));
+
+CREATE POLICY "teachers_manage_class_nuclei" ON nuclei
+  FOR ALL TO authenticated USING (class_id IN (SELECT id FROM classes WHERE teacher_id IN (SELECT id FROM teachers WHERE user_id = auth.uid())));
+
+CREATE POLICY "teachers_manage_class_assemblies" ON assemblies
+  FOR ALL TO authenticated USING (class_id IN (SELECT id FROM classes WHERE teacher_id IN (SELECT id FROM teachers WHERE user_id = auth.uid())));
+
+CREATE POLICY "teachers_manage_class_event_plans" ON event_plans
+  FOR ALL TO authenticated USING (class_id IN (SELECT id FROM classes WHERE teacher_id IN (SELECT id FROM teachers WHERE user_id = auth.uid())));
+
 -- Policies para ESTUDANTES
 
 -- Estudantes podem ver turmas em que estão matriculados
@@ -358,6 +376,19 @@ CREATE POLICY "students_own_indicators" ON maturity_indicators
       SELECT id FROM students WHERE user_id = auth.uid()
     )
   );
+
+-- Estudantes podem ver dados de suas turmas
+CREATE POLICY "students_view_class_assessments" ON assessments
+  FOR SELECT TO authenticated USING (class_id IN (SELECT class_id FROM class_students WHERE student_id IN (SELECT id FROM students WHERE user_id = auth.uid())));
+
+CREATE POLICY "students_view_class_nuclei" ON nuclei
+  FOR SELECT TO authenticated USING (class_id IN (SELECT class_id FROM class_students WHERE student_id IN (SELECT id FROM students WHERE user_id = auth.uid())));
+
+CREATE POLICY "students_view_class_assemblies" ON assemblies
+  FOR SELECT TO authenticated USING (class_id IN (SELECT class_id FROM class_students WHERE student_id IN (SELECT id FROM students WHERE user_id = auth.uid())));
+
+CREATE POLICY "students_view_class_event_plans" ON event_plans
+  FOR SELECT TO authenticated USING (class_id IN (SELECT class_id FROM class_students WHERE student_id IN (SELECT id FROM students WHERE user_id = auth.uid())));
 
 -- Policies para CONVERSAS IA
 

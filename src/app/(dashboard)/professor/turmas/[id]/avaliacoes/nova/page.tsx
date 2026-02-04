@@ -5,9 +5,10 @@ import { Icons } from '@/components/ui/icons'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
-export default async function NewAssessmentPage({ params }: { params: { id: string } }) {
+export default async function NewAssessmentPage({ params }: { params: Promise<{ id: string }> }) {
+    console.log('[DEBUG-TRACE:V3] Rendering NewAssessmentPage')
     const supabase = await createClient()
-    const { id } = params
+    const { id } = await params
 
     const { data: turma } = await supabase
         .from('classes')
@@ -25,7 +26,7 @@ export default async function NewAssessmentPage({ params }: { params: { id: stri
                 </Button>
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">Nova Avaliação</h2>
-                    <p className="text-muted-foreground">{turma?.name} - Criar teste de competência</p>
+                    <p className="text-muted-foreground">{(turma as any)?.name} - Criar teste de competência</p>
                 </div>
             </div>
 

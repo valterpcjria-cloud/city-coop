@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { Icons } from '@/components/ui/icons'
 import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 interface TakeAssessmentFormProps {
     assessment: any
@@ -95,12 +96,49 @@ export function TakeAssessmentForm({ assessment, studentId }: TakeAssessmentForm
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Textarea
-                        placeholder="Digite sua resposta aqui..."
-                        className="min-h-[150px] resize-none text-base"
-                        value={answers[currentStep] || ''}
-                        onChange={(e) => handleAnswerChange(e.target.value)}
-                    />
+                    {currentQuestion.type === 'multiple-choice' && currentQuestion.options ? (
+                        <div className="grid gap-3">
+                            {currentQuestion.options.map((option: string, index: number) => {
+                                const optionLabel = String.fromCharCode(97 + index);
+                                const isSelected = answers[currentStep] === index.toString();
+
+                                return (
+                                    <button
+                                        key={index}
+                                        onClick={() => handleAnswerChange(index.toString())}
+                                        className={cn(
+                                            "flex items-center gap-4 w-full p-4 rounded-xl border-2 transition-all text-left group",
+                                            isSelected
+                                                ? "border-blue-600 bg-blue-50/50 shadow-sm"
+                                                : "border-slate-100 bg-white hover:border-blue-200 hover:bg-slate-50/50"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 font-bold transition-all",
+                                            isSelected
+                                                ? "bg-blue-600 border-blue-600 text-white"
+                                                : "bg-white border-slate-200 text-slate-400 group-hover:border-blue-400 group-hover:text-blue-600"
+                                        )}>
+                                            {optionLabel}
+                                        </div>
+                                        <span className={cn(
+                                            "text-base font-medium",
+                                            isSelected ? "text-blue-900" : "text-slate-700"
+                                        )}>
+                                            {option}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <Textarea
+                            placeholder="Digite sua resposta aqui..."
+                            className="min-h-[150px] resize-none text-base"
+                            value={answers[currentStep] || ''}
+                            onChange={(e) => handleAnswerChange(e.target.value)}
+                        />
+                    )}
                 </CardContent>
                 <CardFooter className="flex justify-between bg-slate-50 p-4 rounded-b-lg">
                     <Button

@@ -17,6 +17,11 @@ import {
     Menu,
     X,
     Calendar,
+    DollarSign,
+    CreditCard,
+    Sparkles,
+    RefreshCw,
+    Clock,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -41,4 +46,10 @@ export const Icons = {
     menu: Menu,
     close: X,
     calendar: Calendar,
+    billing: CreditCard,
+    dollarSign: DollarSign,
+    ai: Sparkles,
+    sparkles: Sparkles,
+    refresh: RefreshCw,
+    clock: Clock,
 }

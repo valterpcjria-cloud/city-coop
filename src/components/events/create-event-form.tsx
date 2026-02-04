@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Icons } from '@/components/ui/icons'
+import { Plus, Trash, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -31,7 +32,7 @@ const formSchema = z.object({
     title: z.string().min(3, 'Título muito curto'),
     description: z.string().min(10, 'Descrição muito curta'),
     event_date: z.date({
-        required_error: 'Selecione uma data para o evento',
+        invalid_type_error: 'Selecione uma data para o evento',
     }),
     budget_items: z.array(z.object({
         item: z.string().min(1, 'Item obrigatório'),
@@ -56,6 +57,7 @@ export function CreateEventForm({ classId }: CreateEventFormProps) {
         defaultValues: {
             title: '',
             description: '',
+            event_date: new Date(),
             budget_items: [{ item: '', value: 0 }],
             timeline_items: [{ task: '', deadline: '' }],
         },
@@ -191,7 +193,7 @@ export function CreateEventForm({ classId }: CreateEventFormProps) {
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-medium">Orçamento Estimado</h3>
                         <Button type="button" variant="outline" size="sm" onClick={() => appendBudget({ item: '', value: 0 })}>
-                            <Icons.add className="mr-2 h-4 w-4" /> Adicionar Item
+                            <Plus className="mr-2 h-4 w-4" /> Adicionar Item
                         </Button>
                     </div>
                     {budgetFields.map((field, index) => (
@@ -221,7 +223,7 @@ export function CreateEventForm({ classId }: CreateEventFormProps) {
                                 )}
                             />
                             <Button type="button" variant="ghost" size="icon" onClick={() => removeBudget(index)}>
-                                <Icons.trash className="h-4 w-4 text-red-500" />
+                                <Trash className="h-4 w-4 text-red-500" />
                             </Button>
                         </div>
                     ))}
@@ -234,7 +236,7 @@ export function CreateEventForm({ classId }: CreateEventFormProps) {
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-medium">Cronograma de Ações</h3>
                         <Button type="button" variant="outline" size="sm" onClick={() => appendTimeline({ task: '', deadline: '' })}>
-                            <Icons.add className="mr-2 h-4 w-4" /> Adicionar Etapa
+                            <Plus className="mr-2 h-4 w-4" /> Adicionar Etapa
                         </Button>
                     </div>
                     {timelineFields.map((field, index) => (
@@ -264,14 +266,14 @@ export function CreateEventForm({ classId }: CreateEventFormProps) {
                                 )}
                             />
                             <Button type="button" variant="ghost" size="icon" onClick={() => removeTimeline(index)}>
-                                <Icons.trash className="h-4 w-4 text-red-500" />
+                                <Trash className="h-4 w-4 text-red-500" />
                             </Button>
                         </div>
                     ))}
                 </div>
 
                 <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : 'Submeter Plano de Evento'}
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Submeter Plano de Evento'}
                 </Button>
             </form>
         </Form>

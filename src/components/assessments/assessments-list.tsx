@@ -55,9 +55,14 @@ export function AssessmentsList({ classId, assessments }: AssessmentsListProps) 
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Button variant="ghost" size="sm" asChild>
-                                        <Link href={`/professor/turmas/${classId}/avaliacoes/${assessment.id}`}>
-                                            Ver Resultados
+                                    <Button variant="outline" size="sm" asChild className="font-bold">
+                                        <Link href={`/professor/turmas/${classId}/avaliacoes/${assessment.id}?tab=content`}>
+                                            Ver Detalhes
+                                        </Link>
+                                    </Button>
+                                    <Button variant="default" size="sm" asChild className="bg-slate-900 font-bold">
+                                        <Link href={`/professor/turmas/${classId}/avaliacoes/${assessment.id}?tab=results`}>
+                                            Analisar Resultados
                                         </Link>
                                     </Button>
                                 </div>

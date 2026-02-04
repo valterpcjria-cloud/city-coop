@@ -7,9 +7,9 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-export default async function TeacherEventsPage({ params }: { params: { id: string } }) {
+export default async function TeacherEventsPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
-    const { id: classId } = await (params as any)
+    const { id: classId } = await params
 
     const { data: plans } = await supabase
         .from('event_plans')

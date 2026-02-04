@@ -2,8 +2,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import Link from 'next/link'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
-export default function ProfessorDashboardPage() {
+export default async function ProfessorDashboardPage() {
+    const supabase = await createClient()
+    const adminAuth = await createAdminClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+
+    // Get Teacher Profile
+    const { data: teacher } = await adminAuth
+        .from('teachers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+    // Get counts
+    const { count: classesCount } = await adminAuth
+        .from('classes')
+        .select('*', { count: 'exact', head: true })
+        .eq('teacher_id', teacher?.id)
+        .eq('status', 'active')
+
+    const { count: studentsCount } = teacher ? await adminAuth
+        .from('class_students')
+        .select('student_id', { count: 'exact', head: true })
+        .filter('class_id', 'in', `(${(await adminAuth.from('classes').select('id').eq('teacher_id', teacher.id)).data?.map(c => c.id).join(',') || ''})`)
+        : { count: 0 }
+
+    // Simplified student count logic for now if the above is too complex
+    const { data: teacherClasses } = teacher ? await adminAuth.from('classes').select('id').eq('teacher_id', teacher.id) : { data: [] }
+    const classIds = teacherClasses?.map(c => c.id) || []
+
+    const { count: realStudentsCount } = classIds.length > 0 ? await adminAuth
+        .from('class_students')
+        .select('*', { count: 'exact', head: true })
+        .in('class_id', classIds)
+        : { count: 0 }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -28,9 +67,9 @@ export default function ProfessorDashboardPage() {
                         <Icons.menu className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">0</div>
+                        <div className="text-2xl font-bold">{classesCount || 0}</div>
                         <p className="text-xs text-muted-foreground">
-                            +0 desde o mês passado
+                            Turmas sob sua coordenação
                         </p>
                     </CardContent>
                 </Card>
@@ -40,9 +79,9 @@ export default function ProfessorDashboardPage() {
                         <Icons.user className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">0</div>
+                        <div className="text-2xl font-bold">{realStudentsCount || 0}</div>
                         <p className="text-xs text-muted-foreground">
-                            Total de alunos ativos
+                            Total de alunos matriculados
                         </p>
                     </CardContent>
                 </Card>
