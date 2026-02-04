@@ -24,7 +24,6 @@ export default async function ProfessorAssessmentsPage() {
 
     const adminClient = await createAdminClient()
 
-    // Get teacher record
     const { data: teacher } = await adminClient
         .from('teachers')
         .select('id')
@@ -33,7 +32,6 @@ export default async function ProfessorAssessmentsPage() {
 
     if (!teacher) return null
 
-    // Get all assessments for teacher's classes
     const { data: assessmentsData } = await adminClient
         .from('assessments')
         .select(`
@@ -53,7 +51,6 @@ export default async function ProfessorAssessmentsPage() {
 
     const totalAssessments = assessments.length
 
-    // Calculate global participation rate
     let totalExpected = 0
     let totalReceived = 0
 
@@ -68,41 +65,42 @@ export default async function ProfessorAssessmentsPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex items-center justify-between">
+            {/* Header with Brand Gradient */}
+            <div className="flex items-center justify-between p-6 -m-6 mb-0 bg-gradient-to-r from-[#4A90D9]/10 via-white to-[#F5A623]/10 border-b border-[#6B7C93]/10">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">Avaliações</h2>
-                    <p className="text-slate-500">Monitore o desempenho e a participação dos alunos em todas as suas turmas.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-[#4A90D9]">Avaliações</h2>
+                    <p className="text-[#6B7C93]">Monitore o desempenho e a participação dos alunos em todas as suas turmas.</p>
                 </div>
             </div>
 
             {/* Overview Stats */}
             <div className="grid gap-4 md:grid-cols-2">
-                <Card className="bg-white/50 backdrop-blur-sm border-slate-200/60 shadow-sm overflow-hidden group">
-                    <div className="h-1 w-full bg-blue-500" />
+                <Card className="bg-white border-[#4A90D9]/20 shadow-md overflow-hidden group hover:shadow-lg transition-all">
+                    <div className="h-1.5 w-full bg-gradient-to-r from-[#4A90D9] to-[#3A7BC8]" />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-600">Total de Avaliações</CardTitle>
-                        <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                            <Icons.check className="h-4 w-4 text-blue-600" />
+                        <CardTitle className="text-sm font-semibold text-[#6B7C93]">Total de Avaliações</CardTitle>
+                        <div className="p-2.5 bg-[#4A90D9]/10 rounded-xl group-hover:bg-[#4A90D9]/20 transition-colors">
+                            <Icons.check className="h-5 w-5 text-[#4A90D9]" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-slate-900">{totalAssessments}</div>
-                        <p className="text-xs text-slate-500 mt-1">Criadas em todas as turmas</p>
+                        <div className="text-4xl font-black text-[#4A90D9]">{totalAssessments}</div>
+                        <p className="text-xs text-[#6B7C93] mt-1">Criadas em todas as turmas</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-white/50 backdrop-blur-sm border-indigo-200/60 shadow-sm overflow-hidden group">
-                    <div className="h-1 w-full bg-indigo-500" />
+                <Card className="bg-white border-[#F5A623]/20 shadow-md overflow-hidden group hover:shadow-lg transition-all">
+                    <div className="h-1.5 w-full bg-gradient-to-r from-[#F5A623] to-[#E09000]" />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-indigo-700">Participação Global</CardTitle>
-                        <div className="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
-                            <Icons.user className="h-4 w-4 text-indigo-600" />
+                        <CardTitle className="text-sm font-semibold text-[#6B7C93]">Participação Global</CardTitle>
+                        <div className="p-2.5 bg-[#F5A623]/10 rounded-xl group-hover:bg-[#F5A623]/20 transition-colors">
+                            <Icons.user className="h-5 w-5 text-[#F5A623]" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-indigo-700">{globalParticipation}%</div>
-                        <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                        <div className="text-4xl font-black text-[#F5A623]">{globalParticipation}%</div>
+                        <div className="w-full bg-[#6B7C93]/10 h-2 rounded-full mt-3 overflow-hidden">
                             <div
-                                className="bg-indigo-500 h-full rounded-full"
+                                className="bg-gradient-to-r from-[#F5A623] to-[#E09000] h-full rounded-full transition-all duration-500"
                                 style={{ width: `${globalParticipation}%` }}
                             />
                         </div>
@@ -111,16 +109,16 @@ export default async function ProfessorAssessmentsPage() {
             </div>
 
             {assessments.length === 0 ? (
-                <Card className="shadow-sm border-dashed bg-slate-50/50">
+                <Card className="shadow-md border-dashed border-[#6B7C93]/30 bg-[#4A90D9]/5">
                     <CardContent className="py-16 flex flex-col items-center justify-center text-center">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6">
-                            <Icons.check className="h-10 w-10 text-slate-300" />
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#6B7C93]/10 mb-6">
+                            <Icons.check className="h-10 w-10 text-[#6B7C93]/30" />
                         </div>
-                        <h3 className="font-bold text-xl text-slate-900 mb-2">Nenhuma avaliação encontrada</h3>
-                        <p className="text-slate-500 max-w-sm mb-6">
+                        <h3 className="font-bold text-xl text-[#4A90D9] mb-2">Nenhuma avaliação encontrada</h3>
+                        <p className="text-[#6B7C93] max-w-sm mb-6">
                             Crie avaliações dentro de suas turmas para começar a monitorar o progresso dos alunos.
                         </p>
-                        <Button asChild>
+                        <Button variant="brand" asChild>
                             <Link href="/professor/turmas">
                                 Ir para Minhas Turmas
                             </Link>
@@ -137,23 +135,23 @@ export default async function ProfessorAssessmentsPage() {
                             : 0
 
                         return (
-                            <Card key={assessment.id} className="group hover:shadow-lg transition-all duration-300 border-slate-200/80 overflow-hidden">
+                            <Card key={assessment.id} className="group hover:shadow-xl transition-all duration-300 border-[#6B7C93]/15 overflow-hidden">
                                 <CardHeader className="pb-4">
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-3">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#4A90D9]/10 text-[#4A90D9] border border-[#4A90D9]/20">
                                                     {assessment.classes.name}
                                                 </span>
-                                                <Badge variant="secondary" className="font-bold uppercase tracking-wider text-[10px] bg-slate-100 text-slate-600">
+                                                <Badge variant="secondary" className="font-bold uppercase tracking-wider text-[10px] bg-[#6B7C93]/10 text-[#6B7C93]">
                                                     {typeLabels[assessment.type] || assessment.type}
                                                 </Badge>
                                             </div>
-                                            <CardTitle className="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">
+                                            <CardTitle className="text-2xl font-black text-[#1a2332] group-hover:text-[#4A90D9] transition-colors">
                                                 {assessment.title}
                                             </CardTitle>
-                                            <CardDescription className="flex items-center gap-2 font-medium">
-                                                <Icons.calendar className="h-4 w-4" />
+                                            <CardDescription className="flex items-center gap-2 font-medium text-[#6B7C93]">
+                                                <Icons.calendar className="h-4 w-4 text-[#4A90D9]" />
                                                 Criado em {format(new Date(assessment.created_at), "dd 'de' MMMM", { locale: ptBR })}
                                             </CardDescription>
                                         </div>
@@ -162,28 +160,28 @@ export default async function ProfessorAssessmentsPage() {
                                 <CardContent>
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between text-sm mb-1">
-                                            <span className="font-bold text-slate-600 uppercase tracking-widest text-[10px]">Participação dos Alunos</span>
-                                            <span className="font-bold text-slate-900">{participationCount}/{totalStudents} ({participationRate}%)</span>
+                                            <span className="font-bold text-[#6B7C93] uppercase tracking-widest text-[10px]">Participação dos Alunos</span>
+                                            <span className="font-bold text-[#1a2332]">{participationCount}/{totalStudents} ({participationRate}%)</span>
                                         </div>
-                                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/50">
+                                        <div className="w-full bg-[#6B7C93]/10 h-3 rounded-full overflow-hidden border border-[#6B7C93]/10">
                                             <div
                                                 className={cn(
                                                     "h-full rounded-full transition-all duration-500",
-                                                    participationRate > 80 ? "bg-green-500" :
-                                                        participationRate > 40 ? "bg-blue-500" : "bg-orange-500"
+                                                    participationRate > 80 ? "bg-gradient-to-r from-green-500 to-green-400" :
+                                                        participationRate > 40 ? "bg-gradient-to-r from-[#4A90D9] to-[#3A7BC8]" : "bg-gradient-to-r from-[#F5A623] to-[#E09000]"
                                                 )}
                                                 style={{ width: `${participationRate}%` }}
                                             />
                                         </div>
                                     </div>
                                 </CardContent>
-                                <CardFooter className="bg-slate-50/80 backdrop-blur-sm flex justify-end gap-3 py-4 border-t border-slate-100">
-                                    <Button variant="ghost" className="font-bold text-slate-600 hover:text-blue-600" asChild>
+                                <CardFooter className="bg-gradient-to-r from-[#4A90D9]/5 to-[#F5A623]/5 flex justify-end gap-3 py-4 border-t border-[#6B7C93]/10">
+                                    <Button variant="ghost" className="font-bold text-[#6B7C93] hover:text-[#4A90D9] hover:bg-[#4A90D9]/10" asChild>
                                         <Link href={`/professor/turmas/${assessment.classes.id}/avaliacoes/${assessment.id}?tab=content`}>
                                             Ver Detalhes
                                         </Link>
                                     </Button>
-                                    <Button className="bg-slate-900 hover:bg-blue-600 text-white font-bold shadow-lg shadow-slate-200" asChild>
+                                    <Button variant="brand" className="shadow-lg shadow-[#4A90D9]/20" asChild>
                                         <Link href={`/professor/turmas/${assessment.classes.id}/avaliacoes/${assessment.id}?tab=results`}>
                                             Analisar Resultados
                                             <Icons.arrowRight className="ml-2 h-4 w-4" />

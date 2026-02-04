@@ -24,7 +24,6 @@ export default function EventPage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
-            // Get Class
             const { data: student } = await supabase
                 .from('students')
                 .select('id, classes:class_students(class_id)')
@@ -35,7 +34,6 @@ export default function EventPage() {
             setStudentClassId(classId)
 
             if (classId) {
-                // Get Event Plan
                 const { data: plan } = await supabase
                     .from('event_plans')
                     .select('*')
@@ -51,30 +49,39 @@ export default function EventPage() {
         fetchData()
     }, [supabase.auth])
 
-    if (loading) return <div>Carregando...</div>
+    if (loading) return (
+        <div className="flex items-center justify-center h-64">
+            <Icons.spinner className="h-8 w-8 animate-spin text-[#4A90D9]" />
+        </div>
+    )
 
-    if (!studentClassId) return <div className="p-8 text-center text-muted-foreground">Você não está vinculado a nenhuma turma.</div>
+    if (!studentClassId) return (
+        <div className="p-8 text-center text-[#6B7C93]">Você não está vinculado a nenhuma turma.</div>
+    )
 
     return (
         <div className="space-y-8 max-w-4xl mx-auto py-8">
-            <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight text-slate-900">Planejamento do Evento</h2>
-                <p className="text-slate-500">O projeto final da sua cooperativa.</p>
+            {/* Header with Brand Gradient */}
+            <div className="flex flex-col gap-2 p-6 -m-6 mb-0 bg-gradient-to-r from-[#4A90D9]/10 via-white to-[#F5A623]/10 border-b border-[#6B7C93]/10 rounded-t-xl">
+                <h2 className="text-3xl font-bold tracking-tight text-[#4A90D9]">Planejamento do Evento</h2>
+                <p className="text-[#6B7C93]">O projeto final da sua cooperativa.</p>
             </div>
 
             {eventPlan ? (
-                <Card className="border-l-4 border-l-blue-500 shadow-md">
+                <Card className="border-l-4 border-l-[#F5A623] shadow-lg hover:shadow-xl transition-shadow">
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <CardTitle className="text-2xl">{eventPlan.title}</CardTitle>
-                                <CardDescription>
+                                <CardTitle className="text-2xl text-[#1a2332]">{eventPlan.title}</CardTitle>
+                                <CardDescription className="text-[#6B7C93] flex items-center gap-2 mt-1">
+                                    <Icons.calendar className="h-4 w-4 text-[#4A90D9]" />
                                     Data prevista: {format(new Date(eventPlan.event_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                                 </CardDescription>
                             </div>
                             <Badge className={
-                                eventPlan.status === 'approved' ? 'bg-green-500' :
-                                    eventPlan.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500'
+                                eventPlan.status === 'approved' ? 'bg-green-500 hover:bg-green-600' :
+                                    eventPlan.status === 'rejected' ? 'bg-red-500 hover:bg-red-600' :
+                                        eventPlan.status === 'submitted' ? 'bg-[#F5A623] hover:bg-[#E09000]' : 'bg-[#6B7C93]'
                             }>
                                 {eventPlan.status === 'submitted' ? 'Em Análise' :
                                     eventPlan.status === 'approved' ? 'Aprovado' :
@@ -83,29 +90,44 @@ export default function EventPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="bg-slate-50 p-4 rounded-lg text-slate-700">
+                        <div className="bg-gradient-to-r from-[#4A90D9]/5 to-[#F5A623]/5 p-4 rounded-xl text-[#1a2332] border border-[#6B7C93]/10">
                             {eventPlan.description}
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                                    <Icons.billing className="h-4 w-4" /> Orçamento
+                            <div className="bg-white p-4 rounded-xl border border-[#6B7C93]/10">
+                                <h4 className="font-bold mb-3 flex items-center gap-2 text-[#F5A623]">
+                                    <div className="p-1.5 rounded-full bg-[#F5A623]/10">
+                                        <Icons.billing className="h-4 w-4" />
+                                    </div>
+                                    Orçamento
                                 </h4>
-                                <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                <ul className="text-sm text-[#6B7C93] space-y-1.5">
                                     {(eventPlan.budget?.items || []).map((item: any, i: number) => (
-                                        <li key={i}>{item.item}: R$ {item.value}</li>
+                                        <li key={i} className="flex justify-between">
+                                            <span>{item.item}</span>
+                                            <span className="font-medium text-[#1a2332]">R$ {item.value}</span>
+                                        </li>
                                     ))}
-                                    <li className="font-bold pt-1 list-none">Total: R$ {eventPlan.budget?.total}</li>
+                                    <li className="font-bold pt-2 border-t border-[#6B7C93]/10 flex justify-between text-[#F5A623]">
+                                        <span>Total</span>
+                                        <span>R$ {eventPlan.budget?.total}</span>
+                                    </li>
                                 </ul>
                             </div>
-                            <div>
-                                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                                    <Icons.calendar className="h-4 w-4" /> Cronograma
+                            <div className="bg-white p-4 rounded-xl border border-[#6B7C93]/10">
+                                <h4 className="font-bold mb-3 flex items-center gap-2 text-[#4A90D9]">
+                                    <div className="p-1.5 rounded-full bg-[#4A90D9]/10">
+                                        <Icons.calendar className="h-4 w-4" />
+                                    </div>
+                                    Cronograma
                                 </h4>
-                                <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                <ul className="text-sm text-[#6B7C93] space-y-1.5">
                                     {(eventPlan.timeline?.steps || []).map((step: any, i: number) => (
-                                        <li key={i}>{step.task} (Até {step.deadline})</li>
+                                        <li key={i} className="flex justify-between">
+                                            <span>{step.task}</span>
+                                            <span className="text-xs text-[#4A90D9] font-medium">Até {step.deadline}</span>
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
@@ -113,28 +135,31 @@ export default function EventPage() {
 
                         {eventPlan.ai_evaluation && (
                             <>
-                                <Separator />
-                                <div>
-                                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-purple-600">
-                                        <Icons.ai className="h-4 w-4" /> Análise da IA
+                                <Separator className="bg-[#6B7C93]/10" />
+                                <div className="bg-gradient-to-r from-[#4A90D9]/5 to-[#F5A623]/5 p-4 rounded-xl border border-[#4A90D9]/20">
+                                    <h4 className="font-bold mb-2 flex items-center gap-2 text-[#4A90D9]">
+                                        <div className="p-1.5 rounded-full bg-gradient-to-br from-[#4A90D9] to-[#F5A623]">
+                                            <Icons.ai className="h-4 w-4 text-white" />
+                                        </div>
+                                        Análise da IA
                                     </h4>
-                                    <p className="text-sm text-slate-600 italic">
+                                    <p className="text-sm text-[#6B7C93] italic">
                                         {eventPlan.ai_evaluation.feedback || "Análise pendente..."}
                                     </p>
                                 </div>
                             </>
                         )}
                     </CardContent>
-
-                    {/* Allow editing if rejected? For now just view. */}
                 </Card>
             ) : (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Criar Novo Plano</CardTitle>
-                        <CardDescription>Preencha os detalhes do evento que sua cooperativa irá realizar.</CardDescription>
+                <Card className="border-[#4A90D9]/20 shadow-lg">
+                    <CardHeader className="bg-gradient-to-r from-[#4A90D9]/5 to-transparent border-b border-[#6B7C93]/10">
+                        <CardTitle className="text-[#4A90D9]">Criar Novo Plano</CardTitle>
+                        <CardDescription className="text-[#6B7C93]">
+                            Preencha os detalhes do evento que sua cooperativa irá realizar.
+                        </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         <CreateEventForm classId={studentClassId} />
                     </CardContent>
                 </Card>

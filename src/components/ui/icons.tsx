@@ -22,6 +22,7 @@ import {
     Sparkles,
     RefreshCw,
     Clock,
+    MessageSquare,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -29,7 +30,7 @@ export type Icon = typeof LucideIcon
 
 export const Icons = {
     spinner: Loader2,
-    google: Chrome, // Using Chrome icon as proxy for Google for now
+    google: Chrome,
     gitHub: Github,
     user: User,
     mail: Mail,
@@ -52,4 +53,5 @@ export const Icons = {
     sparkles: Sparkles,
     refresh: RefreshCw,
     clock: Clock,
+    messageSquare: MessageSquare,
 }

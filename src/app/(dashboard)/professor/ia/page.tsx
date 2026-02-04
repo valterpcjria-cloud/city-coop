@@ -44,7 +44,7 @@ export default function ProfessorAIPage() {
             {
                 id: 'welcome',
                 role: 'assistant',
-                content: 'Olá, Professor. Sou o seu Coop Assistant. Estou aqui para oferecer suporte pedagógico, sugerir dinâmicas e ajudar na gestão da sua cooperativa escolar. Como posso auxiliar sua jornada hoje?'
+                content: 'Olá, Professor. Sou o seu DOT Assistente. Estou aqui para oferecer suporte pedagógico, sugerir dinâmicas e ajudar na gestão da sua cooperativa escolar. Como posso auxiliar sua jornada hoje?'
             }
         ],
         onError: (err: any) => {
@@ -95,14 +95,13 @@ export default function ProfessorAIPage() {
 
     const handleNewChat = async () => {
         try {
-            // Clear from DB
             await fetch('/api/ai/history', { method: 'DELETE' });
 
             setMessages([
                 {
                     id: 'welcome',
                     role: 'assistant',
-                    content: 'Olá, Professor. Sou o seu Coop Assistant. Como posso auxiliar sua jornada hoje?'
+                    content: 'Olá, Professor. Sou o seu DOT Assistente. Como posso auxiliar sua jornada hoje?'
                 }
             ]);
             conversationIdRef.current = 'new';
@@ -153,25 +152,26 @@ export default function ProfessorAIPage() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-6rem)] bg-white relative overflow-hidden">
-            <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-50/50 rounded-full blur-3xl -z-10" />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-violet-50/50 rounded-full blur-3xl -z-10" />
+            {/* Brand background decor */}
+            <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-[#4A90D9]/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-[#F5A623]/5 rounded-full blur-3xl -z-10" />
 
             <ScrollArea ref={scrollAreaRef} className="flex-1 w-full">
                 <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
                     {messages.length <= 1 && (
-                        <div className="text-center space-y-2 mb-12 py-10">
-                            <div className="inline-flex items-center justify-center p-3 bg-indigo-100 rounded-2xl mb-4 shadow-sm">
-                                <Icons.ai className="h-8 w-8 text-indigo-600" />
+                        <div className="text-center space-y-2 mb-12 py-16 flex flex-col items-center">
+                            <div className="inline-flex items-center justify-center p-3 mb-4 w-32 h-32 relative z-10 mt-4">
+                                <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain drop-shadow-xl" />
                             </div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Coop Assistant</h1>
-                            <p className="text-slate-500 font-medium italic">"Dois cérebros operam melhor que um."</p>
+                            <h1 className="text-3xl font-black text-[#4A90D9] tracking-tight">DOT Assistente</h1>
+                            <p className="text-[#6B7C93] font-medium italic">"Inteligência e cooperação em cada detalhe."</p>
 
                             <div className="flex justify-center gap-2 mt-6">
                                 <Button
                                     variant={selectedModel === 'claude' ? 'default' : 'outline'}
                                     size="sm"
                                     onClick={() => setSelectedModel('claude')}
-                                    className={cn("rounded-full px-6 transition-all", selectedModel === 'claude' && "bg-indigo-600 hover:bg-indigo-700")}
+                                    className={cn("rounded-full px-6 transition-all", selectedModel === 'claude' && "bg-[#4A90D9] hover:bg-[#3A7BC8]")}
                                 >
                                     <Icons.sparkles className="h-4 w-4 mr-2" />
                                     Claude (Anthropic)
@@ -180,9 +180,9 @@ export default function ProfessorAIPage() {
                                     variant={selectedModel === 'gpt' ? 'default' : 'outline'}
                                     size="sm"
                                     onClick={() => setSelectedModel('gpt')}
-                                    className={cn("rounded-full px-6 transition-all", selectedModel === 'gpt' && "bg-slate-900 hover:bg-slate-800")}
+                                    className={cn("rounded-full px-6 transition-all", selectedModel === 'gpt' && "bg-[#F5A623] hover:bg-[#E09000]")}
                                 >
-                                    <Icons.sparkles className="h-4 w-4 mr-2 text-emerald-400" />
+                                    <Icons.sparkles className="h-4 w-4 mr-2" />
                                     GPT-4o (OpenAI)
                                 </Button>
                             </div>
@@ -199,15 +199,15 @@ export default function ProfessorAIPage() {
                                 )}
                             >
                                 <Avatar className={cn(
-                                    "h-8 w-8 shrink-0 border shadow-sm",
-                                    m.role === 'assistant' ? "bg-indigo-600 border-indigo-500" : "bg-white"
+                                    "h-9 w-9 shrink-0 border shadow-sm",
+                                    m.role === 'assistant' ? "bg-gradient-to-br from-[#4A90D9] to-[#F5A623]" : "bg-[#F5A623]"
                                 )}>
                                     {m.role === 'assistant' ? (
-                                        <AvatarFallback className="text-white">
-                                            <Icons.ai className="h-4 w-4" />
-                                        </AvatarFallback>
+                                        <div className="p-0.5 w-full h-full flex items-center justify-center">
+                                            <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
+                                        </div>
                                     ) : (
-                                        <AvatarFallback className="text-slate-600 font-bold text-xs">P</AvatarFallback>
+                                        <AvatarFallback className="bg-transparent text-white font-bold text-xs">P</AvatarFallback>
                                     )}
                                 </Avatar>
 
@@ -218,8 +218,8 @@ export default function ProfessorAIPage() {
                                     <div className={cn(
                                         "px-4 py-3 rounded-2xl text-[15px] leading-relaxed",
                                         m.role === 'user'
-                                            ? "bg-slate-900 text-white rounded-tr-none shadow-md"
-                                            : "bg-white border border-slate-100 text-slate-800 rounded-tl-none shadow-sm shadow-slate-200/50"
+                                            ? "bg-gradient-to-r from-[#4A90D9] to-[#3A7BC8] text-white rounded-tr-none shadow-md"
+                                            : "bg-white border border-[#6B7C93]/10 text-[#1a2332] rounded-tl-none shadow-sm"
                                     )}>
                                         {m.parts && m.parts.length > 0 ? (
                                             m.parts.map((part: any, partIdx: number) => (
@@ -235,16 +235,16 @@ export default function ProfessorAIPage() {
 
                         {isLoading && (
                             <div className="flex gap-4 animate-pulse">
-                                <Avatar className="h-8 w-8 bg-indigo-600 border border-indigo-500 shadow-sm">
-                                    <AvatarFallback className="text-white">
-                                        <Icons.ai className="h-4 w-4" />
-                                    </AvatarFallback>
+                                <Avatar className="h-10 w-10 bg-transparent shadow-none p-0">
+                                    <div className="p-1 w-full h-full flex items-center justify-center">
+                                        <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
+                                    </div>
                                 </Avatar>
-                                <div className="bg-white border border-slate-100 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm">
+                                <div className="bg-white border border-[#6B7C93]/10 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm">
                                     <div className="flex gap-1 py-1">
-                                        <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                        <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                        <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#4A90D9] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#F5A623] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#4A90D9] rounded-full animate-bounce"></div>
                                     </div>
                                 </div>
                             </div>
@@ -254,7 +254,7 @@ export default function ProfessorAIPage() {
                 </div>
             </ScrollArea>
 
-            <div className="shrink-0 bg-white border-t border-slate-100 pb-6 px-4 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] focus-within:shadow-[0_-4px_20px_rgba(79,70,229,0.06)] transition-shadow">
+            <div className="shrink-0 bg-white border-t border-[#6B7C93]/10 pb-6 px-4 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] focus-within:shadow-[0_-4px_20px_rgba(74,144,217,0.08)] transition-shadow">
                 <div className="max-w-3xl mx-auto space-y-4 pt-4">
                     {messages.length <= 1 && !isLoading && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -262,10 +262,10 @@ export default function ProfessorAIPage() {
                                 <button
                                     key={item.title}
                                     onClick={() => setLocalInput(item.prompt)}
-                                    className="text-left p-3 rounded-xl border border-indigo-100 bg-indigo-50/30 hover:bg-white hover:shadow-md hover:border-indigo-200 transition-all group"
+                                    className="text-left p-3 rounded-xl border border-[#4A90D9]/20 bg-[#4A90D9]/5 hover:bg-white hover:shadow-md hover:border-[#4A90D9]/30 transition-all group"
                                 >
-                                    <p className="text-xs font-bold text-indigo-700 mb-0.5">{item.title}</p>
-                                    <p className="text-[10px] text-indigo-600/70 line-clamp-1">{item.description}</p>
+                                    <p className="text-xs font-bold text-[#4A90D9] mb-0.5">{item.title}</p>
+                                    <p className="text-[10px] text-[#6B7C93] line-clamp-1">{item.description}</p>
                                 </button>
                             ))}
                         </div>
@@ -273,12 +273,12 @@ export default function ProfessorAIPage() {
 
                     <div className="flex items-center justify-between px-2 mb-1">
                         <div className="flex gap-1.5 items-center">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cérebro Ativo:</span>
+                            <span className="text-[10px] font-bold text-[#6B7C93] uppercase tracking-wider">Cérebro Ativo:</span>
                             <div className={cn(
-                                "h-1.5 w-1.5 rounded-full animate-pulse",
-                                selectedModel === 'gpt' ? "bg-emerald-500" : "bg-indigo-600"
+                                "h-2 w-2 rounded-full animate-pulse",
+                                selectedModel === 'gpt' ? "bg-[#F5A623]" : "bg-[#4A90D9]"
                             )} />
-                            <span className="text-[11px] font-bold text-slate-700">
+                            <span className="text-[11px] font-bold text-[#1a2332]">
                                 {selectedModel === 'gpt' ? 'GPT-4o' : 'Claude 3.5 Sonnet'}
                             </span>
                         </div>
@@ -286,7 +286,7 @@ export default function ProfessorAIPage() {
                             <button
                                 type="button"
                                 onClick={handleNewChat}
-                                className="text-[10px] font-bold text-slate-500 hover:text-slate-700 flex items-center gap-1 transition-colors"
+                                className="text-[10px] font-bold text-[#6B7C93] hover:text-[#4A90D9] flex items-center gap-1 transition-colors"
                             >
                                 <Icons.trash className="h-3 w-3" />
                                 Limpar
@@ -294,7 +294,7 @@ export default function ProfessorAIPage() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedModel(prev => prev === 'claude' ? 'gpt' : 'claude')}
-                                className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
+                                className="text-[10px] font-bold text-[#F5A623] hover:text-[#E09000] flex items-center gap-1 transition-colors"
                             >
                                 <Icons.refresh className="h-3 w-3" />
                                 Alternar
@@ -304,15 +304,15 @@ export default function ProfessorAIPage() {
 
                     <form
                         onSubmit={onSendMessage}
-                        className="relative group shadow-2xl shadow-indigo-100/50 rounded-2xl bg-white"
+                        className="relative group shadow-xl shadow-[#4A90D9]/5 rounded-2xl bg-white border border-[#6B7C93]/15"
                     >
                         <Textarea
                             ref={textareaRef}
                             value={localInput}
                             onChange={handleLocalInputChange}
                             onKeyDown={handleKeyDown}
-                            placeholder="Pergunte ao Coop Assistant..."
-                            className="w-full min-h-[56px] max-h-[200px] py-4 pl-4 pr-12 focus-visible:ring-indigo-500 border-slate-200 group-hover:border-indigo-200 transition-all rounded-2xl resize-none scrolling-touch overflow-y-auto"
+                            placeholder="Pergunte ao DOT Assistente..."
+                            className="w-full min-h-[56px] max-h-[200px] py-4 pl-4 pr-12 focus-visible:ring-[#4A90D9] border-0 group-hover:border-[#4A90D9]/20 transition-all rounded-2xl resize-none scrolling-touch overflow-y-auto"
                             rows={1}
                         />
                         <Button
@@ -320,8 +320,8 @@ export default function ProfessorAIPage() {
                             size="icon"
                             disabled={isLoading || !localInput?.trim()}
                             className={cn(
-                                "absolute right-2 bottom-2 rounded-xl transition-all h-9 w-9",
-                                localInput?.trim() ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "bg-slate-100 text-slate-400"
+                                "absolute right-2 bottom-2 rounded-xl transition-all h-10 w-10",
+                                localInput?.trim() ? "bg-gradient-to-r from-[#4A90D9] to-[#F5A623] text-white shadow-lg" : "bg-[#6B7C93]/10 text-[#6B7C93]"
                             )}
                         >
                             {isLoading ? (
@@ -332,7 +332,7 @@ export default function ProfessorAIPage() {
                             <span className="sr-only">Enviar</span>
                         </Button>
                     </form>
-                    <p className="text-[10px] text-center text-slate-400 font-medium">O Coop Assistant pode fornecer sugestões úteis, mas sempre valide as estratégias pedagogicamente.</p>
+                    <p className="text-[10px] text-center text-[#6B7C93] font-medium">O DOT Assistente pode fornecer sugestões úteis, mas sempre valide as estratégias pedagogicamente.</p>
                 </div>
             </div>
         </div>

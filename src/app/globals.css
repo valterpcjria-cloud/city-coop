@@ -43,75 +43,99 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  
+  /* City Coop Brand Colors */
+  --color-city-blue: #4A90D9;
+  --color-city-blue-light: #6BA5E4;
+  --color-city-blue-dark: #3A7BC8;
+  --color-coop-orange: #F5A623;
+  --color-coop-orange-light: #FFB84D;
+  --color-coop-orange-dark: #E09000;
+  --color-tech-gray: #6B7C93;
+  --color-tech-gray-light: #8A9BB0;
+  --color-tech-gray-dark: #4A5B6E;
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --background: #ffffff;
+  --foreground: #1a2332;
+  --card: #ffffff;
+  --card-foreground: #1a2332;
+  --popover: #ffffff;
+  --popover-foreground: #1a2332;
+  
+  /* Primary = City Blue */
+  --primary: #4A90D9;
+  --primary-foreground: #ffffff;
+  
+  /* Secondary = Tech Gray */
+  --secondary: #f0f4f8;
+  --secondary-foreground: #4A5B6E;
+  
+  /* Muted = Light Gray */
+  --muted: #f5f7fa;
+  --muted-foreground: #6B7C93;
+  
+  /* Accent = Coop Orange */
+  --accent: #F5A623;
+  --accent-foreground: #ffffff;
+  
+  --destructive: #ef4444;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #4A90D9;
+  
+  /* Charts with brand colors */
+  --chart-1: #4A90D9;
+  --chart-2: #F5A623;
+  --chart-3: #6B7C93;
+  --chart-4: #6BA5E4;
+  --chart-5: #FFB84D;
+  
+  /* Sidebar */
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #1a2332;
+  --sidebar-primary: #4A90D9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #FEF3E0;
+  --sidebar-accent-foreground: #E09000;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #4A90D9;
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #6BA5E4;
+  --primary-foreground: #0f172a;
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #FFB84D;
+  --accent-foreground: #0f172a;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #6BA5E4;
+  --chart-1: #6BA5E4;
+  --chart-2: #FFB84D;
+  --chart-3: #8A9BB0;
+  --chart-4: #4A90D9;
+  --chart-5: #F5A623;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #6BA5E4;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #3d2e1a;
+  --sidebar-accent-foreground: #FFB84D;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #6BA5E4;
 }
 
 @layer base {
@@ -122,3 +146,41 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Brand Color Utility Classes */
+.bg-city-blue { background-color: var(--color-city-blue); }
+.bg-city-blue-light { background-color: var(--color-city-blue-light); }
+.bg-city-blue-dark { background-color: var(--color-city-blue-dark); }
+.bg-coop-orange { background-color: var(--color-coop-orange); }
+.bg-coop-orange-light { background-color: var(--color-coop-orange-light); }
+.bg-coop-orange-dark { background-color: var(--color-coop-orange-dark); }
+.bg-tech-gray { background-color: var(--color-tech-gray); }
+
+.text-city-blue { color: var(--color-city-blue); }
+.text-city-blue-light { color: var(--color-city-blue-light); }
+.text-city-blue-dark { color: var(--color-city-blue-dark); }
+.text-coop-orange { color: var(--color-coop-orange); }
+.text-coop-orange-light { color: var(--color-coop-orange-light); }
+.text-coop-orange-dark { color: var(--color-coop-orange-dark); }
+.text-tech-gray { color: var(--color-tech-gray); }
+
+.border-city-blue { border-color: var(--color-city-blue); }
+.border-coop-orange { border-color: var(--color-coop-orange); }
+.border-tech-gray { border-color: var(--color-tech-gray); }
+
+/* Brand Gradients */
+.bg-gradient-brand {
+  background: linear-gradient(135deg, var(--color-city-blue) 0%, var(--color-coop-orange) 100%);
+}
+.bg-gradient-blue {
+  background: linear-gradient(135deg, var(--color-city-blue-dark) 0%, var(--color-city-blue-light) 100%);
+}
+.bg-gradient-orange {
+  background: linear-gradient(135deg, var(--color-coop-orange-dark) 0%, var(--color-coop-orange-light) 100%);
+}
+
+/* Hover States */
+.hover\:bg-city-blue:hover { background-color: var(--color-city-blue); }
+.hover\:bg-coop-orange:hover { background-color: var(--color-coop-orange); }
+.hover\:text-city-blue:hover { color: var(--color-city-blue); }
+.hover\:text-coop-orange:hover { color: var(--color-coop-orange); }

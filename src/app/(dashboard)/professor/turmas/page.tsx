@@ -14,7 +14,6 @@ export default async function ClassesPage() {
 
     if (!user) return null
 
-    // Use Admin Client to ensure we find the teacher profile even if RLS is tricky
     const { data: teacher, error: teacherError } = await adminAuth
         .from('teachers')
         .select('id')
@@ -23,7 +22,6 @@ export default async function ClassesPage() {
 
     if (teacherError) console.error('Error fetching teacher:', teacherError)
 
-    // Also use Admin Client for classes if the teacher profile was found
     const { data: classes, error: classesError } = teacher ? await adminAuth
         .from('classes')
         .select('*, class_students(count)')
@@ -34,12 +32,13 @@ export default async function ClassesPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            {/* Header with Brand Gradient */}
+            <div className="flex items-center justify-between p-6 -m-6 mb-0 bg-gradient-to-r from-[#4A90D9]/10 via-white to-[#F5A623]/10 border-b border-[#6B7C93]/10">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">Minhas Turmas</h2>
-                    <p className="text-slate-500">Gerencie suas turmas e cooperativas.</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-[#4A90D9]">Minhas Turmas</h2>
+                    <p className="text-[#6B7C93]">Gerencie suas turmas e cooperativas.</p>
                 </div>
-                <Button asChild>
+                <Button variant="brand" asChild>
                     <Link href="/professor/turmas/nova">
                         <Icons.add className="mr-2 h-4 w-4" />
                         Nova Turma
@@ -48,17 +47,18 @@ export default async function ClassesPage() {
             </div>
 
             {!classes || classes.length === 0 ? (
-                <Card className="shadow-sm border-dashed">
+                <Card className="shadow-sm border-dashed border-[#6B7C93]/30">
                     <CardContent className="py-12 flex flex-col items-center justify-center text-center">
-                        <div className="bg-slate-100 p-4 rounded-full mb-4">
-                            <Icons.calendar className="h-8 w-8 text-slate-400" />
+                        <div className="bg-gradient-to-br from-[#4A90D9]/10 to-[#F5A623]/10 p-5 rounded-full mb-4">
+                            <Icons.calendar className="h-10 w-10 text-[#4A90D9]" />
                         </div>
-                        <h3 className="font-medium text-lg text-slate-900 mb-1">Nenhuma turma encontrada</h3>
-                        <p className="text-slate-500 mb-6 max-w-sm">
+                        <h3 className="font-bold text-lg text-[#4A90D9] mb-1">Nenhuma turma encontrada</h3>
+                        <p className="text-[#6B7C93] mb-6 max-w-sm">
                             Crie sua primeira turma para começar a organizar as cooperativas escolares.
                         </p>
-                        <Button asChild>
+                        <Button variant="orange" asChild>
                             <Link href="/professor/turmas/nova">
+                                <Icons.add className="mr-2 h-4 w-4" />
                                 Criar Turma
                             </Link>
                         </Button>
@@ -67,27 +67,32 @@ export default async function ClassesPage() {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {classes.map((turma: any) => (
-                        <Card key={turma.id} className="hover:shadow-md transition-shadow">
+                        <Card key={turma.id} className="border-l-4 border-l-[#4A90D9] hover:shadow-lg transition-all duration-200">
                             <CardHeader className="pb-3">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <CardTitle className="text-lg font-bold">{turma.name}</CardTitle>
-                                        <CardDescription>{turma.code}</CardDescription>
+                                        <CardTitle className="text-lg font-bold text-[#1a2332]">{turma.name}</CardTitle>
+                                        <CardDescription className="text-[#6B7C93]">{turma.code}</CardDescription>
                                     </div>
-                                    <div className={`px-2 py-1 rounded text-xs font-medium ${turma.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
-                                        }`}>
+                                    <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${turma.status === 'active'
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-[#6B7C93]/10 text-[#6B7C93]'}`}>
                                         {turma.status === 'active' ? 'Ativa' : 'Encerrada'}
                                     </div>
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
-                                    <div className="flex items-center text-sm text-slate-600">
-                                        <Icons.user className="mr-2 h-4 w-4 text-slate-400" />
+                                    <div className="flex items-center text-sm text-[#6B7C93]">
+                                        <div className="p-1.5 rounded-full bg-[#F5A623]/10 mr-2">
+                                            <Icons.user className="h-3.5 w-3.5 text-[#F5A623]" />
+                                        </div>
                                         {turma.class_students?.[0]?.count || 0} estudantes
                                     </div>
-                                    <div className="flex items-center text-sm text-slate-600">
-                                        <Icons.calendar className="mr-2 h-4 w-4 text-slate-400" />
+                                    <div className="flex items-center text-sm text-[#6B7C93]">
+                                        <div className="p-1.5 rounded-full bg-[#4A90D9]/10 mr-2">
+                                            <Icons.calendar className="h-3.5 w-3.5 text-[#4A90D9]" />
+                                        </div>
                                         {format(new Date(turma.start_date), "d MMM yyyy", { locale: ptBR })} -{' '}
                                         {format(new Date(turma.end_date), "d MMM yyyy", { locale: ptBR })}
                                     </div>

@@ -30,28 +30,29 @@ export default async function StudentDashboard() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            {/* Header with Brand Gradient */}
+            <div className="flex items-center justify-between p-6 -m-6 mb-0 bg-gradient-to-r from-[#4A90D9]/10 via-white to-[#F5A623]/10 border-b border-tech-gray/10">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">Meu Painel</h2>
-                    <p className="text-slate-500">Bem-vindo ao City Coop, {student?.name.split(' ')[0]}!</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-city-blue">Meu Painel</h2>
+                    <p className="text-tech-gray">Bem-vindo ao City Coop, {student?.name?.split(' ')[0] || 'Estudante'}!</p>
                 </div>
                 <div className="text-right hidden sm:block">
-                    <p className="text-sm font-medium text-slate-900">{currentClass?.name || 'Sem turma'}</p>
-                    <p className="text-xs text-slate-500">{currentClass?.code}</p>
+                    <p className="text-sm font-semibold text-coop-orange">{currentClass?.name || 'Sem turma'}</p>
+                    <p className="text-xs text-tech-gray">{currentClass?.code}</p>
                 </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {/* Status Card */}
-                <Card className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-none shadow-md">
+                {/* Status Card - Brand Gradient */}
+                <Card className="bg-gradient-to-br from-[#4A90D9] to-[#3A7BC8] text-white border-none shadow-lg">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-medium opacity-90">Meu Núcleo</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {currentNucleus ? (
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 <div className="text-2xl font-bold">{currentNucleus.name}</div>
-                                <Badge variant="secondary" className="bg-white/20 hover:bg-white/30 text-white border-0">
+                                <Badge variant="secondary" className="bg-coop-orange hover:bg-coop-orange-light text-white border-0">
                                     {nucleusMember.role === 'coordenador' ? 'Coordenador' : 'Membro'}
                                 </Badge>
                             </div>
@@ -65,43 +66,50 @@ export default async function StudentDashboard() {
                 </Card>
 
                 {/* Activities Card */}
-                <Card>
+                <Card className="shadow-sm border-l-4 border-l-coop-orange hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Atividades Pendentes</CardTitle>
-                        <Icons.check className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium text-tech-gray">Atividades Pendentes</CardTitle>
+                        <div className="p-2 rounded-full bg-coop-orange/10">
+                            <Icons.check className="h-4 w-4 text-coop-orange" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                        <p className="text-xs text-muted-foreground">
+                        <div className="text-3xl font-bold text-coop-orange">0</div>
+                        <p className="text-xs text-tech-gray">
                             Tudo em dia!
                         </p>
                     </CardContent>
                 </Card>
 
                 {/* Events Card */}
-                <Card>
+                <Card className="shadow-sm border-l-4 border-l-city-blue hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Próximo Evento</CardTitle>
-                        <Icons.calendar className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium text-tech-gray">Próximo Evento</CardTitle>
+                        <div className="p-2 rounded-full bg-city-blue/10">
+                            <Icons.calendar className="h-4 w-4 text-city-blue" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">--</div>
-                        <p className="text-xs text-muted-foreground">
+                        <div className="text-3xl font-bold text-city-blue">--</div>
+                        <p className="text-xs text-tech-gray">
                             Nenhum evento agendado
                         </p>
                     </CardContent>
                 </Card>
 
                 {/* AI Assistant Card */}
-                <Card className="col-span-1 border-blue-200 bg-blue-50/50">
+                <Card className="col-span-1 border-coop-orange/30 bg-gradient-to-br from-[#F5A623]/5 to-[#4A90D9]/5 hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-blue-700">Coop Buddy</CardTitle>
+                        <CardTitle className="text-sm font-bold text-coop-orange flex items-center gap-2">
+                            <Icons.ai className="h-4 w-4" />
+                            Coop Buddy
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-slate-600 mb-3">
+                        <p className="text-xs text-tech-gray mb-3">
                             Tem dúvidas sobre sua função no núcleo ou sobre cooperativismo?
                         </p>
-                        <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700" asChild>
+                        <Button size="sm" className="w-full bg-gradient-to-r from-city-blue to-coop-orange hover:from-city-blue-dark hover:to-coop-orange-dark text-white shadow-md" asChild>
                             <Link href="/estudante/chat">
                                 Perguntar Agora
                             </Link>
@@ -112,20 +120,26 @@ export default async function StudentDashboard() {
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Main Content Area - e.g., Nucleus Updates or Feed */}
-                <Card className="col-span-1 md:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Mural da Cooperativa</CardTitle>
-                        <CardDescription>Acompanhe as atualizações da sua turma.</CardDescription>
+                <Card className="col-span-1 md:col-span-2 shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="border-b border-tech-gray/10 bg-gradient-to-r from-city-blue/5 via-transparent to-coop-orange/5">
+                        <CardTitle className="text-city-blue">Mural da Cooperativa</CardTitle>
+                        <CardDescription className="text-tech-gray">Acompanhe as atualizações da sua turma.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
-                                <Icons.messageSquare className="h-6 w-6 text-slate-400" />
+                    <CardContent className="pt-6">
+                        <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                            <div className="w-16 h-16 bg-gradient-to-br from-city-blue/10 to-coop-orange/10 rounded-full flex items-center justify-center">
+                                <Icons.ai className="h-8 w-8 text-city-blue" />
                             </div>
-                            <div>
-                                <p className="text-sm font-medium text-slate-900">Nenhuma atualização recente</p>
-                                <p className="text-sm text-slate-500">Quando houver novidades, elas aparecerão aqui.</p>
+                            <div className="space-y-1">
+                                <p className="text-sm font-semibold text-city-blue">Nenhuma atualização recente</p>
+                                <p className="text-sm text-tech-gray">Quando houver novidades, elas aparecerão aqui.</p>
                             </div>
+                            <Button variant="outline" className="border-coop-orange text-coop-orange hover:bg-coop-orange hover:text-white" asChild>
+                                <Link href="/estudante/evento">
+                                    <Icons.calendar className="mr-2 h-4 w-4" />
+                                    Ver Planejamento do Evento
+                                </Link>
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>

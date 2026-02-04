@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -24,13 +25,13 @@ export function Sidebar({ className }: SidebarProps) {
     const routes = [
         {
             label: 'Visão Geral',
-            icon: Icons.menu, // Using Menu as placeholder for Dashboard icon
+            icon: Icons.menu,
             href: '/professor',
             active: pathname === '/professor',
         },
         {
             label: 'Minhas Turmas',
-            icon: Icons.user, // Placeholder
+            icon: Icons.user,
             href: '/professor/turmas',
             active: pathname.startsWith('/professor/turmas'),
         },
@@ -42,27 +43,31 @@ export function Sidebar({ className }: SidebarProps) {
         },
         {
             label: 'Eventos',
-            icon: Icons.calendar, // Need to add Calendar icon
+            icon: Icons.calendar,
             href: '/professor/eventos',
             active: pathname.startsWith('/professor/eventos'),
         },
         {
             label: 'Diretrizes',
-            icon: Icons.settings, // Using Settings as placeholder for Book/Guide
+            icon: Icons.settings,
             href: '/professor/diretrizes',
             active: pathname.startsWith('/professor/diretrizes'),
         },
     ]
 
     return (
-        <div className={cn('pb-12 h-screen border-r bg-slate-50/40', className)}>
+        <div className={cn('pb-12 h-screen border-r border-tech-gray/20 bg-gradient-to-b from-white to-slate-50/80', className)}>
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2">
-                    <div className="flex items-center px-4 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-green-500 flex items-center justify-center mr-2 shadow-sm">
-                            <span className="text-white font-bold">CC</span>
-                        </div>
-                        <h2 className="text-lg font-bold tracking-tight">City Coop</h2>
+                    <div className="flex items-center px-4 mb-8">
+                        <Image
+                            src="/logo.png"
+                            alt="City Coop"
+                            width={150}
+                            height={45}
+                            className="object-contain"
+                            priority
+                        />
                     </div>
                     <div className="space-y-1">
                         {routes.map((route) => (
@@ -70,13 +75,18 @@ export function Sidebar({ className }: SidebarProps) {
                                 key={route.href}
                                 variant={route.active ? 'secondary' : 'ghost'}
                                 className={cn(
-                                    'w-full justify-start',
-                                    route.active && 'bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800'
+                                    'w-full justify-start transition-all duration-200',
+                                    route.active
+                                        ? 'bg-gradient-to-r from-[#4A90D9]/10 to-[#F5A623]/10 text-city-blue border-l-4 border-coop-orange font-semibold'
+                                        : 'text-tech-gray hover:text-city-blue hover:bg-city-blue/5'
                                 )}
                                 asChild
                             >
                                 <Link href={route.href}>
-                                    <route.icon className={cn("mr-2 h-4 w-4", route.active ? "text-blue-600" : "text-slate-500")} />
+                                    <route.icon className={cn(
+                                        "mr-3 h-5 w-5 transition-colors",
+                                        route.active ? "text-coop-orange" : "text-tech-gray"
+                                    )} />
                                     {route.label}
                                 </Link>
                             </Button>
@@ -84,33 +94,42 @@ export function Sidebar({ className }: SidebarProps) {
                     </div>
                 </div>
                 <div className="px-3 py-2">
-                    <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-slate-500">
+                    <h2 className="mb-3 px-4 text-xs font-bold tracking-wider uppercase text-coop-orange">
                         Ferramentas IA
                     </h2>
                     <div className="space-y-1">
                         <Button
                             variant={pathname === '/professor/ia' ? 'secondary' : 'ghost'}
                             className={cn(
-                                "w-full justify-start",
-                                pathname === '/professor/ia' ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100" : "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                "w-full justify-start transition-all duration-200",
+                                pathname === '/professor/ia'
+                                    ? "bg-gradient-to-r from-[#4A90D9]/15 to-[#F5A623]/15 text-city-blue border-l-4 border-coop-orange font-semibold"
+                                    : "text-city-blue hover:text-city-blue-dark hover:bg-city-blue/5"
                             )}
                             asChild
                         >
                             <Link href="/professor/ia">
-                                <Icons.ai className={cn("mr-2 h-4 w-4", pathname === '/professor/ia' ? "text-indigo-600" : "text-indigo-500")} />
-                                Coop Assistant
+                                <div className="mr-3 h-7 w-7 rounded-full shadow-sm flex-shrink-0 flex items-center justify-center p-0.5">
+                                    <img src="/dot-bot.png" alt="DOT" className="h-full w-full object-contain" />
+                                </div>
+                                DOT Assistente
                             </Link>
                         </Button>
                         <Button
                             variant={pathname === '/professor/ia/avaliacoes' ? 'secondary' : 'ghost'}
                             className={cn(
-                                "w-full justify-start",
-                                pathname === '/professor/ia/avaliacoes' ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100" : "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                "w-full justify-start transition-all duration-200",
+                                pathname === '/professor/ia/avaliacoes'
+                                    ? "bg-gradient-to-r from-[#4A90D9]/15 to-[#F5A623]/15 text-city-blue border-l-4 border-coop-orange font-semibold"
+                                    : "text-city-blue hover:text-city-blue-dark hover:bg-city-blue/5"
                             )}
                             asChild
                         >
                             <Link href="/professor/ia/avaliacoes">
-                                <Icons.add className={cn("mr-2 h-4 w-4", pathname === '/professor/ia/avaliacoes' ? "text-indigo-600" : "text-indigo-500")} />
+                                <Icons.add className={cn(
+                                    "mr-3 h-5 w-5",
+                                    pathname === '/professor/ia/avaliacoes' ? "text-coop-orange" : "text-city-blue"
+                                )} />
                                 Criar Avaliação IA
                             </Link>
                         </Button>
@@ -120,10 +139,10 @@ export function Sidebar({ className }: SidebarProps) {
             <div className="absolute bottom-4 left-0 w-full px-3">
                 <Button
                     variant="ghost"
-                    className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
                     onClick={handleSignOut}
                 >
-                    <Icons.logout className="mr-2 h-4 w-4" />
+                    <Icons.logout className="mr-3 h-5 w-5" />
                     Sair
                 </Button>
             </div>
