@@ -1,3 +1,5 @@
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
 import { generateObject } from 'ai'
 import { getAIModel } from '@/lib/ai/models'
 import { SYSTEM_PROMPT_COOP } from '@/lib/ai/anthropic'
@@ -12,7 +14,7 @@ export async function POST(
         const { id } = await params
 
         // Fetch Response + Assessment Questions
-        const { data: response } = await supabase
+        const { data: response } = await (supabase as any)
             .from('assessment_responses')
             .select(`
             *,
@@ -45,7 +47,7 @@ Tarefas:
 2. Nas questões OBJETIVAS, se o Status for INCORRETO, explique por que a outra alternativa era a certa.
 3. Calcule uma nota de 0 a 100 baseada na precisão (objetivas) e qualidade (dissertativas).`
 
-        const model = getAIModel()
+        const model = await getAIModel()
         const { object } = await generateObject({
             model,
             system: SYSTEM_PROMPT_COOP + " Forneça feedback construtivo.",
@@ -58,7 +60,7 @@ Tarefas:
         })
 
         // Update with feedback
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('assessment_responses')
             .update({
                 ai_feedback: object,

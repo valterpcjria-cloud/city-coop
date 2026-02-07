@@ -91,7 +91,7 @@ export async function coopAssistantTeacher(
 
 // ============================================
 
-export const STUDENT_SYSTEM_PROMPT = `Você é o Coop Buddy, assistente IA para estudantes do programa City Coop.
+export const STUDENT_SYSTEM_PROMPT = `Você é o DOT Assistente, assistente IA para estudantes do programa City Coop.
 
 CONTEXTO:
 Você ajuda estudantes de Ensino Fundamental e Médio a aprender sobre cooperativismo e planejar eventos cooperativos.
@@ -149,7 +149,7 @@ FORMATO DAS RESPOSTAS:
 - Use emojis com moderação 🤝
 - Sugira próximos passos práticos`
 
-export async function coopBuddyStudent(
+export async function dotAssistanteStudent(
     messages: ChatMessage[],
     context?: {
         classId?: string

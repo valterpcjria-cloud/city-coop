@@ -45,7 +45,7 @@ export default function ProfessorAIPage() {
                 id: 'welcome',
                 role: 'assistant',
                 content: 'Olá, Professor. Sou o seu DOT Assistente. Estou aqui para oferecer suporte pedagógico, sugerir dinâmicas e ajudar na gestão da sua cooperativa escolar. Como posso auxiliar sua jornada hoje?'
-            }
+            } as any
         ],
         onError: (err: any) => {
             console.error("Chat error:", err);
@@ -102,7 +102,7 @@ export default function ProfessorAIPage() {
                     id: 'welcome',
                     role: 'assistant',
                     content: 'Olá, Professor. Sou o seu DOT Assistente. Como posso auxiliar sua jornada hoje?'
-                }
+                } as any
             ]);
             conversationIdRef.current = 'new';
             setLocalInput('');

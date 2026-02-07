@@ -27,7 +27,14 @@ export default function LoginPage() {
         const checkSession = async () => {
             const { data: { session } } = await supabase.auth.getSession()
             if (session) {
-                router.push('/professor')
+                const role = session.user.user_metadata?.role
+                if (role === 'manager') {
+                    router.push('/gestor')
+                } else if (role === 'teacher') {
+                    router.push('/professor')
+                } else {
+                    router.push('/estudante')
+                }
             }
         }
         checkSession()
@@ -48,13 +55,21 @@ export default function LoginPage() {
 
             toast.success('Login realizado com sucesso!')
 
+            // First try metadata (faster, always available)
+            const role = data.user.user_metadata?.role
+
+            if (role === 'manager') {
+                router.push('/gestor')
+                return
+            }
+
             const { data: teacher } = await supabase
                 .from('teachers')
                 .select('id')
                 .eq('user_id', data.user.id)
                 .single()
 
-            if (teacher) {
+            if (teacher || role === 'teacher') {
                 router.push('/professor')
             } else {
                 router.push('/estudante')

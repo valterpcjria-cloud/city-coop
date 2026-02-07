@@ -16,7 +16,7 @@ export default async function NucleiPage({ params }: { params: { id: string } })
         .from('classes')
         .select('name, code')
         .eq('id', id)
-        .single()
+        .single() as any
 
     if (!turma) notFound()
 
@@ -110,7 +110,7 @@ export default async function NucleiPage({ params }: { params: { id: string } })
                 <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
                     {requiredNuclei.map((nucleusName) => {
                         const existingNucleus = nuclei?.find((n: any) => n.name === nucleusName)
-                        const members = existingNucleus?.members || []
+                        const members = (existingNucleus as any)?.members || []
 
                         return (
                             <Card key={nucleusName} className={`relative overflow-hidden ${existingNucleus ? 'border-primary/20' : 'border-dashed'}`}>
@@ -126,7 +126,7 @@ export default async function NucleiPage({ params }: { params: { id: string } })
                                     {members.length > 0 ? (
                                         <div className="space-y-2 mt-2">
                                             {members.map((member: any) => {
-                                                const studentInfo = students?.find((s: any) => s.student.id === member.student_id)?.student
+                                                const studentInfo = (students as any[])?.find((s: any) => s.student.id === member.student_id)?.student
                                                 return (
                                                     <div key={member.id} className="flex items-center justify-between text-sm bg-slate-50 p-2 rounded">
                                                         <span className="truncate max-w-[120px]">{studentInfo?.name || 'Aluno'}</span>

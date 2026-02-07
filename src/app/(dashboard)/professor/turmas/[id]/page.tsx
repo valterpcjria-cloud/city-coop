@@ -21,7 +21,7 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
         .from('classes')
         .select('*')
         .eq('id', id)
-        .single()
+        .single() as any
 
     if (turmaError) {
         console.error('Erro ao buscar turma:', turmaError)
@@ -184,7 +184,7 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
                                             <CardContent>
                                                 {nucleo ? (
                                                     <p className="text-sm text-[#6B7C93]">
-                                                        {nucleo.members?.length || 0} membros
+                                                        {(nucleo as any).members?.length || 0} membros
                                                     </p>
                                                 ) : (
                                                     <div className="text-center py-2">

@@ -25,7 +25,7 @@ export default async function StudentDashboardLayout({
         .from('students')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .single() as any
 
     if (!student) {
         // If not student, CHECK if teacher
@@ -33,12 +33,23 @@ export default async function StudentDashboardLayout({
             .from('teachers')
             .select('id')
             .eq('user_id', user.id)
-            .single()
+            .single() as any
 
         if (teacher) {
             redirect('/professor')
         }
 
+        const { data: manager } = await adminAuth
+            .from('managers')
+            .select('id')
+            .eq('user_id', user.id)
+            .single() as any
+
+        if (manager) {
+            redirect('/gestor')
+        }
+
+        // If neither, go to error page
         redirect('/onboarding-error')
     }
 

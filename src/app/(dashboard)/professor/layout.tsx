@@ -25,7 +25,7 @@ export default async function ProfessorDashboardLayout({
         .from('teachers')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .single() as any
 
     if (!teacher) {
         // If not teacher, CHECK if it is a student before redirecting
@@ -33,10 +33,20 @@ export default async function ProfessorDashboardLayout({
             .from('students')
             .select('id')
             .eq('user_id', user.id)
-            .single()
+            .single() as any
 
         if (student) {
             redirect('/estudante')
+        }
+
+        const { data: manager } = await adminAuth
+            .from('managers')
+            .select('id')
+            .eq('user_id', user.id)
+            .single() as any
+
+        if (manager) {
+            redirect('/gestor')
         }
 
         // If neither, go to error page
@@ -47,7 +57,10 @@ export default async function ProfessorDashboardLayout({
         <div className="flex min-h-screen">
             <Sidebar className="w-64 hidden md:block" />
             <div className="flex-1 flex flex-col min-h-screen">
-                <DashboardHeader user={{ name: teacher.name, email: teacher.email }} />
+                <DashboardHeader
+                    user={{ name: teacher.name, email: teacher.email }}
+                    title="Painel do Professor"
+                />
                 <main className="flex-1 p-6 bg-slate-50/50">
                     {children}
                 </main>

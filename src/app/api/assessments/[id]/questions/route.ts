@@ -46,7 +46,7 @@ export async function PATCH(
         const adminClient = await createAdminClient()
 
         // Verificar se o usuário é professor da turma
-        const { data: teacher } = await adminClient
+        const { data: teacher } = await (adminClient as any)
             .from('teachers')
             .select('id')
             .eq('user_id', user.id)
@@ -57,7 +57,7 @@ export async function PATCH(
         }
 
         // Verificar se a avaliação existe e pertence ao professor
-        const { data: assessment, error: assessmentError } = await adminClient
+        const { data: assessment, error: assessmentError } = await (adminClient as any)
             .from('assessments')
             .select('id, class_id, created_by')
             .eq('id', assessmentId)
@@ -68,7 +68,7 @@ export async function PATCH(
         }
 
         // Verificar se o professor é dono da turma
-        const { data: classData } = await adminClient
+        const { data: classData } = await (adminClient as any)
             .from('classes')
             .select('teacher_id')
             .eq('id', assessment.class_id)
@@ -79,7 +79,7 @@ export async function PATCH(
         }
 
         // Atualizar questões
-        const { error: updateError } = await adminClient
+        const { error: updateError } = await (adminClient as any)
             .from('assessments')
             .update({ questions })
             .eq('id', assessmentId)

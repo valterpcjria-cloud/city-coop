@@ -12,7 +12,7 @@ export async function GET(req: Request) {
             return new Response('Unauthorized', { status: 401 })
         }
 
-        const { data: conversation, error } = await supabase
+        const { data: conversation, error } = await (supabase as any)
             .from('ai_conversations')
             .select('*')
             .eq('user_id', user.id)
@@ -42,7 +42,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('ai_conversations')
             .delete()
             .eq('user_id', user.id)

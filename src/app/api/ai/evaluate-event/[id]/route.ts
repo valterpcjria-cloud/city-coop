@@ -11,7 +11,7 @@ export async function POST(
         const { id } = await params // Event Plan ID
 
         // Fetch Plan
-        const { data: plan } = await supabase
+        const { data: plan } = await (supabase as any)
             .from('event_plans')
             .select('*')
             .eq('id', id)
@@ -23,7 +23,7 @@ export async function POST(
         const feedback = await evaluateEventPlan(plan)
 
         // Save Feedback
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('event_plans')
             .update({
                 ai_evaluation: {

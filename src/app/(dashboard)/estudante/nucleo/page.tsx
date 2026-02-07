@@ -16,7 +16,7 @@ export default async function MyNucleusPage() {
         .from('students')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .single() as any
 
     if (!student) return <div>Estudante não encontrado</div>
 
@@ -134,7 +134,7 @@ export default async function MyNucleusPage() {
                         <div className="text-center">
                             <p className="text-sm text-muted-foreground mb-3">Precisa de ideias para começar?</p>
                             <Badge variant="outline" className="cursor-pointer hover:bg-slate-50">
-                                Pergunte ao Coop Buddy
+                                Pergunte ao DOT Assistente
                             </Badge>
                         </div>
 

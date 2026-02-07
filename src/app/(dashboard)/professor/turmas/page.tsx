@@ -18,7 +18,7 @@ export default async function ClassesPage() {
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .single() as any
 
     if (teacherError) console.error('Error fetching teacher:', teacherError)
 

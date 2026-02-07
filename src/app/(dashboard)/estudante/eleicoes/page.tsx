@@ -124,7 +124,7 @@ export default function StudentElectionsPage() {
                     .from('students')
                     .select('id')
                     .eq('user_id', user.id)
-                    .single()
+                    .single() as any
 
                 if (student) {
                     const myCandidate = data.candidates.find((c: any) => c.student_id === student.id)

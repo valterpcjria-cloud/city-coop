@@ -29,7 +29,7 @@ export default async function TakeAssessmentPage({ params }: { params: Promise<{
             .select('id')
             .eq('assessment_id', id)
             .eq('student_id', student.id)
-            .single()
+            .single() as any
 
         if (existingResponse) {
             return (

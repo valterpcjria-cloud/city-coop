@@ -101,8 +101,8 @@ export default async function StudentDashboard() {
                 <Card className="col-span-1 border-coop-orange/30 bg-gradient-to-br from-[#F5A623]/5 to-[#4A90D9]/5 hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-bold text-coop-orange flex items-center gap-2">
-                            <Icons.ai className="h-4 w-4" />
-                            Coop Buddy
+                            <img src="/dot-bot.png" alt="DOT" className="w-8 h-8 object-contain" />
+                            DOT Assistente
                         </CardTitle>
                     </CardHeader>
                     <CardContent>

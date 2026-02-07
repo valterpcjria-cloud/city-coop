@@ -1,17 +1,83 @@
 import { createClient } from '@/lib/supabase/server'
 import { streamText, convertToModelMessages } from 'ai'
-import { anthropic } from '@ai-sdk/anthropic'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
+import { createAnthropic } from '@ai-sdk/anthropic'
+import { getAIKeys } from '@/lib/ai/config'
 import { TEACHER_SYSTEM_PROMPT, STUDENT_SYSTEM_PROMPT } from '@/lib/ai/claude'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 
 export const maxDuration = 30
+
+// Function to retrieve relevant knowledge from the database
+async function retrieveKnowledge(query: string, limit: number = 5): Promise<string> {
+    try {
+        const supabase = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+
+        // Fetch all knowledge base content
+        const { data: knowledge, error } = await supabase
+            .from('knowledge_base')
+            .select('content, category, metadata')
+            .order('created_at', { ascending: false })
+            .limit(50)
+
+        if (error || !knowledge || knowledge.length === 0) {
+            return ''
+        }
+
+        // Simple keyword matching for relevance
+        const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 3)
+
+        const scored = knowledge.map(item => {
+            const content = item.content.toLowerCase()
+            const title = (item.metadata?.title || '').toLowerCase()
+            let score = 0
+
+            for (const word of queryWords) {
+                if (content.includes(word)) score += 1
+                if (title.includes(word)) score += 2
+            }
+
+            return { ...item, score }
+        })
+
+        // Sort by relevance and take top results
+        const relevant = scored
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, limit)
+
+        if (relevant.length === 0) {
+            // If no keyword match, return most recent content
+            return knowledge.slice(0, 3).map(item => {
+                const title = item.metadata?.title || 'Documento'
+                const source = item.metadata?.source_type || 'texto'
+                return `[${title} (${source})]\n${item.content.substring(0, 2000)}`
+            }).join('\n\n---\n\n')
+        }
+
+        // Format relevant knowledge for context
+        return relevant.map(item => {
+            const title = item.metadata?.title || 'Documento'
+            const source = item.metadata?.source_type || 'texto'
+            const url = item.metadata?.source_url || ''
+            return `[${title} (Fonte: ${source}${url ? `, URL: ${url}` : ''})]\n${item.content.substring(0, 3000)}`
+        }).join('\n\n---\n\n')
+
+    } catch (error) {
+        console.error('Error retrieving knowledge:', error)
+        return ''
+    }
+}
 
 export async function POST(req: Request) {
     try {
         const body = await req.json()
         let { messages, conversationId, model: requestedModel, text } = body
 
-        // Robustness: Handle cases where sendMessage sends {text} instead of {messages}
+        // ... existing robustness logic ...
         if (!messages && text) {
             messages = [{ role: 'user', content: text }]
         } else if (!messages && body.message) {
@@ -27,6 +93,8 @@ export async function POST(req: Request) {
             return new Response('Unauthorized', { status: 401 })
         }
 
+        const keys = await getAIKeys()
+
         // Determine role and select system prompt
         const { data: teacher } = await supabase
             .from('teachers')
@@ -34,18 +102,29 @@ export async function POST(req: Request) {
             .eq('user_id', user.id)
             .single()
 
-        const systemPrompt = teacher ? TEACHER_SYSTEM_PROMPT : STUDENT_SYSTEM_PROMPT
         const userType = teacher ? 'teacher' : 'student'
 
+        // Get the last user message for knowledge retrieval
+        const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop()?.content || ''
+
+        // Retrieve relevant knowledge from the database
+        const knowledgeContext = await retrieveKnowledge(lastUserMessage)
+
+        // Build enhanced system prompt with knowledge context
+        let basePrompt = teacher ? TEACHER_SYSTEM_PROMPT : STUDENT_SYSTEM_PROMPT
+
+        if (knowledgeContext) {
+            basePrompt += `\n\n## BASE DE CONHECIMENTO DISPONÍVEL\n\nVocê tem acesso aos seguintes documentos e informações da base de conhecimento. Use estas informações para responder de forma precisa e contextualizada:\n\n${knowledgeContext}\n\n---\n\nIMPORTANTE: Use as informações acima para responder perguntas relacionadas. Cite as fontes quando apropriado.`
+        }
 
         const aiModel = requestedModel === 'gpt'
-            ? openai('gpt-4o')
-            : anthropic('claude-3-5-sonnet-20240620')
+            ? createOpenAI({ apiKey: keys.openai || process.env.OPENAI_API_KEY })('gpt-4o')
+            : createAnthropic({ apiKey: keys.anthropic || process.env.ANTHROPIC_API_KEY })('claude-3-5-sonnet-20240620')
 
         const result = streamText({
             model: aiModel as any,
             messages: await convertToModelMessages(messages),
-            system: systemPrompt,
+            system: basePrompt,
             onFinish: async (event) => {
                 try {
                     console.log(`Chat finished: ${event.text.substring(0, 30)}...`)

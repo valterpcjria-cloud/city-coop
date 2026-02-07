@@ -11,16 +11,18 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function DashboardHeader({
-    user
+    user,
+    title = "Painel do Professor"
 }: {
     user?: { name: string; email: string; image?: string }
+    title?: string
 }) {
     return (
         <header className="border-b bg-white/50 backdrop-blur-sm px-6 h-16 flex items-center justify-between sticky top-0 z-10">
             <div className="flex items-center gap-4">
                 {/* Breadcrumbs or Page Title could go here */}
                 <h1 className="font-semibold text-lg text-slate-800">
-                    Painel do Professor
+                    {title}
                 </h1>
             </div>
 

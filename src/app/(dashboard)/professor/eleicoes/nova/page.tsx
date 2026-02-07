@@ -53,7 +53,7 @@ export default function NewElectionPage() {
                 .from('teachers')
                 .select('id')
                 .eq('user_id', user.id)
-                .single()
+                .single() as any
 
             if (teacher) {
                 const { data: classData } = await supabase

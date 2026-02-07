@@ -32,6 +32,17 @@ import {
     FileText,
     Flag,
     Wallet,
+    BarChart3,
+    Download,
+    Filter,
+    TrendingUp,
+    School,
+    Youtube,
+    Globe,
+    File,
+    Image,
+    Link2,
+    Upload,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -74,6 +85,17 @@ export const Icons = {
     wallet: Wallet,
     plus: Plus,
     x: X,
+    chart: BarChart3,
+    download: Download,
+    filter: Filter,
+    trendingUp: TrendingUp,
+    school: School,
+    youtube: Youtube,
+    globe: Globe,
+    file: File,
+    image: Image,
+    link: Link2,
+    upload: Upload,
 }
 
 

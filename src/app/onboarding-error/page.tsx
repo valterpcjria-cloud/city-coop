@@ -77,7 +77,7 @@ export default function OnboardingError() {
                 </CardHeader>
                 <CardContent className="space-y-4 text-center">
                     <p className="text-slate-600">
-                        Encontramos sua conta de login, mas seus dados de professor/estudante não foram salvos corretamente.
+                        Encontramos sua conta de login, mas seus dados de perfil (gestor/professor/estudante) não foram salvos corretamente.
                     </p>
 
                     {userId && (

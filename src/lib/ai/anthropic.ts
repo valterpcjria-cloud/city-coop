@@ -1,8 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-
-export const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-})
+import { getAIKeys } from './config'
 
 export const SYSTEM_PROMPT_COOP = `Você é um especialista em cooperativismo escolar e pedagogia. 
 Sua função é auxiliar alunos e professores no desenvolvimento de uma cooperativa escolar.
@@ -10,6 +7,11 @@ Sempre responda de forma encorajadora, educativa e focado nos 7 princípios do c
 `
 
 export async function evaluateEventPlan(plan: any) {
+    const keys = await getAIKeys()
+    const anthropic = new Anthropic({
+        apiKey: keys.anthropic || process.env.ANTHROPIC_API_KEY,
+    })
+
     const prompt = `
     Analise o seguinte plano de evento escolar sob a ótica do cooperativismo:
     
@@ -35,5 +37,5 @@ export async function evaluateEventPlan(plan: any) {
         messages: [{ role: 'user', content: prompt }]
     });
 
-    return msg.content[0].type === 'text' ? msg.content[0].text : '';
+    return msg.content[0].type === 'text' ? (msg.content[0] as any).text : '';
 }

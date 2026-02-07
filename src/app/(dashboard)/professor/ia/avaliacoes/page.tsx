@@ -15,7 +15,7 @@ export default async function IAAssessmentsHubPage() {
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .single() as any
 
     const { data: classes } = (teacher as any) ? await adminAuth
         .from('classes')

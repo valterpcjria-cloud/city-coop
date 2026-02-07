@@ -18,7 +18,7 @@ export default async function ProfessorDashboardPage() {
         .from('teachers')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .single() as any
 
     // Get counts
     const { count: classesCount } = await adminAuth
@@ -28,7 +28,7 @@ export default async function ProfessorDashboardPage() {
         .eq('status', 'active')
 
     const { data: teacherClasses } = teacher ? await adminAuth.from('classes').select('id').eq('teacher_id', teacher.id) : { data: [] }
-    const classIds = teacherClasses?.map(c => c.id) || []
+    const classIds = (teacherClasses as any[])?.map(c => c.id) || []
 
     const { count: realStudentsCount } = classIds.length > 0 ? await adminAuth
         .from('class_students')
