@@ -41,6 +41,12 @@ export function StudentSidebar({ className }: SidebarProps) {
             active: pathname.startsWith('/estudante/atividades'),
         },
         {
+            label: 'Eleições',
+            icon: Icons.vote,
+            href: '/estudante/eleicoes',
+            active: pathname.startsWith('/estudante/eleicoes'),
+        },
+        {
             label: 'Chat IA',
             icon: Icons.ai,
             href: '/estudante/chat',

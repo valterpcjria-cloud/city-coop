@@ -23,6 +23,15 @@ import {
     RefreshCw,
     Clock,
     MessageSquare,
+    Vote,
+    BookOpen,
+    GraduationCap,
+    Target,
+    Users,
+    Trophy,
+    FileText,
+    Flag,
+    Wallet,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -54,4 +63,17 @@ export const Icons = {
     refresh: RefreshCw,
     clock: Clock,
     messageSquare: MessageSquare,
+    vote: Vote,
+    bookOpen: BookOpen,
+    graduationCap: GraduationCap,
+    target: Target,
+    users: Users,
+    trophy: Trophy,
+    fileText: FileText,
+    flag: Flag,
+    wallet: Wallet,
+    plus: Plus,
+    x: X,
 }
+
+

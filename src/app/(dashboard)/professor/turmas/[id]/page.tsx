@@ -4,130 +4,151 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Icons } from '@/components/ui/icons'
-import { Separator } from '@/components/ui/separator'
-import { AddStudentDialog } from '@/components/students/add-student-dialog'
-import { AssessmentsList } from '@/components/assessments/assessments-list'
-import { IndicatorsDashboard } from '@/components/indicators/indicators-dashboard'
-import { getClassAverageIndicators } from '@/lib/indicators'
 
-export default async function ClassDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-    const supabase = await createClient()
+interface PageProps {
+    params: Promise<{ id: string }>
+}
+
+export default async function TurmaDetalhesPage({ params }: PageProps) {
     const { id } = await params
+    const supabase = await createClient()
 
-    const { data: turma } = await supabase
+    // Buscar turma
+    const { data: turma, error: turmaError } = await supabase
         .from('classes')
         .select('*')
         .eq('id', id)
-        .single() as any
+        .single()
+
+    if (turmaError) {
+        console.error('Erro ao buscar turma:', turmaError)
+        return (
+            <div className="p-8 text-center">
+                <h1 className="text-2xl font-bold text-red-600 mb-4">Erro ao carregar turma</h1>
+                <p className="text-gray-600 mb-2">ID: {id}</p>
+                <p className="text-red-500">{turmaError.message}</p>
+                <pre className="mt-4 p-4 bg-gray-100 rounded text-left text-sm overflow-auto">
+                    {JSON.stringify(turmaError, null, 2)}
+                </pre>
+            </div>
+        )
+    }
 
     if (!turma) {
         notFound()
     }
 
-    const { data: students } = await supabase
+    // Buscar estudantes
+    const { data: estudantes } = await supabase
         .from('class_students')
-        .select(`
-      *,
-      student:students(*)
-    `)
+        .select('*, student:students(*)')
         .eq('class_id', id)
 
-    const { data: nuclei } = await supabase
+    // Buscar núcleos
+    const { data: nucleos } = await supabase
         .from('nuclei')
-        .select(`
-      *,
-      members:nucleus_members(
-        role,
-        student:students(name)
-      )
-    `)
+        .select('*, members:nucleus_members(role, student:students(name))')
         .eq('class_id', id)
 
-    const { data: assessments } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('class_id', id)
-        .order('created_at', { ascending: false })
-
-    const averageIndicators = await getClassAverageIndicators(id)
+    const totalEstudantes = estudantes?.length || 0
+    const totalNucleos = nucleos?.length || 0
 
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 -m-6 mb-0 bg-gradient-to-r from-[#4A90D9]/10 via-white to-[#F5A623]/10 border-b">
                 <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <Link href="/professor/turmas" className="text-muted-foreground hover:text-primary transition-colors">
-                            <Icons.arrowRight className="h-4 w-4 rotate-180" />
+                    <div className="flex items-center gap-3 mb-1">
+                        <Link
+                            href="/professor/turmas"
+                            className="p-2 rounded-full hover:bg-white/50 transition-colors"
+                        >
+                            <Icons.chevronLeft className="h-5 w-5 text-[#4A90D9]" />
                         </Link>
-                        <h2 className="text-3xl font-bold tracking-tight text-slate-900">{turma.name}</h2>
-                        <Badge variant={turma.status === 'active' ? 'default' : 'secondary'} className="ml-2">
+                        <h1 className="text-3xl font-bold text-[#4A90D9]">{turma.name}</h1>
+                        <Badge
+                            className={turma.status === 'active'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-600'
+                            }
+                        >
                             {turma.status === 'active' ? 'Ativa' : 'Encerrada'}
                         </Badge>
                     </div>
-                    <p className="text-slate-500 pl-6">{turma.code} • {turma.grade_level} • {turma.modality}</p>
+                    <p className="text-[#6B7C93] ml-12">
+                        {turma.code} • {turma.grade_level} • {turma.modality}
+                    </p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" asChild>
                         <Link href={`/professor/turmas/${id}/nucleos`}>
-                            <Icons.menu className="mr-2 h-4 w-4" />
+                            <Icons.users className="mr-2 h-4 w-4" />
                             Gerenciar Núcleos
                         </Link>
-                    </Button>
-                    <Button>
-                        <Icons.add className="mr-2 h-4 w-4" />
-                        Adicionar Aluno
                     </Button>
                 </div>
             </div>
 
-            <Tabs defaultValue="students" className="w-full">
-                <TabsList>
-                    <TabsTrigger value="students">Estudantes ({students?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="nuclei">Núcleos ({nuclei?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="assessments">Avaliações ({assessments?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="indicators">Indicadores</TabsTrigger>
+            {/* Tabs */}
+            <Tabs defaultValue="estudantes" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 max-w-md">
+                    <TabsTrigger value="estudantes">
+                        Estudantes ({totalEstudantes})
+                    </TabsTrigger>
+                    <TabsTrigger value="nucleos">
+                        Núcleos ({totalNucleos})
+                    </TabsTrigger>
                 </TabsList>
 
-                {/* Tab: Students */}
-                <TabsContent value="students" className="mt-6">
+                {/* Tab Estudantes */}
+                <TabsContent value="estudantes" className="mt-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Estudantes Matriculados</CardTitle>
+                            <CardTitle className="text-[#4A90D9]">Estudantes Matriculados</CardTitle>
                             <CardDescription>
-                                Lista de alunos e seus respectivos núcleos.
+                                Lista de alunos vinculados a esta turma.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {!students || students.length === 0 ? (
+                            {totalEstudantes === 0 ? (
                                 <div className="text-center py-12">
-                                    <p className="text-muted-foreground">Nenhum estudante matriculado ainda.</p>
-                                    <Button variant="link" className="mt-2">Adicionar estudantes manualmente</Button>
+                                    <div className="bg-[#4A90D9]/10 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                                        <Icons.user className="h-8 w-8 text-[#4A90D9]" />
+                                    </div>
+                                    <p className="text-[#6B7C93] mb-4">Nenhum estudante matriculado ainda.</p>
+                                    <Button variant="outline">
+                                        <Icons.add className="mr-2 h-4 w-4" />
+                                        Adicionar Estudante
+                                    </Button>
                                 </div>
                             ) : (
-                                <div className="space-y-4">
-                                    {students.map((item: any) => (
-                                        <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-slate-50 transition-colors">
+                                <div className="space-y-3">
+                                    {estudantes?.map((item: any) => (
+                                        <div
+                                            key={item.id}
+                                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors"
+                                        >
                                             <div className="flex items-center gap-4">
-                                                <Avatar>
-                                                    <AvatarFallback>{item.student.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                                <Avatar className="h-10 w-10 bg-[#F5A623]/20">
+                                                    <AvatarFallback className="text-[#F5A623] font-bold">
+                                                        {item.student?.name?.substring(0, 2).toUpperCase() || '??'}
+                                                    </AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <p className="font-medium text-slate-900">{item.student.name}</p>
-                                                    <p className="text-sm text-muted-foreground">{item.student.email}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {item.student?.name || 'Nome não disponível'}
+                                                    </p>
+                                                    <p className="text-sm text-[#6B7C93]">
+                                                        {item.student?.email || 'Email não disponível'}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                <Badge variant="outline">
-                                                    Sem Núcleo
-                                                </Badge>
-                                                <Button size="icon" variant="ghost">
-                                                    <Icons.settings className="h-4 w-4" />
-                                                </Button>
-                                            </div>
+                                            <Badge variant="outline" className="text-[#6B7C93]">
+                                                Sem Núcleo
+                                            </Badge>
                                         </div>
                                     ))}
                                 </div>
@@ -136,37 +157,42 @@ export default async function ClassDetailsPage({ params }: { params: Promise<{ i
                     </Card>
                 </TabsContent>
 
-                {/* Tab: Nuclei */}
-                <TabsContent value="nuclei" className="mt-6">
+                {/* Tab Núcleos */}
+                <TabsContent value="nucleos" className="mt-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Estrutura da Cooperativa</CardTitle>
-                            <CardDescription>Organização dos alunos nos 6 núcleos operacionais.</CardDescription>
+                            <CardTitle className="text-[#4A90D9]">Estrutura da Cooperativa</CardTitle>
+                            <CardDescription>
+                                Organização dos alunos nos núcleos operacionais.
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {['Entretenimento', 'Logística', 'Operacional', 'Financeiro', 'Comunicação', 'Parcerias'].map((nucleusName) => {
-                                    const nucleus = nuclei?.find((n: any) => n.name === nucleusName) as any
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {['Entretenimento', 'Logística', 'Operacional', 'Financeiro', 'Comunicação', 'Parcerias'].map((nome) => {
+                                    const nucleo = nucleos?.find((n: any) => n.name === nome)
+                                    const cor = nome === 'Financeiro' ? 'bg-red-500' :
+                                        nome === 'Logística' ? 'bg-green-500' :
+                                            nome === 'Comunicação' ? 'bg-purple-500' :
+                                                nome === 'Parcerias' ? 'bg-orange-500' : 'bg-blue-500'
+
                                     return (
-                                        <Card key={nucleusName} className="relative overflow-hidden">
-                                            <div className={`absolute top-0 left-0 w-1 h-full 
-                          ${nucleusName === 'Financeiro' ? 'bg-red-500' :
-                                                    nucleusName === 'Logística' ? 'bg-green-500' :
-                                                        'bg-blue-500'}`}
-                                            />
+                                        <Card key={nome} className="relative overflow-hidden border-l-4" style={{ borderLeftColor: cor.replace('bg-', '') }}>
+                                            <div className={`absolute top-0 left-0 w-1 h-full ${cor}`} />
                                             <CardHeader className="pb-2">
-                                                <CardTitle className="text-lg">{nucleusName}</CardTitle>
+                                                <CardTitle className="text-lg">{nome}</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                {nucleus ? (
-                                                    <div className="space-y-2">
-                                                        <p className="text-sm text-muted-foreground">{nucleus.members.length} membros</p>
-                                                    </div>
+                                                {nucleo ? (
+                                                    <p className="text-sm text-[#6B7C93]">
+                                                        {nucleo.members?.length || 0} membros
+                                                    </p>
                                                 ) : (
-                                                    <div className="flex flex-col items-center justify-center py-4 text-center">
-                                                        <p className="text-sm text-muted-foreground mb-2">Não formado</p>
+                                                    <div className="text-center py-2">
+                                                        <p className="text-sm text-[#6B7C93] mb-2">Não formado</p>
                                                         <Button size="sm" variant="outline" asChild>
-                                                            <Link href={`/professor/turmas/${id}/nucleos`}>Formar</Link>
+                                                            <Link href={`/professor/turmas/${id}/nucleos`}>
+                                                                Formar
+                                                            </Link>
                                                         </Button>
                                                     </div>
                                                 )}
@@ -178,21 +204,6 @@ export default async function ClassDetailsPage({ params }: { params: Promise<{ i
                         </CardContent>
                     </Card>
                 </TabsContent>
-
-                {/* Tab: Assessments */}
-                <TabsContent value="assessments" className="mt-6">
-                    <AssessmentsList classId={id} assessments={assessments || []} />
-                </TabsContent>
-
-                {/* Tab: Indicators */}
-                <TabsContent value="indicators" className="mt-6">
-                    <IndicatorsDashboard
-                        classId={id}
-                        averageData={averageIndicators}
-                        studentsData={[]}
-                    />
-                </TabsContent>
-
             </Tabs>
         </div>
     )

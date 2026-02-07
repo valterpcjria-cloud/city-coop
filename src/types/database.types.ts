@@ -33,6 +33,12 @@ export type KnowledgeCategory =
     | 'avaliacao'
 export type UserType = 'teacher' | 'student' | 'manager'
 
+// Voting System Types
+export type ElectionStatus = 'configuracao' | 'inscricoes' | 'campanha' | 'votacao' | 'encerrada'
+export type ConselhoType = 'administracao' | 'fiscal' | 'etica'
+export type ResultadoType = 'eleito_efetivo' | 'eleito_suplente' | 'nao_eleito'
+export type DocumentoTipo = 'ata_eleitoral' | 'resultado'
+
 export interface Database {
     public: {
         Tables: {
@@ -550,6 +556,166 @@ export interface Database {
                     created_at?: string
                 }
             }
+            elections: {
+                Row: {
+                    id: string
+                    class_id: string | null
+                    status: ElectionStatus
+                    data_inicio_inscricoes: string | null
+                    data_fim_inscricoes: string | null
+                    data_inicio_campanha: string | null
+                    data_fim_campanha: string | null
+                    data_inicio_votacao: string | null
+                    data_fim_votacao: string | null
+                    vagas_administracao: number
+                    vagas_fiscal_efetivos: number
+                    vagas_fiscal_suplentes: number
+                    vagas_etica: number
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    class_id?: string | null
+                    status?: ElectionStatus
+                    data_inicio_inscricoes?: string | null
+                    data_fim_inscricoes?: string | null
+                    data_inicio_campanha?: string | null
+                    data_fim_campanha?: string | null
+                    data_inicio_votacao?: string | null
+                    data_fim_votacao?: string | null
+                    vagas_administracao?: number
+                    vagas_fiscal_efetivos?: number
+                    vagas_fiscal_suplentes?: number
+                    vagas_etica?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    class_id?: string | null
+                    status?: ElectionStatus
+                    data_inicio_inscricoes?: string | null
+                    data_fim_inscricoes?: string | null
+                    data_inicio_campanha?: string | null
+                    data_fim_campanha?: string | null
+                    data_inicio_votacao?: string | null
+                    data_fim_votacao?: string | null
+                    vagas_administracao?: number
+                    vagas_fiscal_efetivos?: number
+                    vagas_fiscal_suplentes?: number
+                    vagas_etica?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            candidates: {
+                Row: {
+                    id: string
+                    election_id: string | null
+                    student_id: string | null
+                    conselho: ConselhoType
+                    proposta: string
+                    aprovado: boolean
+                    total_votos: number
+                    resultado: ResultadoType | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    election_id?: string | null
+                    student_id?: string | null
+                    conselho: ConselhoType
+                    proposta: string
+                    aprovado?: boolean
+                    total_votos?: number
+                    resultado?: ResultadoType | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    election_id?: string | null
+                    student_id?: string | null
+                    conselho?: ConselhoType
+                    proposta?: string
+                    aprovado?: boolean
+                    total_votos?: number
+                    resultado?: ResultadoType | null
+                    created_at?: string
+                }
+            }
+            vote_controls: {
+                Row: {
+                    id: string
+                    election_id: string | null
+                    student_id: string | null
+                    votou_administracao: boolean
+                    votou_fiscal: boolean
+                    votou_etica: boolean
+                    timestamp_voto: string
+                }
+                Insert: {
+                    id?: string
+                    election_id?: string | null
+                    student_id?: string | null
+                    votou_administracao?: boolean
+                    votou_fiscal?: boolean
+                    votou_etica?: boolean
+                    timestamp_voto?: string
+                }
+                Update: {
+                    id?: string
+                    election_id?: string | null
+                    student_id?: string | null
+                    votou_administracao?: boolean
+                    votou_fiscal?: boolean
+                    votou_etica?: boolean
+                    timestamp_voto?: string
+                }
+            }
+            votes: {
+                Row: {
+                    id: string
+                    candidate_id: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    candidate_id?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    candidate_id?: string | null
+                    created_at?: string
+                }
+            }
+            election_documents: {
+                Row: {
+                    id: string
+                    election_id: string | null
+                    tipo: DocumentoTipo | null
+                    conteudo: string | null
+                    url_pdf: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    election_id?: string | null
+                    tipo?: DocumentoTipo | null
+                    conteudo?: string | null
+                    url_pdf?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    election_id?: string | null
+                    tipo?: DocumentoTipo | null
+                    conteudo?: string | null
+                    url_pdf?: string | null
+                    created_at?: string
+                }
+            }
         }
         Views: {
             [_ in never]: never
@@ -579,3 +745,10 @@ export type MaturityIndicators = Database['public']['Tables']['maturity_indicato
 export type AIConversation = Database['public']['Tables']['ai_conversations']['Row']
 export type AIResearch = Database['public']['Tables']['ai_researches']['Row']
 export type KnowledgeBase = Database['public']['Tables']['knowledge_base']['Row']
+
+// Voting System Convenience Types
+export type Election = Database['public']['Tables']['elections']['Row']
+export type Candidate = Database['public']['Tables']['candidates']['Row']
+export type VoteControl = Database['public']['Tables']['vote_controls']['Row']
+export type Vote = Database['public']['Tables']['votes']['Row']
+export type ElectionDocument = Database['public']['Tables']['election_documents']['Row']

@@ -11,6 +11,7 @@ import { ptBR } from 'date-fns/locale'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EditQuestionsDialog } from '@/components/assessments/edit-questions-dialog'
 
 export default async function AssessmentDetailsPage({
     params,
@@ -120,10 +121,10 @@ export default async function AssessmentDetailsPage({
                                     <CardTitle className="text-xl font-bold text-[#4A90D9]">Questões Geradas</CardTitle>
                                     <CardDescription className="font-medium text-[#6B7C93]">Total de {assessment.questions?.length || 0} questões.</CardDescription>
                                 </div>
-                                <Button variant="outline" size="sm" className="font-bold gap-2 border-[#4A90D9]/30 text-[#4A90D9] hover:bg-[#4A90D9]/10">
-                                    <Icons.settings className="h-4 w-4" />
-                                    Editar
-                                </Button>
+                                <EditQuestionsDialog
+                                    assessmentId={assessmentId}
+                                    questions={assessment.questions}
+                                />
                             </CardHeader>
                             <CardContent className="pt-6 space-y-8">
                                 {assessment.questions && Array.isArray(assessment.questions) && assessment.questions.map((q: any, i: number) => (

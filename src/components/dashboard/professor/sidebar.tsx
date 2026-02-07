@@ -24,6 +24,12 @@ export function Sidebar({ className }: SidebarProps) {
 
     const routes = [
         {
+            label: 'Diretrizes',
+            icon: Icons.bookOpen,
+            href: '/professor/diretrizes',
+            active: pathname.startsWith('/professor/diretrizes'),
+        },
+        {
             label: 'Visão Geral',
             icon: Icons.menu,
             href: '/professor',
@@ -48,10 +54,10 @@ export function Sidebar({ className }: SidebarProps) {
             active: pathname.startsWith('/professor/eventos'),
         },
         {
-            label: 'Diretrizes',
-            icon: Icons.settings,
-            href: '/professor/diretrizes',
-            active: pathname.startsWith('/professor/diretrizes'),
+            label: 'Eleições',
+            icon: Icons.vote,
+            href: '/professor/eleicoes',
+            active: pathname.startsWith('/professor/eleicoes'),
         },
     ]
 
