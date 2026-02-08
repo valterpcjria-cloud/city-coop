@@ -9,7 +9,7 @@ export async function GET(
         const supabase = await createClient()
         const { id: classId } = await params
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('class_students')
             .select(`
                 *,
@@ -41,10 +41,10 @@ export async function POST(
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-        const teacherResult = await supabase.from('teachers').select('id').eq('user_id', user.id).single()
-        const teacherId = (teacherResult.data as any)?.id
+        const teacherResult = await (supabase.from('teachers').select('id').eq('user_id', user.id).single() as any)
+        const teacherId = teacherResult.data?.id
 
-        const turmaResult = await supabase
+        const turmaResult = await (supabase as any)
             .from('classes')
             .select('id, school_id')
             .eq('id', id)
@@ -59,7 +59,7 @@ export async function POST(
 
         for (const studentData of students) {
             if (studentData.id) {
-                const { data, error } = await supabase
+                const { data, error } = await (supabase as any)
                     .from('class_students')
                     .insert({
                         class_id: id,
@@ -73,14 +73,14 @@ export async function POST(
                     results.push({ ...studentData, status: 'success' })
                 }
             } else if (studentData.email) {
-                let { data: existingStudent } = await supabase
+                let { data: existingStudent } = await (supabase as any)
                     .from('students')
                     .select('id')
                     .eq('email', studentData.email)
                     .single()
 
                 if (!existingStudent) {
-                    const { data: newStudent, error: createError } = await supabase
+                    const { data: newStudent, error: createError } = await (supabase as any)
                         .from('students')
                         .insert({
                             name: studentData.name,
@@ -99,7 +99,7 @@ export async function POST(
                 }
 
                 if (existingStudent) {
-                    const { error: linkError } = await supabase
+                    const { error: linkError } = await (supabase as any)
                         .from('class_students')
                         .insert({
                             class_id: id,

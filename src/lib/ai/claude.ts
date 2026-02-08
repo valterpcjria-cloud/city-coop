@@ -71,7 +71,7 @@ export async function coopAssistantTeacher(
         topic?: string
     }
 ): Promise<string> {
-    const model = getAIModel()
+    const model = await getAIModel()
 
     const contextInfo = context
         ? `\n\nCONTEXTO ATUAL:\n${context.topic ? `Tópico: ${context.topic}` : ''}${context.classId ? `\nTurma ID: ${context.classId}` : ''}`
@@ -157,7 +157,7 @@ export async function dotAssistanteStudent(
         topic?: string
     }
 ): Promise<string> {
-    const model = getAIModel()
+    const model = await getAIModel()
 
     let contextInfo = ''
     if (context) {
@@ -210,7 +210,7 @@ export async function aiResearch(
     query: string,
     category?: string
 ): Promise<ResearchResult> {
-    const model = getAIModel()
+    const model = await getAIModel()
 
     const { text } = await generateText({
         model,
@@ -266,7 +266,7 @@ CRITÉRIOS DE AVALIAÇÃO (0-100 cada):
 RESPONDA SEMPRE EM JSON VÁLIDO.`
 
 export async function evaluateEventPlan(eventPlan: object): Promise<EventPlanEvaluation> {
-    const model = getAIModel()
+    const model = await getAIModel()
 
     const { object } = await generateObject({
         model,
@@ -331,7 +331,7 @@ export async function generateAssemblyAgenda(
     }[]
     totalDuration: number
 }> {
-    const model = getAIModel()
+    const model = await getAIModel()
 
     const { object } = await generateObject({
         model,
@@ -367,7 +367,7 @@ export async function generateAssemblyMinutes(
     discussions: { topic: string; summary: string }[],
     decisions: { topic: string; decision: string; votes?: { favor: number; against: number; abstention: number } }[]
 ): Promise<string> {
-    const model = getAIModel()
+    const model = await getAIModel()
     const { text } = await generateText({
         model,
         system: 'Você é um secretário de assembleias cooperativas. Gere atas formais e completas em formato Markdown.',
@@ -410,7 +410,7 @@ export async function generateAssessmentFeedback(
     areasToImprove: string[]
     recommendations: string[]
 }> {
-    const model = getAIModel()
+    const model = await getAIModel()
 
     const { object } = await generateObject({
         model,
@@ -493,7 +493,7 @@ export async function generateAssessment(
         questionsCount?: number
     }
 ) {
-    const model = getAIModel()
+    const model = await getAIModel()
 
     const { object } = await generateObject({
         model,

@@ -10,8 +10,8 @@ export async function POST(request: Request) {
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         // Insert new plan
-        const { data, error } = await supabase
-            .from('event_plans')
+        const { data, error } = await (supabase
+            .from('event_plans') as any)
             .insert(body)
             .select()
             .single()

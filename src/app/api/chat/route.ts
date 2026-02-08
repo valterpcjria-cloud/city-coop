@@ -137,9 +137,9 @@ export async function POST(req: Request) {
                     // Determine which ID to use
                     let targetId = conversationId && conversationId !== 'new' ? conversationId : null
 
-                    // If no ID provided and not explicitly a 'new' conversation, try to find the latest
                     if (!targetId && conversationId !== 'new') {
-                        const { data: latest, error: fetchError } = await (supabase.from('ai_conversations') as any)
+                        const { data: latest, error: fetchError } = await (supabase as any)
+                            .from('ai_conversations')
                             .select('id')
                             .eq('user_id', user.id)
                             .eq('user_type', userType)
@@ -152,7 +152,8 @@ export async function POST(req: Request) {
                     }
 
                     if (targetId) {
-                        const { error: updateError } = await (supabase.from('ai_conversations') as any)
+                        const { error: updateError } = await (supabase as any)
+                            .from('ai_conversations')
                             .update({
                                 messages: allMessages,
                                 updated_at: new Date().toISOString()
@@ -163,7 +164,8 @@ export async function POST(req: Request) {
                         else console.log(`Chat history updated for ${targetId}`)
                     } else {
                         // Create new conversation
-                        const { error: insertError } = await (supabase.from('ai_conversations') as any)
+                        const { error: insertError } = await (supabase as any)
+                            .from('ai_conversations')
                             .insert({
                                 user_id: user.id,
                                 user_type: userType,

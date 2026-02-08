@@ -20,7 +20,7 @@ export async function PATCH(
             reviewed_by: user.id
         }
 
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('event_plans')
             .update(updates)
             .eq('id', id)

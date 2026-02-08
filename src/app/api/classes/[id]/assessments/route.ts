@@ -9,7 +9,7 @@ export async function GET(
         const supabase = await createClient()
         const { id: classId } = await params
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('assessments')
             .select('*')
             .eq('class_id', classId)

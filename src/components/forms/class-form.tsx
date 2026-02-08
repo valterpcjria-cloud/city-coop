@@ -35,11 +35,11 @@ const formSchema = z.object({
         message: 'Código deve ter pelo menos 3 caracteres.',
     }),
     grade_level: z.string({
-        required_error: 'Selecione o ano escolar.',
-    }),
+        message: 'Selecione o ano escolar.',
+    } as any),
     modality: z.string({
-        required_error: 'Selecione a modalidade.',
-    }),
+        message: 'Selecione a modalidade.',
+    } as any),
     start_date: z.string().min(1, 'Data de início obrigatória'),
     end_date: z.string().min(1, 'Data de término obrigatória'),
 })

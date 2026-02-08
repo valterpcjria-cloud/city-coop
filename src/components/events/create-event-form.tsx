@@ -32,8 +32,8 @@ const formSchema = z.object({
     title: z.string().min(3, 'Título muito curto'),
     description: z.string().min(10, 'Descrição muito curta'),
     event_date: z.date({
-        invalid_type_error: 'Selecione uma data para o evento',
-    }),
+        message: 'Selecione uma data para o evento',
+    } as any),
     budget_items: z.array(z.object({
         item: z.string().min(1, 'Item obrigatório'),
         value: z.coerce.number().min(0, 'Valor inválido')
@@ -53,7 +53,7 @@ export function CreateEventForm({ classId }: CreateEventFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             title: '',
             description: '',

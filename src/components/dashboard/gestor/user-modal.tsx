@@ -16,6 +16,7 @@ interface User {
     name: string
     email: string
     phone: string | null
+    cpf?: string | null
     role: 'gestor' | 'professor' | 'estudante'
     school_id: string | null
     is_superadmin: boolean

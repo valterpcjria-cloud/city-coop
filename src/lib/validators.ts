@@ -153,7 +153,7 @@ export function validate<T>(schema: z.ZodSchema<T>, data: unknown): {
         return { success: true, data: result.data }
     }
 
-    const errors = result.error.errors.map(e =>
+    const errors = result.error.issues.map(e =>
         `${e.path.join('.')}: ${e.message}`
     )
 
