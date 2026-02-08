@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { validateSuperadminAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
+import { isValidCPF } from '@/lib/validators'
 
 /**
  * ===========================================
@@ -123,6 +124,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Validate CPF if provided
+        if (cpf && !isValidCPF(cpf)) {
+            return NextResponse.json(
+                { error: 'CPF inválido' },
+                { status: 400 }
+            )
+        }
+
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -155,6 +164,7 @@ export async function POST(request: NextRequest) {
                 name,
                 email,
                 phone,
+                cpf,
                 is_superadmin: is_superadmin || false
             })
             insertError = error
@@ -216,6 +226,14 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'ID e role são obrigatórios' }, { status: 400 })
         }
 
+        // Validate CPF if provided
+        if (cpf && !isValidCPF(cpf)) {
+            return NextResponse.json(
+                { error: 'CPF inválido' },
+                { status: 400 }
+            )
+        }
+
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -226,7 +244,7 @@ export async function PUT(request: NextRequest) {
         if (role === 'gestor') {
             const { error } = await supabase
                 .from('gestors')
-                .update({ name, phone, is_superadmin, is_active, updated_at: new Date().toISOString() })
+                .update({ name, phone, cpf, is_superadmin, is_active, updated_at: new Date().toISOString() })
                 .eq('id', id)
             updateError = error
         } else if (role === 'professor') {

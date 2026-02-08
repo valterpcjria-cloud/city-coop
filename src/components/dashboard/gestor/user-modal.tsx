@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { toast } from '@/components/ui/sonner'
 import { Loader2, UserPlus, Save } from 'lucide-react'
+import { isValidCPF } from '@/lib/validators'
 
 interface User {
     id: string
@@ -97,12 +98,19 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserMod
         setIsLoading(true)
 
         try {
+            // Validar CPF se preenchido
+            if (cpf && !isValidCPF(cpf)) {
+                setIsLoading(false)
+                toast.error('CPF Inválido', { description: 'Por favor, insira um CPF válido.' })
+                return
+            }
+
             const payload = {
                 ...(isEditing && { id: user.id }),
                 name,
                 email,
                 phone: phone || null,
-                cpf: (role === 'professor' || role === 'estudante') && cpf ? cpf : null,
+                cpf: cpf || null,
                 role,
                 school_id: (role === 'professor' || role === 'estudante') && schoolId ? schoolId : null,
                 grade_level: role === 'estudante' && gradeLevel ? gradeLevel : null,
@@ -192,19 +200,17 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserMod
                         />
                     </div>
 
-                    {/* CPF - only for professors and students */}
-                    {(role === 'professor' || role === 'estudante') && (
-                        <div className="space-y-2">
-                            <Label htmlFor="cpf">CPF</Label>
-                            <Input
-                                id="cpf"
-                                value={cpf}
-                                onChange={(e) => setCpf(e.target.value)}
-                                placeholder="000.000.000-00"
-                                maxLength={14}
-                            />
-                        </div>
-                    )}
+                    {/* CPF - enabled for all now */}
+                    <div className="space-y-2">
+                        <Label htmlFor="cpf">CPF</Label>
+                        <Input
+                            id="cpf"
+                            value={cpf}
+                            onChange={(e) => setCpf(e.target.value)}
+                            placeholder="000.000.000-00"
+                            maxLength={14}
+                        />
+                    </div>
 
                     {/* Role */}
                     <div className="space-y-2">
