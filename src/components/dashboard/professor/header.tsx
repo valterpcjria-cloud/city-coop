@@ -1,5 +1,10 @@
+'use client'
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,6 +22,15 @@ export function DashboardHeader({
     user?: { name: string; email: string; image?: string }
     title?: string
 }) {
+    const router = useRouter()
+
+    const handleSignOut = async () => {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        router.push('/login')
+        router.refresh()
+    }
+
     return (
         <header className="border-b bg-white/50 backdrop-blur-sm px-6 h-16 flex items-center justify-between sticky top-0 z-10">
             <div className="flex items-center gap-4">
@@ -48,16 +62,21 @@ export function DashboardHeader({
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                Perfil
+                            <DropdownMenuItem asChild>
+                                <Link href="/professor/perfil" className="flex items-center w-full">
+                                    Perfil
+                                </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                Configurações
+                            <DropdownMenuItem asChild>
+                                <Link href="/professor/configuracoes" className="flex items-center w-full">
+                                    Configurações
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem onClick={handleSignOut} className="text-red-600 cursor-pointer">
                             Sair
                         </DropdownMenuItem>
                     </DropdownMenuContent>
