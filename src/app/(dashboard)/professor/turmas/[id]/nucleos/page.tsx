@@ -36,7 +36,8 @@ export default async function NucleiPage({ params }: { params: { id: string } })
       members:nucleus_members(
         id,
         role,
-        student_id
+        student_id,
+        student:students(name)
       )
     `)
         .eq('class_id', id)
@@ -46,6 +47,8 @@ export default async function NucleiPage({ params }: { params: { id: string } })
     nuclei?.forEach((n: any) => {
         n.members.forEach((m: any) => assignedStudentIds.add(m.student_id))
     })
+
+    const availableStudents = students?.filter((s: any) => !assignedStudentIds.has(s.student.id)) || []
 
     // List of all 6 required nuclei
     const requiredNuclei = [
@@ -78,11 +81,11 @@ export default async function NucleiPage({ params }: { params: { id: string } })
                         <CardHeader>
                             <CardTitle className="text-base">Estudantes Não Alocados</CardTitle>
                             <CardDescription>
-                                Arraste ou selecione para adicionar a um núcleo
+                                Estes alunos ainda não pertencem a nenhum núcleo
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                            {students?.filter((s: any) => !assignedStudentIds.has(s.student.id)).map((s: any) => (
+                            {availableStudents.map((s: any) => (
                                 <div key={s.student.id} className="p-3 bg-white border rounded-md shadow-sm flex items-center justify-between group">
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-8 w-8">
@@ -92,12 +95,10 @@ export default async function NucleiPage({ params }: { params: { id: string } })
                                             <p className="text-sm font-medium truncate w-32">{s.student.name}</p>
                                         </div>
                                     </div>
-                                    <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100">
-                                        <Icons.add className="h-4 w-4" />
-                                    </Button>
+                                    <Icons.user className="h-4 w-4 text-slate-300" />
                                 </div>
                             ))}
-                            {students?.filter((s: any) => !assignedStudentIds.has(s.student.id)).length === 0 && (
+                            {availableStudents.length === 0 && (
                                 <div className="text-center py-8 text-muted-foreground text-sm">
                                     Todos os alunos foram alocados!
                                 </div>
@@ -111,6 +112,10 @@ export default async function NucleiPage({ params }: { params: { id: string } })
                     {requiredNuclei.map((nucleusName) => {
                         const existingNucleus = nuclei?.find((n: any) => n.name === nucleusName)
                         const members = (existingNucleus as any)?.members || []
+                        const formattedMembers = members.map((m: any) => ({
+                            ...m,
+                            studentName: m.student?.name || 'Aluno'
+                        }))
 
                         return (
                             <Card key={nucleusName} className={`relative overflow-hidden ${existingNucleus ? 'border-primary/20' : 'border-dashed'}`}>
@@ -125,17 +130,14 @@ export default async function NucleiPage({ params }: { params: { id: string } })
                                 <CardContent>
                                     {members.length > 0 ? (
                                         <div className="space-y-2 mt-2">
-                                            {members.map((member: any) => {
-                                                const studentInfo = (students as any[])?.find((s: any) => s.student.id === member.student_id)?.student
-                                                return (
-                                                    <div key={member.id} className="flex items-center justify-between text-sm bg-slate-50 p-2 rounded">
-                                                        <span className="truncate max-w-[120px]">{studentInfo?.name || 'Aluno'}</span>
-                                                        <Badge variant="outline" className="text-[10px] h-5 px-1">
-                                                            {member.role === 'coordenador' ? 'Coord' : 'Membro'}
-                                                        </Badge>
-                                                    </div>
-                                                )
-                                            })}
+                                            {formattedMembers.map((member: any) => (
+                                                <div key={member.id} className="flex items-center justify-between text-sm bg-slate-50 p-2 rounded">
+                                                    <span className="truncate max-w-[120px]">{member.studentName}</span>
+                                                    <Badge variant="outline" className="text-[10px] h-5 px-1">
+                                                        {member.role === 'coordenador' ? 'Coord' : 'Membro'}
+                                                    </Badge>
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : (
                                         <div className="h-20 flex items-center justify-center text-xs text-muted-foreground border-2 border-dashed rounded-md bg-slate-50/50">
@@ -144,9 +146,17 @@ export default async function NucleiPage({ params }: { params: { id: string } })
                                     )}
 
                                     <div className="mt-4 flex justify-end">
-                                        <Button variant="outline" size="sm" className="w-full text-xs">
-                                            Gerenciar
-                                        </Button>
+                                        <NucleusDialog
+                                            classId={id}
+                                            nucleusName={nucleusName}
+                                            currentMembers={formattedMembers}
+                                            availableStudents={availableStudents}
+                                            trigger={
+                                                <Button variant="outline" size="sm" className="w-full text-xs hover:bg-city-blue hover:text-white transition-colors">
+                                                    Gerenciar
+                                                </Button>
+                                            }
+                                        />
                                     </div>
                                 </CardContent>
                             </Card>
