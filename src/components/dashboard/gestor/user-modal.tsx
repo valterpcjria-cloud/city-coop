@@ -65,7 +65,7 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserMod
             setName(user?.name || '')
             setEmail(user?.email || '')
             setPhone(user?.phone || '')
-            setCpf(user?.cpf || '')
+            setCpf((user as any)?.cpf || '')
             setRole(user?.role || 'professor')
             setSchoolId(user?.school_id || '')
             setGradeLevel(user?.grade_level || '')
