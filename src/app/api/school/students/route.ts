@@ -49,14 +49,26 @@ export async function GET(request: Request) {
 
         let filteredStudents = students || []
 
-        if (classId) {
-            const { data: classStudents } = await adminSupabase
-                .from('class_students')
-                .select('student_id')
-                .eq('class_id', classId) as any
+        // 3. Buscar alunos que já possuem matrícula em QUALQUER turma ativa
+        const { data: allActiveMatriculas } = await (adminSupabase as any)
+            .from('class_students')
+            .select('student_id, class_id, classes!inner(status)')
+            .eq('classes.status', 'active')
 
-            const existingIds = new Set((classStudents || []).map((cs: any) => cs.student_id))
-            filteredStudents = students.filter((s: any) => !existingIds.has(s.id))
+        const matriculadosIds = new Set((allActiveMatriculas || []).map((m: any) => m.student_id))
+
+        // Remover alunos já matriculados da lista global
+        filteredStudents = filteredStudents.filter((s: any) => !matriculadosIds.has(s.id))
+
+        // 4. Filtro adicional caso tenha vindo do diálogo de uma turma específica (redundante mas seguro)
+        if (classId) {
+            const existingIdsInThisClass = new Set((allActiveMatriculas || [])
+                .filter((m: any) => m.class_id === classId)
+                .map((m: any) => m.student_id))
+
+            // Este filtro já está coberto pelo global acima, mas garantimos que 
+            // alunos da própria turma atual não apareçam (mesmo que a turma não fosse 'active' por algum erro)
+            filteredStudents = filteredStudents.filter((s: any) => !existingIdsInThisClass.has(s.id))
         }
 
         return NextResponse.json({ success: true, students: filteredStudents })
