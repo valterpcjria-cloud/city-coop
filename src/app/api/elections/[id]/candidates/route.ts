@@ -19,8 +19,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         const { searchParams } = new URL(request.url)
         const conselho = searchParams.get('conselho')
 
-        let query = supabase
-            .from('candidates')
+        let query = (supabase
+            .from('candidates') as any)
             .select(`
                 *,
                 student:students(id, name, email)
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar eleição para verificar se pode mostrar votos
-        const { data: election } = await supabase
-            .from('elections')
+        const { data: election } = await (supabase
+            .from('elections') as any)
             .select('status')
             .eq('id', electionId)
             .single()
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         // Só mostrar votos se eleição estiver encerrada
         const showVotes = election?.status === 'encerrada'
 
-        const processedCandidates = candidates.map(c => ({
+        const processedCandidates = candidates.map((c: any) => ({
             ...c,
             total_votos: showVotes ? c.total_votos : undefined,
             resultado: showVotes ? c.resultado : undefined,
@@ -58,9 +58,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         // Agrupar por conselho
         const grouped = {
-            administracao: processedCandidates.filter(c => c.conselho === 'administracao'),
-            fiscal: processedCandidates.filter(c => c.conselho === 'fiscal'),
-            etica: processedCandidates.filter(c => c.conselho === 'etica'),
+            administracao: processedCandidates.filter((c: any) => c.conselho === 'administracao'),
+            fiscal: processedCandidates.filter((c: any) => c.conselho === 'fiscal'),
+            etica: processedCandidates.filter((c: any) => c.conselho === 'etica'),
         }
 
         return NextResponse.json({
@@ -88,8 +88,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar estudante
-        const { data: student } = await adminClient
-            .from('students')
+        const { data: student } = await (adminClient
+            .from('students') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -99,8 +99,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar eleição
-        const { data: election } = await adminClient
-            .from('elections')
+        const { data: election } = await (adminClient
+            .from('elections') as any)
             .select('*')
             .eq('id', electionId)
             .single()
@@ -143,8 +143,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se já é candidato
-        const { data: existingCandidate } = await adminClient
-            .from('candidates')
+        const { data: existingCandidate } = await (adminClient
+            .from('candidates') as any)
             .select('id, conselho')
             .eq('election_id', electionId)
             .eq('student_id', student.id)
@@ -157,8 +157,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Criar candidatura
-        const { data: candidate, error } = await adminClient
-            .from('candidates')
+        const { data: candidate, error } = await (adminClient
+            .from('candidates') as any)
             .insert({
                 election_id: electionId,
                 student_id: student.id,

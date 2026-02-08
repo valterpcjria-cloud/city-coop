@@ -1,6 +1,6 @@
 import React from 'react'
-import { Sidebar } from '@/components/dashboard/gestor/sidebar'
-import { DashboardHeader } from '@/components/dashboard/professor/header'
+import { GestorSidebar } from '@/components/dashboard/gestor/gestor-sidebar'
+import { GestorHeader } from '@/components/dashboard/gestor/gestor-header'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -64,17 +64,24 @@ export default async function GestorDashboardLayout({
     }
 
     return (
-        <div className="flex min-h-screen">
-            <Sidebar className="w-64 hidden md:block" />
-            <div className="flex-1 flex flex-col min-h-screen">
-                <DashboardHeader
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100/50">
+            {/* Premium Glassmorphism Sidebar */}
+            <GestorSidebar className="hidden md:flex" />
+
+            {/* Main Content Area */}
+            <div className="md:ml-72 min-h-screen flex flex-col">
+                {/* Floating Header */}
+                <GestorHeader
                     user={{ name: manager.name, email: manager.email }}
                     title="Painel do Gestor"
                 />
-                <main className="flex-1 p-6 bg-slate-50/50">
+
+                {/* Content */}
+                <main className="flex-1 px-4 pb-6">
                     {children}
                 </main>
             </div>
         </div>
     )
 }
+

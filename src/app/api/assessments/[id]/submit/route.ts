@@ -18,7 +18,7 @@ export async function POST(
             .from('students')
             .select('id')
             .eq('user_id', user.id)
-            .single()
+            .single() as any
 
         if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 })
 
@@ -28,15 +28,15 @@ export async function POST(
             .select('id')
             .eq('assessment_id', assessmentId)
             .eq('student_id', student.id)
-            .single()
+            .single() as any
 
         if (existing) {
             return NextResponse.json({ error: 'Already submitted' }, { status: 400 })
         }
 
         // Insert response
-        const { data, error } = await supabase
-            .from('assessment_responses')
+        const { data, error } = await (supabase
+            .from('assessment_responses') as any)
             .insert({
                 assessment_id: assessmentId,
                 student_id: student.id,

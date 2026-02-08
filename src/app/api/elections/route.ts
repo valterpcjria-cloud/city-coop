@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url)
         const classId = searchParams.get('class_id')
 
-        let query = supabase
-            .from('elections')
+        let query = (supabase
+            .from('elections') as any)
             .select(`
                 *,
                 class:classes(id, name, code)
@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Verificar se é professor
-        const { data: teacher } = await adminClient
-            .from('teachers')
+        const { data: teacher } = await (adminClient
+            .from('teachers') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Verificar se professor é responsável pela turma
-        const { data: classData } = await adminClient
-            .from('classes')
+        const { data: classData } = await (adminClient
+            .from('classes') as any)
             .select('id, teacher_id')
             .eq('id', class_id)
             .eq('teacher_id', teacher.id)
@@ -114,8 +114,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Criar eleição
-        const { data: election, error } = await adminClient
-            .from('elections')
+        const { data: election, error } = await (adminClient
+            .from('elections') as any)
             .insert({
                 class_id,
                 status: 'configuracao',

@@ -15,8 +15,8 @@ export async function POST(request: Request) {
         const { name, code, grade_level, modality, start_date, end_date } = body
 
         // Find teacher using Admin Client to bypass any RLS issue during creation
-        const { data: teacher, error: teacherError } = await adminAuth
-            .from('teachers')
+        const { data: teacher, error: teacherError } = await (adminAuth
+            .from('teachers') as any)
             .select('id, school_id')
             .eq('user_id', user.id)
             .single()
@@ -26,8 +26,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Professor não encontrado' }, { status: 404 })
         }
 
-        const { data, error } = await adminAuth
-            .from('classes')
+        const { data, error } = await (adminAuth
+            .from('classes') as any)
             .insert({
                 name,
                 code,

@@ -220,3 +220,118 @@ export async function validateRoles(allowedRoles: UserRole[]): Promise<AuthResul
 
     return auth
 }
+
+/**
+ * Extended auth result for superadmin with additional info
+ */
+export interface SuperadminAuthResult extends AuthResult {
+    isSuperadmin: boolean
+}
+
+/**
+ * Validates access for Superadmin-only routes (like user management)
+ * Returns 401 if not authenticated, 403 if not a superadmin
+ */
+export async function validateSuperadminAccess(): Promise<SuperadminAuthResult> {
+    try {
+        // Get auth token from cookies
+        const supabase = await createAuthClient()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+        console.log('[AUTH_GUARD] Auth check:', {
+            hasUser: !!user,
+            userId: user?.id,
+            userEmail: user?.email,
+            authError: authError?.message
+        })
+
+        if (authError || !user) {
+            return {
+                success: false,
+                user: null,
+                role: null,
+                isSuperadmin: false,
+                error: 'Não autenticado',
+                response: NextResponse.json(
+                    { error: 'Não autenticado. Faça login para continuar.' },
+                    { status: 401 }
+                )
+            }
+        }
+
+        // Use admin client to bypass RLS for superadmin check
+        const { createClient } = await import('@supabase/supabase-js')
+        const adminClient = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+
+        console.log('[AUTH_GUARD] Checking gestors table for user_id:', user.id)
+
+        const { data: gestor, error } = await adminClient
+            .from('gestors')
+            .select('id, user_id, email, is_superadmin')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+        console.log('[AUTH_GUARD] Gestor query result:', {
+            gestor,
+            error: error?.message,
+            is_superadmin: gestor?.is_superadmin
+        })
+
+        // Check if we found a gestor record with superadmin=true
+        if (error) {
+            console.error('[AUTH_GUARD] DB error:', error.message)
+            return {
+                success: false,
+                user: { id: user.id, email: user.email || '' },
+                role: 'gestor',
+                isSuperadmin: false,
+                error: 'Erro ao verificar permissões.',
+                response: NextResponse.json(
+                    { error: 'Erro ao verificar permissões.' },
+                    { status: 500 }
+                )
+            }
+        }
+
+        if (!gestor || !gestor.is_superadmin) {
+            console.warn(`[AUTH_GUARD] Non-superadmin access attempt. User: ${user.id}, Gestor found: ${!!gestor}, is_superadmin: ${gestor?.is_superadmin}`)
+            return {
+                success: false,
+                user: { id: user.id, email: user.email || '' },
+                role: 'gestor',
+                isSuperadmin: false,
+                error: 'Acesso negado. Apenas superadministradores podem gerenciar usuários.',
+                response: NextResponse.json(
+                    { error: 'Acesso negado. Apenas superadministradores podem gerenciar usuários.' },
+                    { status: 403 }
+                )
+            }
+        }
+
+        console.log('[AUTH_GUARD] Superadmin access GRANTED for:', user.email)
+
+        return {
+            success: true,
+            user: { id: user.id, email: user.email || '' },
+            role: 'gestor',
+            isSuperadmin: true
+        }
+    } catch (error) {
+        console.error('[AUTH_GUARD] Superadmin check error:', error)
+        return {
+            success: false,
+            user: null,
+            role: null,
+            isSuperadmin: false,
+            error: 'Erro ao verificar permissões de administrador.',
+            response: NextResponse.json(
+                { error: 'Erro ao verificar permissões de administrador.' },
+                { status: 500 }
+            )
+        }
+    }
+}
+

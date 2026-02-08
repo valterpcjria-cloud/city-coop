@@ -9,6 +9,7 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
     MoreVertical,
     Trash,
     Plus,
@@ -43,6 +44,7 @@ import {
     Image,
     Link2,
     Upload,
+    Bell,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -59,6 +61,7 @@ export const Icons = {
     check: Check,
     chevronLeft: ChevronLeft,
     chevronRight: ChevronRight,
+    chevronDown: ChevronDown,
     ellipsis: MoreVertical,
     trash: Trash,
     add: Plus,
@@ -96,6 +99,7 @@ export const Icons = {
     image: Image,
     link: Link2,
     upload: Upload,
+    bell: Bell,
 }
 
 

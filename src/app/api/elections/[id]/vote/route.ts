@@ -19,8 +19,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar estudante
-        const { data: student } = await adminClient
-            .from('students')
+        const { data: student } = await (adminClient
+            .from('students') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -30,8 +30,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar eleição
-        const { data: election } = await adminClient
-            .from('elections')
+        const { data: election } = await (adminClient
+            .from('elections') as any)
             .select('*')
             .eq('id', electionId)
             .single()
@@ -58,8 +58,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se já votou
-        const { data: existingVoteControl } = await adminClient
-            .from('vote_controls')
+        const { data: existingVoteControl } = await (adminClient
+            .from('vote_controls') as any)
             .select('*')
             .eq('election_id', electionId)
             .eq('student_id', student.id)
@@ -101,8 +101,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar todos os candidatos da eleição para validar
-        const { data: allCandidates } = await adminClient
-            .from('candidates')
+        const { data: allCandidates } = await (adminClient
+            .from('candidates') as any)
             .select('id, conselho')
             .eq('election_id', electionId)
             .eq('aprovado', true)
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Erro ao validar candidatos' }, { status: 500 })
         }
 
-        const candidateMap = new Map(allCandidates.map(c => [c.id, c.conselho]))
+        const candidateMap = new Map(allCandidates.map((c: any) => [c.id, c.conselho]))
 
         // Validar que todos os candidatos existem e são do conselho correto
         const validateVotes = (votes: string[], expectedConselho: string) => {
@@ -141,8 +141,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
         try {
             // 1. Criar ou atualizar vote_control (marca que votou)
-            const { error: voteControlError } = await adminClient
-                .from('vote_controls')
+            const { error: voteControlError } = await (adminClient
+                .from('vote_controls') as any)
                 .upsert({
                     election_id: electionId,
                     student_id: student.id,
@@ -172,8 +172,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             ]
 
             if (allVotes.length > 0) {
-                const { error: votesError } = await adminClient
-                    .from('votes')
+                const { error: votesError } = await (adminClient
+                    .from('votes') as any)
                     .insert(allVotes)
 
                 if (votesError) {
@@ -183,21 +183,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
                 // 3. Incrementar contador de votos em cada candidato
                 for (const candidateId of [...administracao, ...fiscal, ...etica]) {
-                    const { error: updateError } = await adminClient.rpc('increment_vote_count', {
-                        p_candidate_id: candidateId
-                    }).catch(async () => {
-                        // Fallback se RPC não existir
-                        const { data: candidate } = await adminClient
-                            .from('candidates')
-                            .select('total_votos')
-                            .eq('id', candidateId)
-                            .single()
+                    // Update vote count for each candidate
+                    const { data: candidate } = await (adminClient
+                        .from('candidates') as any)
+                        .select('total_votos')
+                        .eq('id', candidateId)
+                        .single()
 
-                        return await adminClient
-                            .from('candidates')
-                            .update({ total_votos: (candidate?.total_votos || 0) + 1 })
-                            .eq('id', candidateId)
-                    })
+                    await (adminClient
+                        .from('candidates') as any)
+                        .update({ total_votos: (candidate?.total_votos || 0) + 1 })
+                        .eq('id', candidateId)
                 }
             }
 
@@ -236,8 +232,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar estudante
-        const { data: student } = await adminClient
-            .from('students')
+        const { data: student } = await (adminClient
+            .from('students') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -247,8 +243,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se já votou
-        const { data: voteControl } = await adminClient
-            .from('vote_controls')
+        const { data: voteControl } = await (adminClient
+            .from('vote_controls') as any)
             .select('*')
             .eq('election_id', electionId)
             .eq('student_id', student.id)

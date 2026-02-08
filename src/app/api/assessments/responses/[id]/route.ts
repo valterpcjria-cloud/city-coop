@@ -9,8 +9,8 @@ export async function GET(
         const supabase = await createClient()
         const { id } = await params
 
-        const { data, error } = await supabase
-            .from('assessment_responses')
+        const { data, error } = await (supabase
+            .from('assessment_responses') as any)
             .select('*')
             .eq('id', id)
             .single()
@@ -36,8 +36,8 @@ export async function PATCH(
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         // Update score
-        const { error } = await supabase
-            .from('assessment_responses')
+        const { error } = await (supabase
+            .from('assessment_responses') as any)
             .update({ score: score })
             .eq('id', id)
 

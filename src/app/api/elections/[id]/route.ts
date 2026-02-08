@@ -16,8 +16,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
         }
 
-        const { data: election, error } = await supabase
-            .from('elections')
+        const { data: election, error } = await (supabase
+            .from('elections') as any)
             .select(`
                 *,
                 class:classes(id, name, code, teacher_id)
@@ -50,8 +50,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se é professor
-        const { data: teacher } = await adminClient
-            .from('teachers')
+        const { data: teacher } = await (adminClient
+            .from('teachers') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -61,8 +61,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se eleição existe e pertence ao professor
-        const { data: election } = await adminClient
-            .from('elections')
+        const { data: election } = await (adminClient
+            .from('elections') as any)
             .select(`
                 *,
                 class:classes(id, teacher_id)
@@ -100,8 +100,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             }
         }
 
-        const { data: updatedElection, error } = await adminClient
-            .from('elections')
+        const { data: updatedElection, error } = await (adminClient
+            .from('elections') as any)
             .update(updateData)
             .eq('id', id)
             .select()
@@ -137,8 +137,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se é professor
-        const { data: teacher } = await adminClient
-            .from('teachers')
+        const { data: teacher } = await (adminClient
+            .from('teachers') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -148,8 +148,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se eleição existe e pertence ao professor
-        const { data: election } = await adminClient
-            .from('elections')
+        const { data: election } = await (adminClient
+            .from('elections') as any)
             .select(`
                 *,
                 class:classes(id, teacher_id)
@@ -170,8 +170,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Não é possível excluir eleição em votação ou encerrada' }, { status: 400 })
         }
 
-        const { error } = await adminClient
-            .from('elections')
+        const { error } = await (adminClient
+            .from('elections') as any)
             .delete()
             .eq('id', id)
 

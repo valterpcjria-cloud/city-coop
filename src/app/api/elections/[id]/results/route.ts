@@ -19,8 +19,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar eleição
-        const { data: election } = await adminClient
-            .from('elections')
+        const { data: election } = await (adminClient
+            .from('elections') as any)
             .select(`
                 *,
                 class:classes(id, name, code, teacher_id)
@@ -33,8 +33,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se é professor da turma
-        const { data: teacher } = await adminClient
-            .from('teachers')
+        const { data: teacher } = await (adminClient
+            .from('teachers') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -50,8 +50,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar candidatos com votos
-        const { data: candidates } = await adminClient
-            .from('candidates')
+        const { data: candidates } = await (adminClient
+            .from('candidates') as any)
             .select(`
                 *,
                 student:students(id, name, email)
@@ -64,8 +64,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar estatísticas de votação
-        const { data: voteControls } = await adminClient
-            .from('vote_controls')
+        const { data: voteControls } = await (adminClient
+            .from('vote_controls') as any)
             .select('*')
             .eq('election_id', electionId)
 
@@ -73,9 +73,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         // Processar resultados por conselho
         const processResults = (conselho: string, vagas: number, vagasSuplentes: number = 0) => {
-            const conselhoCandiates = candidates.filter(c => c.conselho === conselho)
+            const conselhoCandiates = candidates.filter((c: any) => c.conselho === conselho)
 
-            return conselhoCandiates.map((candidato, index) => {
+            return conselhoCandiates.map((candidato: any, index: number) => {
                 let resultado: string | null = null
 
                 if (election.status === 'encerrada') {
@@ -107,8 +107,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             for (const conselho of Object.values(resultados)) {
                 for (const candidato of conselho) {
                     if (candidato.resultado) {
-                        await adminClient
-                            .from('candidates')
+                        await (adminClient
+                            .from('candidates') as any)
                             .update({ resultado: candidato.resultado })
                             .eq('id', candidato.id)
                     }
@@ -150,8 +150,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se é professor
-        const { data: teacher } = await adminClient
-            .from('teachers')
+        const { data: teacher } = await (adminClient
+            .from('teachers') as any)
             .select('id')
             .eq('user_id', user.id)
             .single()
@@ -161,8 +161,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar eleição
-        const { data: election } = await adminClient
-            .from('elections')
+        const { data: election } = await (adminClient
+            .from('elections') as any)
             .select(`
                 *,
                 class:classes(id, name, teacher_id)
@@ -183,8 +183,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Atualizar status para encerrada
-        const { error: updateError } = await adminClient
-            .from('elections')
+        const { error: updateError } = await (adminClient
+            .from('elections') as any)
             .update({ status: 'encerrada' })
             .eq('id', electionId)
 
@@ -194,8 +194,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         // Buscar candidatos e calcular resultados
-        const { data: candidates } = await adminClient
-            .from('candidates')
+        const { data: candidates } = await (adminClient
+            .from('candidates') as any)
             .select('*')
             .eq('election_id', electionId)
             .order('total_votos', { ascending: false })
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         if (candidates) {
             // Calcular e atualizar resultados
             const updateResults = async (conselho: string, vagas: number, vagasSuplentes: number = 0) => {
-                const conselhoCandidates = candidates.filter(c => c.conselho === conselho)
+                const conselhoCandidates = candidates.filter((c: any) => c.conselho === conselho)
 
                 for (let i = 0; i < conselhoCandidates.length; i++) {
                     let resultado: string
@@ -215,8 +215,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                         resultado = 'nao_eleito'
                     }
 
-                    await adminClient
-                        .from('candidates')
+                    await (adminClient
+                        .from('candidates') as any)
                         .update({ resultado })
                         .eq('id', conselhoCandidates[i].id)
                 }

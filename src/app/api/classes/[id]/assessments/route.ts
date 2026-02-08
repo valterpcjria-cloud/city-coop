@@ -57,15 +57,15 @@ export async function POST(
 
         if (!teacher) {
             console.log('[API] Teacher record missing for user:', user.id, '. Attempting auto-provision...')
-            const { data: newTeacher, error: provisionError } = await adminAuth
-                .from('teachers')
+            const { data: newTeacher, error: provisionError } = await (adminAuth
+                .from('teachers') as any)
                 .insert({
                     user_id: user.id,
                     name: user.user_metadata?.name || user.email?.split('@')[0] || 'Professor',
                     email: user.email!,
                 })
                 .select('id')
-                .single() as any
+                .single()
 
             if (provisionError) {
                 console.error('[API] Auto-provisioning failed:', provisionError)
@@ -81,8 +81,8 @@ export async function POST(
 
         console.log('[API] Inserting into DB with teacher ID:', teacher.id)
 
-        const { data, error } = await adminAuth
-            .from('assessments')
+        const { data, error } = await (adminAuth
+            .from('assessments') as any)
             .insert({
                 class_id: classId,
                 title,
@@ -92,7 +92,7 @@ export async function POST(
                 available_from: availableFrom
             })
             .select()
-            .single() as any
+            .single()
 
         if (error) {
             console.error('[API] DB Error:', error)

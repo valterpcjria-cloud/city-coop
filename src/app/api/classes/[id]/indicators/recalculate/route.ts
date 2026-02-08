@@ -17,8 +17,8 @@ export async function POST(
         // or automatic trigger on individual grading.
         // For now, let's allow teachers to "Refresh Indicators" for the whole class.
 
-        const { data: students } = await supabase
-            .from('class_students')
+        const { data: students } = await (supabase
+            .from('class_students') as any)
             .select('student_id')
             .eq('class_id', classId)
 

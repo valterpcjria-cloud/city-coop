@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { KnowledgeBaseModal } from './knowledge-modal'
-import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/alert-dialog'
+import { toast } from '@/components/ui/sonner'
 import { useRouter } from 'next/navigation'
 import { FileText, Youtube, Globe, File, Image } from 'lucide-react'
 
@@ -54,6 +55,11 @@ export function KnowledgeBaseTable({ initialData }: KnowledgeBaseTableProps) {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedItem, setSelectedItem] = useState<any>(null)
 
+    // Confirm dialog state
+    const [confirmOpen, setConfirmOpen] = useState(false)
+    const [deleteId, setDeleteId] = useState<string | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
+
     const handleEdit = (item: any) => {
         setSelectedItem(item)
         setIsModalOpen(true)
@@ -64,20 +70,33 @@ export function KnowledgeBaseTable({ initialData }: KnowledgeBaseTableProps) {
         setIsModalOpen(true)
     }
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Tem certeza que deseja excluir este documento?')) return
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id)
+        setConfirmOpen(true)
+    }
 
+    const handleDeleteConfirm = async () => {
+        if (!deleteId) return
+
+        setIsDeleting(true)
         try {
-            const response = await fetch(`/api/gestor/knowledge?id=${id}`, {
+            const response = await fetch(`/api/gestor/knowledge?id=${deleteId}`, {
                 method: 'DELETE'
             })
 
             if (!response.ok) throw new Error('Falha ao excluir')
 
-            toast.success('Documento removido com sucesso')
+            toast.success('Documento removido com sucesso!', {
+                description: 'O conteúdo foi excluído da base de conhecimento.'
+            })
             router.refresh()
         } catch (error: any) {
-            toast.error(`Erro: ${error.message}`)
+            toast.error('Erro ao excluir documento', {
+                description: error.message
+            })
+        } finally {
+            setIsDeleting(false)
+            setDeleteId(null)
         }
     }
 
@@ -150,7 +169,12 @@ export function KnowledgeBaseTable({ initialData }: KnowledgeBaseTableProps) {
                                             <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
                                                 <Icons.settings className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDeleteClick(item.id)}
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                            >
                                                 <Icons.trash className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -174,6 +198,19 @@ export function KnowledgeBaseTable({ initialData }: KnowledgeBaseTableProps) {
                 onClose={() => setIsModalOpen(false)}
                 item={selectedItem}
                 onSuccess={handleSuccess}
+            />
+
+            {/* Premium Confirm Dialog */}
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                variant="danger"
+                title="Excluir Documento"
+                description="Tem certeza que deseja excluir este documento? Esta ação não pode ser desfeita e o conteúdo será removido permanentemente da base de conhecimento."
+                confirmText="Sim, Excluir"
+                cancelText="Cancelar"
+                onConfirm={handleDeleteConfirm}
+                loading={isDeleting}
             />
         </div>
     )
