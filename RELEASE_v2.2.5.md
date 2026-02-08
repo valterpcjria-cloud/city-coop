@@ -14,10 +14,21 @@ Esta versão foca na personalização da conta e no reforço da segurança, perm
 - **Validação Robustecida**: Verificação de força de senha e coincidência de campos no frontend.
 - **Supabase Auth Sync**: Atualização direta e segura via Supabase Identity.
 
+### 🎓 Alocação e Matrícula de Estudantes
+- **Gestão de Alunos**: Implementada tabela de alunos no painel do gestor com suporte a alocação de escola e série.
+- **Busca Global Resiliente**: Novo sistema de busca que localiza alunos em toda a rede corporativa, ignorando restrições de escola para casos de transferência.
+- **Matrícula Facilitada**: Administradores agora podem matricular alunos em qualquer turma com permissões totais de sistema.
+- **Vínculo Automático**: Sincronização automática do `school_id` ao matricular alunos que ainda não possuem vínculo escolar.
+
+### 📚 Modalidade EJA
+- **Suporte Nativo**: Implementado suporte completo para a modalidade EJA (Educação de Jovens e Adultos) em turmas, alunos e formulários de registro.
+- **Validação Específica**: Atualizados validadores de série para incluir a nova modalidade em todos os fluxos do sistema.
+
 ### 🛠️ Notas Técnicas
-- **Migration**: Lançado script `supabase/REPARO_AVATAR_COMPLETO.sql` para ajuste de colunas e RLS.
-- **API**: Atualizada rota `/api/user/profile` para suportar `avatar_url`.
-- **UI**: Melhoria no tratamento de erros de upload para exibir mensagens detalhadas do servidor.
+- **Migration**: Lançados scripts `supabase/migrations/20260208_add_eja_grade.sql` e reparos de AVATAR.
+- **API**: Atualizadas rotas `/api/school/students` e `/api/classes/[id]/students` com lógica administrativa e bypass de RLS.
+- **TypeScript Clean Build**: Corrigidos erros de inferência e tipagens `never` para garantir deploys estáveis na Vercel.
+- **UI**: Melhoria no tratamento de erros de upload e feedback de busca no `AddStudentDialog`.
 
 ---
 *City Coop Platform - Desenvolvido com ❤️ para a educação.*
