@@ -93,7 +93,8 @@ export async function GET() {
                 console.log('[API_PROFILE] Using metadata fallback')
                 userProfile = {
                     name: user.user_metadata?.name || 'Gestor',
-                    email: user.email
+                    email: user.email,
+                    avatar_url: user.user_metadata?.avatar_url || null
                 }
                 role = 'gestor'
             }
@@ -108,7 +109,8 @@ export async function GET() {
                     email: userProfile.email || authData.email,
                     name: userProfile.name || authData.name,
                     phone: userProfile.phone || '',
-                    bio: userProfile.bio || ''
+                    bio: userProfile.bio || '',
+                    avatar_url: userProfile.avatar_url || null
                 }
             })
         }
@@ -131,15 +133,15 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { name, phone, bio } = body
+        const { name, phone, bio, avatar_url } = body
 
-        console.log('[API_PROFILE_POST] Attempting update for user:', user.id, { name, phone, bio })
+        console.log('[API_PROFILE_POST] Attempting update for user:', user.id, { name, phone, bio, avatar_url })
 
         // 1. Tenta atualizar em GESTORS
         const { data: gestor } = await (supabase.from('gestors') as any).select('id').eq('user_id', user.id).maybeSingle()
         if (gestor) {
             console.log('[API_PROFILE_POST] Updating gestors table')
-            const { error } = await (supabase.from('gestors') as any).update({ name, phone, bio }).eq('id', (gestor as any).id)
+            const { error } = await (supabase.from('gestors') as any).update({ name, phone, bio, avatar_url }).eq('id', (gestor as any).id)
             if (error) throw error
             return NextResponse.json({ success: true })
         }
@@ -148,7 +150,7 @@ export async function POST(request: Request) {
         const { data: manager } = await (supabase.from('managers') as any).select('id').eq('user_id', user.id).maybeSingle()
         if (manager) {
             console.log('[API_PROFILE_POST] Updating managers table')
-            const { error } = await (supabase.from('managers') as any).update({ name, phone, bio }).eq('id', (manager as any).id)
+            const { error } = await (supabase.from('managers') as any).update({ name, phone, bio, avatar_url }).eq('id', (manager as any).id)
             if (error) throw error
             return NextResponse.json({ success: true })
         }
@@ -156,7 +158,7 @@ export async function POST(request: Request) {
         // 3. Tenta atualizar em TEACHERS
         const { data: teacher } = await (supabase.from('teachers') as any).select('id').eq('user_id', user.id).maybeSingle()
         if (teacher) {
-            const { error } = await (supabase.from('teachers') as any).update({ name, phone, bio }).eq('id', (teacher as any).id)
+            const { error } = await (supabase.from('teachers') as any).update({ name, phone, bio, avatar_url }).eq('id', (teacher as any).id)
             if (error) throw error
             return NextResponse.json({ success: true })
         }
@@ -164,7 +166,7 @@ export async function POST(request: Request) {
         // 4. Tenta atualizar em STUDENTS
         const { data: student } = await (supabase.from('students') as any).select('id').eq('user_id', user.id).maybeSingle()
         if (student) {
-            const { error } = await (supabase.from('students') as any).update({ name, phone, bio }).eq('id', (student as any).id)
+            const { error } = await (supabase.from('students') as any).update({ name, phone, bio, avatar_url }).eq('id', (student as any).id)
             if (error) throw error
             return NextResponse.json({ success: true })
         }

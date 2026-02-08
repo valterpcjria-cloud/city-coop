@@ -11,10 +11,14 @@ import { Icons } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { Loader2, Camera, Building2, UserCircle } from 'lucide-react'
 
+import { createClient } from '@/lib/supabase/client'
+
 export function ProfileScreen() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
     const [profile, setProfile] = useState<any>(null)
+    const supabase = createClient()
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -35,6 +39,64 @@ export function ProfileScreen() {
         fetchProfile()
     }, [])
 
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Limite de 2MB
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('A imagem deve ter no máximo 2MB')
+            return
+        }
+
+        setIsUploading(true)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error('Usuário não autenticado')
+
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${user.id}-${Math.random()}.${fileExt}`
+            const filePath = `${user.id}/${fileName}`
+
+            // 1. Upload para o Storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file)
+
+            if (uploadError) throw uploadError
+
+            // 2. Pegar a URL pública
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath)
+
+            // 3. Atualizar o estado local e enviar para a API
+            setProfile({ ...profile, avatar_url: publicUrl })
+
+            const response = await fetch('/api/user/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...profile,
+                    avatar_url: publicUrl
+                })
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Falha ao atualizar avatar no perfil')
+            }
+
+            toast.success('Foto de perfil atualizada!')
+        } catch (error: any) {
+            console.error('Erro detalhado no upload:', error)
+            const errorMsg = error.message || error.error_description || 'Erro desconhecido'
+            toast.error(`Erro ao fazer upload: ${errorMsg}`)
+        } finally {
+            setIsUploading(false)
+        }
+    }
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSaving(true)
@@ -45,10 +107,14 @@ export function ProfileScreen() {
                 body: JSON.stringify({
                     name: profile.name,
                     phone: profile.phone,
-                    bio: profile.bio
+                    bio: profile.bio,
+                    avatar_url: profile.avatar_url
                 })
             })
-            if (!response.ok) throw new Error('Falha ao salvar')
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Falha ao salvar')
+            }
             toast.success('Perfil atualizado com sucesso!')
         } catch (error: any) {
             toast.error('Erro ao salvar alterações')
@@ -75,15 +141,26 @@ export function ProfileScreen() {
                     <div className="h-24 bg-gradient-to-r from-city-blue to-city-blue-dark" />
                     <CardContent className="pt-0 relative flex flex-col items-center">
                         <div className="relative -mt-12 group">
-                            <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
-                                <AvatarImage src={profile?.image} />
+                            <Avatar className="h-24 w-24 border-4 border-white shadow-xl bg-white">
+                                <AvatarImage src={profile?.avatar_url} className="object-cover" />
                                 <AvatarFallback className="bg-slate-100 text-city-blue text-xl font-bold">
-                                    {initials}
+                                    {isUploading ? <Loader2 className="h-6 w-6 animate-spin" /> : initials}
                                 </AvatarFallback>
                             </Avatar>
-                            <button className="absolute bottom-0 right-0 p-1.5 bg-white rounded-full shadow-lg border border-slate-100 text-slate-600 hover:text-city-blue transition-colors">
+                            <label
+                                htmlFor="avatar-upload"
+                                className="absolute bottom-0 right-0 p-1.5 bg-white rounded-full shadow-lg border border-slate-100 text-slate-600 hover:text-city-blue transition-colors cursor-pointer"
+                            >
                                 <Camera className="h-4 w-4" />
-                            </button>
+                                <input
+                                    id="avatar-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleFileUpload}
+                                    disabled={isUploading}
+                                />
+                            </label>
                         </div>
                         <div className="mt-4 text-center">
                             <h3 className="font-bold text-lg text-slate-800">{profile?.name}</h3>
@@ -156,7 +233,7 @@ export function ProfileScreen() {
                             </div>
 
                             <div className="flex justify-end pt-2">
-                                <Button type="submit" variant="brand" disabled={isSaving}>
+                                <Button type="submit" variant="brand" disabled={isSaving || isUploading}>
                                     {isSaving ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

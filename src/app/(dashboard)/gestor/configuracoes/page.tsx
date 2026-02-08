@@ -9,6 +9,8 @@ import { Icons } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 
+import { SettingsScreen } from '@/components/dashboard/shared/settings-screen'
+
 export default function GestorSettingsPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
@@ -170,6 +172,10 @@ export default function GestorSettingsPage() {
                         </p>
                     </CardContent>
                 </Card>
+            </div>
+
+            <div className="pt-12 border-t border-slate-200">
+                <SettingsScreen />
             </div>
         </div>
     )
