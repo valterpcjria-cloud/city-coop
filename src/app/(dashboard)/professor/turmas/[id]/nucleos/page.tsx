@@ -8,9 +8,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { NucleusDialog } from '@/components/nuclei/nucleus-dialog'
 
-export default async function NucleiPage({ params }: { params: { id: string } }) {
+export default async function NucleiPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
-    const { id } = params // Next 15 might require await params
+    const { id } = await params
 
     const { data: turma } = await supabase
         .from('classes')

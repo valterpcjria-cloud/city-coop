@@ -42,6 +42,7 @@ const gradeOptions = [
     { value: '1EM', label: '1º Ano - Médio' },
     { value: '2EM', label: '2º Ano - Médio' },
     { value: '3EM', label: '3º Ano - Médio' },
+    { value: 'EJA', label: 'EJA - Jovens e Adultos' },
 ]
 
 export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserModalProps) {

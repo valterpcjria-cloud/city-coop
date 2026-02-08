@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Icons } from '@/components/ui/icons'
+import { AddStudentDialog } from '@/components/students/add-student-dialog'
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -91,6 +92,15 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
                     </p>
                 </div>
                 <div className="flex gap-2">
+                    <AddStudentDialog
+                        classId={id}
+                        trigger={
+                            <Button variant="outline">
+                                <Icons.add className="mr-2 h-4 w-4" />
+                                Adicionar Aluno
+                            </Button>
+                        }
+                    />
                     <Button variant="outline" asChild>
                         <Link href={`/professor/turmas/${id}/nucleos`}>
                             <Icons.users className="mr-2 h-4 w-4" />
@@ -127,10 +137,7 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
                                         <Icons.user className="h-8 w-8 text-[#4A90D9]" />
                                     </div>
                                     <p className="text-[#6B7C93] mb-4">Nenhum estudante matriculado ainda.</p>
-                                    <Button variant="outline">
-                                        <Icons.add className="mr-2 h-4 w-4" />
-                                        Adicionar Estudante
-                                    </Button>
+                                    <AddStudentDialog classId={id} />
                                 </div>
                             ) : (
                                 <div className="space-y-3">

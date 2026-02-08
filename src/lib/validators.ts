@@ -104,7 +104,7 @@ export const teacherSchema = z.object({
 export const studentSchema = z.object({
     name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(200),
     email: z.string().email('E-mail inválido').optional().nullable(),
-    grade_level: z.enum(['9EF', '1EM', '2EM', '3EM']),
+    grade_level: z.enum(['9EF', '1EM', '2EM', '3EM', 'EJA']),
     school_id: uuidSchema,
 })
 

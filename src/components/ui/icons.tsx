@@ -45,6 +45,7 @@ import {
     Link2,
     Upload,
     Bell,
+    Search,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -100,6 +101,7 @@ export const Icons = {
     link: Link2,
     upload: Upload,
     bell: Bell,
+    search: Search,
 }
 
 

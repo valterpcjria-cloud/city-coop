@@ -141,6 +141,7 @@ export function ClassForm() {
                                         <SelectItem value="1EM">1º Ano - Ensino Médio</SelectItem>
                                         <SelectItem value="2EM">2º Ano - Ensino Médio</SelectItem>
                                         <SelectItem value="3EM">3º Ano - Ensino Médio</SelectItem>
+                                        <SelectItem value="EJA">EJA - Jovens e Adultos</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />

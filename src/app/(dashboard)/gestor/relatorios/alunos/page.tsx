@@ -83,6 +83,7 @@ export default function StudentsReportPage() {
         { value: '1EM', label: '1º Ano (EM)' },
         { value: '2EM', label: '2º Ano (EM)' },
         { value: '3EM', label: '3º Ano (EM)' },
+        { value: 'EJA', label: 'EJA' },
     ]
 
     const filters: FilterOption[] = [
