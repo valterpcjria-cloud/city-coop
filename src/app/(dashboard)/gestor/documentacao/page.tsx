@@ -79,11 +79,20 @@ const sections = [
                 ]
             },
             {
-                subtitle: 'Relatórios',
+                subtitle: 'Gestão de Cooperativas Parceiras',
                 items: [
-                    'Dashboard com KPIs consolidados',
-                    'Relatórios de escolas, alunos, turmas',
-                    'Relatórios de eventos e eleições',
+                    'Cadastro completo de cooperativas (Razão Social, CNPJ)',
+                    'Gestão de Ramos Cooperativistas e Localização',
+                    'Edição e Exclusão segura de parcerias',
+                    'Banco de oportunidades e matching territorial'
+                ]
+            },
+            {
+                subtitle: 'Relatórios e KPIs',
+                items: [
+                    'Dashboard com KPIs consolidados em tempo real',
+                    'Relatórios de escolas, alunos e engajamento',
+                    'Mapeamento de conexões produtivas',
                     'Exportação em CSV, XLSX e PDF'
                 ]
             }
@@ -115,21 +124,21 @@ const sections = [
                 ]
             },
             {
-                subtitle: 'Avaliações Inteligentes',
+                subtitle: 'Avaliações e IA Pedagógica',
                 items: [
-                    'Geração de avaliações por IA',
-                    'Tipos: Objetiva, Dissertativa, Redação',
-                    'Correção assistida por IA',
-                    'Feedback automático personalizado'
+                    'Geração inteligente de questões (v2.3.6)',
+                    'Editor de Questões: Revisão manual pré-publicação',
+                    'Troca de tipos: Objetiva, Dissertativa, Redação',
+                    'Correção automática assistida com feedback DOT'
                 ]
             },
             {
-                subtitle: 'Planos de Evento',
+                subtitle: 'Eventos e Projetos',
                 items: [
-                    'Editor completo de planos',
-                    'Avaliação de viabilidade por IA',
-                    'Workflow de aprovação',
-                    'Acompanhamento de execução'
+                    'Gestão de Ciclos e Cronogramas',
+                    'Avaliação de viabilidade de planos por IA',
+                    'Acompanhamento de núcleos e entregas',
+                    'Workflow de aprovação administrativa'
                 ]
             }
         ]
@@ -275,7 +284,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold">Documentação do Sistema</h1>
-                            <p className="text-white/80">City Coop Platform v2.3.3</p>
+                            <p className="text-white/80">City Coop Platform v2.3.6</p>
                         </div>
                     </motion.div>
 
@@ -445,7 +454,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="bg-city-blue/10 text-city-blue">
-                                v2.3.3
+                                v2.3.6
                             </Badge>
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                                 Produção
