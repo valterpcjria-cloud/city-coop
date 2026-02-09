@@ -37,6 +37,12 @@ export function StudentSidebar({ className }: SidebarProps) {
             active: pathname.startsWith('/estudante/nucleo'),
         },
         {
+            label: 'Formação & Scores',
+            icon: Icons.trophy,
+            href: '/estudante/formacao',
+            active: pathname.startsWith('/estudante/formacao'),
+        },
+        {
             label: 'Atividades',
             icon: Icons.check,
             href: '/estudante/atividades',

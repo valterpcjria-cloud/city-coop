@@ -46,6 +46,9 @@ import {
     Upload,
     Bell,
     Search,
+    Building2,
+    Info,
+    CheckSquare,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -102,6 +105,9 @@ export const Icons = {
     upload: Upload,
     bell: Bell,
     search: Search,
+    building: Building2,
+    info: Info,
+    checkSquare: CheckSquare,
 }
 
 

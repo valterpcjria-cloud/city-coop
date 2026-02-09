@@ -47,6 +47,16 @@ const routes = [
         href: '/gestor/relatorios',
     },
     {
+        label: 'Núcleo de Gestão',
+        icon: Icons.users,
+        href: '/gestor/nucleo',
+    },
+    {
+        label: 'Cooperativas',
+        icon: Icons.building,
+        href: '/gestor/cooperativas',
+    },
+    {
         label: 'Documentação',
         icon: Icons.bookOpen,
         href: '/gestor/documentacao',

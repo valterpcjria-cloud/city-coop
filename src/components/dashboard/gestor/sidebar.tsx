@@ -67,6 +67,18 @@ export function Sidebar({ className }: SidebarProps) {
             active: pathname.startsWith('/gestor/relatorios'),
         },
         {
+            label: 'Núcleo de Gestão',
+            icon: Icons.users,
+            href: '/gestor/nucleo',
+            active: pathname.startsWith('/gestor/nucleo'),
+        },
+        {
+            label: 'Cooperativas',
+            icon: Icons.building,
+            href: '/gestor/cooperativas',
+            active: pathname.startsWith('/gestor/cooperativas'),
+        },
+        {
             label: 'Documentação',
             icon: Icons.bookOpen,
             href: '/gestor/documentacao',
