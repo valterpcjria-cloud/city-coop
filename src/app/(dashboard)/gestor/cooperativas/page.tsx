@@ -1,16 +1,35 @@
+'use client'
+
+import { useState } from 'react'
 import { Icons } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CooperativeList } from './components/cooperative-list'
 import { MatchingDashboard } from './components/matching-dashboard'
+import { CooperativeFormModal } from './components/cooperative-form-modal'
+import { Cooperative } from '@/types/coop-mgmt'
 
 export default function CooperativasPage() {
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [selectedCoop, setSelectedCoop] = useState<Cooperative | null>(null)
+    const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+    const handleSuccess = () => {
+        setRefreshTrigger(prev => prev + 1)
+    }
+
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight text-city-blue">Gestão de Cooperativas Parceiras</h2>
                 <div className="flex items-center space-x-2">
-                    <Button className="bg-city-blue hover:bg-city-blue/90">
+                    <Button
+                        className="bg-city-blue hover:bg-city-blue/90"
+                        onClick={() => {
+                            setSelectedCoop(null)
+                            setIsModalOpen(true)
+                        }}
+                    >
                         <Icons.add className="mr-2 h-4 w-4" />
                         Nova Cooperativa
                     </Button>
@@ -58,8 +77,21 @@ export default function CooperativasPage() {
 
             <div className="mt-8">
                 <h3 className="text-xl font-semibold mb-4 text-city-blue">Cooperativas Cadastradas</h3>
-                <CooperativeList />
+                <CooperativeList
+                    onEdit={(coop) => {
+                        setSelectedCoop(coop)
+                        setIsModalOpen(true)
+                    }}
+                    refreshTrigger={refreshTrigger}
+                />
             </div>
+
+            <CooperativeFormModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={handleSuccess}
+                cooperative={selectedCoop}
+            />
 
             <div className="mt-8">
                 <MatchingDashboard />
