@@ -113,34 +113,30 @@ export default function ProfessorAIPage() {
         }
     };
 
-    const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    useEffect(() => {
-        if (scrollAreaRef.current) {
-            const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-            if (scrollContainer) {
-                scrollContainer.scrollTop = scrollContainer.scrollHeight;
-            }
+    const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior });
         }
-    }, [messages]);
+    };
 
+    // Auto-scroll when messages change or while streaming
+    useEffect(() => {
+        const frameId = requestAnimationFrame(() => {
+            scrollToBottom(isLoading ? 'auto' : 'smooth');
+        });
+        return () => cancelAnimationFrame(frameId);
+    }, [messages, isLoading]);
+
+    // Auto-expand textarea
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = 'inherit';
             textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
         }
     }, [localInput]);
-
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -156,7 +152,7 @@ export default function ProfessorAIPage() {
             <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-[#4A90D9]/5 rounded-full blur-3xl -z-10" />
             <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-[#F5A623]/5 rounded-full blur-3xl -z-10" />
 
-            <ScrollArea ref={scrollAreaRef} className="flex-1 w-full">
+            <ScrollArea className="flex-1 w-full">
                 <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
                     {messages.length <= 1 && (
                         <div className="text-center space-y-2 mb-12 py-16 flex flex-col items-center">
