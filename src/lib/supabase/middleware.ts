@@ -64,14 +64,14 @@ export async function updateSession(request: NextRequest) {
             .eq('user_id', user.id)
             .single()
 
-        const { data: manager } = await supabase
-            .from('managers')
+        const { data: gestor } = await supabase
+            .from('gestors')
             .select('id')
             .eq('user_id', user.id)
             .single()
 
         const url = request.nextUrl.clone()
-        if (manager) {
+        if (gestor) {
             url.pathname = '/gestor'
         } else if (teacher) {
             url.pathname = '/professor'

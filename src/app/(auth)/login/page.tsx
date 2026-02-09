@@ -21,20 +21,29 @@ export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [isCheckingSession, setIsCheckingSession] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
         const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (session) {
-                const role = session.user.user_metadata?.role
-                if (role === 'manager') {
-                    router.push('/gestor')
-                } else if (role === 'teacher') {
-                    router.push('/professor')
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
+                if (session) {
+                    const role = session.user.user_metadata?.role
+                    if (role === 'gestor' || role === 'manager') {
+                        router.push('/gestor')
+                    } else if (role === 'teacher') {
+                        router.push('/professor')
+                    } else {
+                        router.push('/estudante')
+                    }
+                    // Keep loading true while redirecting
                 } else {
-                    router.push('/estudante')
+                    setIsCheckingSession(false)
                 }
+            } catch (err) {
+                console.error("Session check error:", err)
+                setIsCheckingSession(false)
             }
         }
         checkSession()
@@ -58,7 +67,7 @@ export default function LoginPage() {
             // First try metadata (faster, always available)
             const role = data.user.user_metadata?.role
 
-            if (role === 'manager') {
+            if (role === 'gestor' || role === 'manager') {
                 router.push('/gestor')
                 return
             }
@@ -69,7 +78,7 @@ export default function LoginPage() {
                 .eq('user_id', data.user.id)
                 .single()
 
-            if (teacher || role === 'teacher') {
+            if (teacher || role === 'teacher' || role === 'professor') {
                 router.push('/professor')
             } else {
                 router.push('/estudante')
@@ -96,6 +105,17 @@ export default function LoginPage() {
             console.error('OAuth error:', err)
             toast.error('Erro ao conectar com Google')
         }
+    }
+
+    if (isCheckingSession) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
+                <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-10 w-10 animate-spin text-[#4A90D9]" />
+                    <p className="text-sm font-medium text-[#6B7C93]">Verificando sessão...</p>
+                </div>
+            </div>
+        )
     }
 
     return (
