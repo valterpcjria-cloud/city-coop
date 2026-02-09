@@ -57,23 +57,15 @@ export async function updateSession(request: NextRequest) {
 
     // If logged in user tries to access auth pages, redirect to appropriate dashboard
     if (user && isAuthRoute) {
-        // Get user role from profile
-        const { data: teacher } = await supabase
-            .from('teachers')
-            .select('id')
-            .eq('user_id', user.id)
-            .single()
-
-        const { data: gestor } = await supabase
-            .from('gestors')
-            .select('id')
-            .eq('user_id', user.id)
-            .single()
+        // Get user role from profile using a single optimized query
+        const { data: profile } = await (supabase as any).rpc('get_user_role', {
+            p_user_id: user.id
+        })
 
         const url = request.nextUrl.clone()
-        if (gestor) {
+        if (profile?.role === 'gestor') {
             url.pathname = '/gestor'
-        } else if (teacher) {
+        } else if (profile?.role === 'teacher') {
             url.pathname = '/professor'
         } else {
             url.pathname = '/estudante'

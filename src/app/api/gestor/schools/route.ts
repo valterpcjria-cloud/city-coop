@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
         // Rate limiting
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
-        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.GET)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.GET)
         if (!rateLimit.success) {
             return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
         // Rate limiting
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
-        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.POST)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.POST)
         if (!rateLimit.success) {
             return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
@@ -131,7 +131,7 @@ export async function PUT(request: NextRequest) {
 
         // Rate limiting
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
-        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.PUT)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.PUT)
         if (!rateLimit.success) {
             return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
@@ -222,7 +222,7 @@ export async function DELETE(request: NextRequest) {
 
         // Rate limiting
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
-        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.DELETE)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.DELETE)
         if (!rateLimit.success) {
             return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }

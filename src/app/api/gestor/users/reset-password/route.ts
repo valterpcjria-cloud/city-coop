@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
         if (!auth.success) return auth.response!
 
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
-        const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.POST)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.POST)
         if (!rateLimit.success) {
             return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }

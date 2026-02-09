@@ -12,19 +12,43 @@ interface RateLimitEntry {
     resetTime: number
 }
 
-const rateLimitStore = new Map<string, RateLimitEntry>()
+/**
+ * ===========================================
+ * Rate Limiter - Storage Providers
+ * ===========================================
+ */
 
-// Cleanup old entries every 5 minutes
-if (typeof setInterval !== 'undefined') {
-    setInterval(() => {
-        const now = Date.now()
-        for (const [key, entry] of rateLimitStore.entries()) {
-            if (entry.resetTime < now) {
-                rateLimitStore.delete(key)
-            }
-        }
-    }, 5 * 60 * 1000)
+interface RateLimitStore {
+    get(key: string): Promise<RateLimitEntry | undefined>
+    set(key: string, entry: RateLimitEntry): Promise<void>
+    delete(key: string): Promise<void>
 }
+
+class InMemoryStore implements RateLimitStore {
+    private store = new Map<string, RateLimitEntry>()
+
+    async get(key: string) { return this.store.get(key) }
+    async set(key: string, entry: RateLimitEntry) { this.store.set(key, entry) }
+    async delete(key: string) { this.store.delete(key) }
+
+    constructor() {
+        // Cleanup old entries every 5 minutes
+        if (typeof setInterval !== 'undefined') {
+            setInterval(() => {
+                const now = Date.now()
+                for (const [key, entry] of this.store.entries()) {
+                    if (entry.resetTime < now) {
+                        this.store.delete(key)
+                    }
+                }
+            }, 5 * 60 * 1000)
+        }
+    }
+}
+
+// Global store instance - Default to In-Memory
+// In a production environment with Redis, you would initialize a RedisStore here if REDIS_URL exists
+const rateLimitStore: RateLimitStore = new InMemoryStore()
 
 export interface RateLimitConfig {
     maxRequests: number
@@ -57,14 +81,14 @@ export interface RateLimitResult {
  * @param identifier - Unique identifier (IP, user ID, etc.)
  * @param config - Rate limit configuration
  */
-export function checkRateLimit(
+export async function checkRateLimit(
     identifier: string,
     config: RateLimitConfig = RATE_LIMITS.GET
-): RateLimitResult {
+): Promise<RateLimitResult> {
     const now = Date.now()
     const key = identifier
 
-    let entry = rateLimitStore.get(key)
+    let entry = await rateLimitStore.get(key)
 
     // Create new entry if doesn't exist or window expired
     if (!entry || entry.resetTime < now) {
@@ -76,7 +100,7 @@ export function checkRateLimit(
 
     // Increment count
     entry.count++
-    rateLimitStore.set(key, entry)
+    await rateLimitStore.set(key, entry)
 
     const remaining = Math.max(0, config.maxRequests - entry.count)
     const resetIn = Math.ceil((entry.resetTime - now) / 1000)
