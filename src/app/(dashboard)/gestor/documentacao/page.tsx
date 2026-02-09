@@ -29,15 +29,17 @@ const sections = [
                     'Banco de dados Supabase (PostgreSQL)',
                     'Autenticação integrada com Supabase Auth',
                     'Inteligência Artificial com Claude 3.5 e GPT-4o',
-                    'Isolamento de dados por escola (Row Level Security)'
+                    'Isolamento de dados por escola (Row Level Security)',
+                    'Otimização de performance com Agregações SQL nativas'
                 ]
             },
             {
                 subtitle: 'Perfis de Usuário',
                 items: [
-                    'Gestor: Administrador geral - gerencia escolas e configurações',
-                    'Professor: Gerencia turmas, cooperativas e avaliações',
-                    'Estudante: Participa da cooperativa e acessa o DOT'
+                    'Superadmin: Controle total de usuários e sistema',
+                    'Gestor: Administrador de escolas e base de conhecimento',
+                    'Professor: Gerencia turmas e avaliações pedagógicas',
+                    'Estudante: Participa da cooperativa e interage com o DOT'
                 ]
             }
         ]
@@ -50,21 +52,21 @@ const sections = [
         description: 'Funcionalidades administrativas',
         content: [
             {
-                subtitle: 'Gestão de Escolas',
+                subtitle: 'Controle de Usuários',
                 items: [
-                    'Cadastro de múltiplas escolas (ilimitado)',
-                    'Edição de dados: nome, código, cidade, estado',
-                    'Visualização de métricas por escola',
-                    'Exclusão com confirmação de segurança'
+                    'Gestão unificada de Perfis (Gestor, Professor, Aluno)',
+                    'Validação de CPF obrigatória para segurança',
+                    'Ativação e desativação instantânea de contas',
+                    'Reset de senhas administrativo via email'
                 ]
             },
             {
-                subtitle: 'Gestão de Professores',
+                subtitle: 'Gestão de Escolas',
                 items: [
-                    'Cadastro vinculado à escola',
-                    'Criação automática de usuário',
-                    'Edição de vínculos e permissões',
-                    'Listagem com filtros avançados'
+                    'Cadastro de múltiplas escolas (ilimitado)',
+                    'Edição de metadados: INEP, categoria, localização',
+                    'Métricas de engajamento por unidade escolar',
+                    'Exclusão segura com verificação de dependências'
                 ]
             },
             {
@@ -197,9 +199,9 @@ const sections = [
                 subtitle: 'Geradores Automáticos',
                 items: [
                     'Gerador de Avaliações (objetiva/dissertativa)',
-                    'Avaliador de Planos de Evento',
-                    'Gerador de Pautas de Assembleia',
-                    'Gerador de Atas de Reunião'
+                    'Avaliador de Planos de Evento com feedback técnico',
+                    'Avaliação automática de respostas de alunos',
+                    'Monitoramento de submissões em tempo real'
                 ]
             }
         ]
@@ -221,12 +223,12 @@ const sections = [
                 ]
             },
             {
-                subtitle: 'Isolamento de Dados',
+                subtitle: 'Isolamento e Performance',
                 items: [
-                    'Row Level Security (RLS) por escola',
-                    'Professores veem apenas suas turmas',
-                    'Alunos veem apenas sua cooperativa',
-                    'Gestor tem visão consolidada'
+                    'Row Level Security (RLS) nativo do Supabase',
+                    'Controle de Taxa (Rate Limiting) escalável',
+                    'Middleware de autenticação de baixa latência',
+                    'Queries otimizadas via PostgreSQL RPC'
                 ]
             }
         ]
@@ -235,9 +237,9 @@ const sections = [
 
 const quickStats = [
     { label: 'Módulos', value: '3', icon: Layers, color: 'text-blue-500' },
-    { label: 'Páginas', value: '40+', icon: FileText, color: 'text-green-500' },
-    { label: 'APIs', value: '25+', icon: Zap, color: 'text-purple-500' },
-    { label: 'Tabelas', value: '18', icon: Database, color: 'text-orange-500' }
+    { label: 'Páginas', value: '45+', icon: FileText, color: 'text-green-500' },
+    { label: 'APIs', value: '35+', icon: Zap, color: 'text-purple-500' },
+    { label: 'Tabelas', value: '22', icon: Database, color: 'text-orange-500' }
 ]
 
 export default function DocumentacaoPage() {
@@ -273,7 +275,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold">Documentação do Sistema</h1>
-                            <p className="text-white/80">City Coop Platform v2.2.1</p>
+                            <p className="text-white/80">City Coop Platform v2.3.3</p>
                         </div>
                     </motion.div>
 
@@ -335,8 +337,8 @@ export default function DocumentacaoPage() {
                                     key={section.id}
                                     onClick={() => setExpandedSection(section.id)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${expandedSection === section.id
-                                            ? 'bg-city-blue text-white shadow-lg shadow-city-blue/25'
-                                            : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-100'
+                                        ? 'bg-city-blue text-white shadow-lg shadow-city-blue/25'
+                                        : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-100'
                                         }`}
                                 >
                                     <section.icon className="h-5 w-5" />
@@ -443,7 +445,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="bg-city-blue/10 text-city-blue">
-                                v2.2.1
+                                v2.3.3
                             </Badge>
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                                 Produção
