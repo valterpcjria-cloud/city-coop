@@ -1,8 +1,8 @@
-# Release Notes - v2.2.1
+# Release Notes - v2.3.4
 
 ## 🚀 Novidades e Melhorias
 
-Esta versão foca na estabilidade do sistema e no empoderamento do professor na gestão de avaliações.
+Esta versão foca na correção de sobreposições na sidebar e na estabilidade das ferramentas de avaliação.
 
 ### 📝 Editor de Questões (Novo)
 Agora os professores podem revisar e editar as questões geradas pela IA antes de disponibilizá-las para os alunos.

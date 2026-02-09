@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { DeleteAssessmentButton } from '@/components/assessments/delete-assessment-button'
 
 const typeLabels: Record<string, string> = {
     cooperativismo: 'Cooperativismo',
@@ -175,12 +176,19 @@ export default async function ProfessorAssessmentsPage() {
                                         </div>
                                     </div>
                                 </CardContent>
-                                <CardFooter className="bg-gradient-to-r from-[#4A90D9]/5 to-[#F5A623]/5 flex justify-end gap-3 py-4 border-t border-[#6B7C93]/10">
-                                    <Button variant="ghost" className="font-bold text-[#6B7C93] hover:text-[#4A90D9] hover:bg-[#4A90D9]/10" asChild>
-                                        <Link href={`/professor/turmas/${assessment.classes.id}/avaliacoes/${assessment.id}?tab=content`}>
-                                            Ver Detalhes
-                                        </Link>
-                                    </Button>
+                                <CardFooter className="bg-gradient-to-r from-[#4A90D9]/5 to-[#F5A623]/5 flex justify-between items-center py-4 border-t border-[#6B7C93]/10">
+                                    <div className="flex gap-2">
+                                        <DeleteAssessmentButton
+                                            assessmentId={assessment.id}
+                                            title={assessment.title}
+                                            hasResponses={participationCount > 0}
+                                        />
+                                        <Button variant="ghost" className="font-bold text-[#6B7C93] hover:text-[#4A90D9] hover:bg-[#4A90D9]/10" asChild>
+                                            <Link href={`/professor/turmas/${assessment.classes.id}/avaliacoes/${assessment.id}?tab=content`}>
+                                                Ver Detalhes
+                                            </Link>
+                                        </Button>
+                                    </div>
                                     <Button variant="brand" className="shadow-lg shadow-[#4A90D9]/20" asChild>
                                         <Link href={`/professor/turmas/${assessment.classes.id}/avaliacoes/${assessment.id}?tab=results`}>
                                             Analisar Resultados

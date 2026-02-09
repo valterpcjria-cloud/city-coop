@@ -32,7 +32,7 @@ export async function POST(
         console.log('[API] Creating assessment for class:', classId)
 
         const body = await request.json()
-        const { title, type, description, questions, availableFrom } = body
+        const { title, type, description, questions, availableFrom, availableUntil } = body
         console.log('[API] Payload:', { title, type, questionsCount: questions?.length })
 
         if (!title || !type || !questions) {
@@ -89,7 +89,8 @@ export async function POST(
                 type,
                 questions,
                 created_by: teacher.id,
-                available_from: availableFrom
+                available_from: availableFrom,
+                available_until: availableUntil
             })
             .select()
             .single()

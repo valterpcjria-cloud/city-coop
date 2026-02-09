@@ -29,10 +29,13 @@ export default async function StudentActivitiesPage() {
 
     const classId = student.classes[0].class_id
 
+    const now = new Date().toISOString()
+
     const { data: assessments } = await supabase
         .from('assessments')
         .select('*')
         .eq('class_id', classId)
+        .or(`available_from.lte.${now},available_from.is.null`)
         .order('created_at', { ascending: false })
 
     const { data: responses } = await supabase

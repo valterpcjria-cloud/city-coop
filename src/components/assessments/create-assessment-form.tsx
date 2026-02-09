@@ -48,6 +48,8 @@ const formSchema = z.object({
         message: 'Selecione um tipo de avaliação.',
     }),
     description: z.string().optional(),
+    availableFrom: z.string().optional(),
+    availableUntil: z.string().optional(),
 })
 
 interface CreateAssessmentFormProps {
@@ -80,6 +82,8 @@ export function CreateAssessmentForm({ classId }: CreateAssessmentFormProps) {
             title: '',
             description: '',
             type: '',
+            availableFrom: '',
+            availableUntil: '',
         },
     })
 
@@ -189,7 +193,8 @@ export function CreateAssessmentForm({ classId }: CreateAssessmentFormProps) {
                         correctAnswer: q.correctAnswer,
                         answerKey: q.answerKey
                     })),
-                    availableFrom: new Date().toISOString(),
+                    availableFrom: values.availableFrom || new Date().toISOString(),
+                    availableUntil: values.availableUntil || null,
                 }),
             })
 
@@ -368,6 +373,55 @@ export function CreateAssessmentForm({ classId }: CreateAssessmentFormProps) {
                                     </Select>
                                     <FormDescription>
                                         A avaliação influenciará o indicador desta competência.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="grid gap-6 md:grid-cols-2 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <FormField
+                            control={form.control}
+                            name="availableFrom"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Icons.calendar className="h-4 w-4 text-[#4A90D9]" />
+                                        <FormLabel className="font-bold text-[#1a2332]">Liberação (Opcional)</FormLabel>
+                                    </div>
+                                    <FormControl>
+                                        <Input
+                                            type="datetime-local"
+                                            {...field}
+                                            className="bg-white border-[#4A90D9]/20 focus:border-[#4A90D9] transition-colors"
+                                        />
+                                    </FormControl>
+                                    <FormDescription className="text-[11px]">
+                                        Deixe vazio para liberar imediatamente.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="availableUntil"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Icons.clock className="h-4 w-4 text-[#F5A623]" />
+                                        <FormLabel className="font-bold text-[#1a2332]">Prazo Final (Opcional)</FormLabel>
+                                    </div>
+                                    <FormControl>
+                                        <Input
+                                            type="datetime-local"
+                                            {...field}
+                                            className="bg-white border-[#F5A623]/20 focus:border-[#F5A623] transition-colors"
+                                        />
+                                    </FormControl>
+                                    <FormDescription className="text-[11px]">
+                                        Data limite para submissão.
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
