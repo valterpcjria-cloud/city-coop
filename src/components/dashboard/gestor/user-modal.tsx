@@ -36,6 +36,7 @@ interface UserModalProps {
     user: User | null
     schools: School[]
     onSuccess: () => void
+    defaultRole?: 'gestor' | 'professor' | 'estudante'
 }
 
 const gradeOptions = [
@@ -46,7 +47,7 @@ const gradeOptions = [
     { value: 'EJA', label: 'EJA - Jovens e Adultos' },
 ]
 
-export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserModalProps) {
+export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRole }: UserModalProps) {
     const isEditing = !!user
     const [isLoading, setIsLoading] = useState(false)
 
@@ -67,12 +68,12 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserMod
             setEmail(user?.email || '')
             setPhone(user?.phone || '')
             setCpf((user as any)?.cpf || '')
-            setRole(user?.role || 'professor')
+            setRole(user?.role || defaultRole || 'professor')
             setSchoolId(user?.school_id || '')
             setGradeLevel(user?.grade_level || '')
             setIsSuperadmin(user?.is_superadmin || false)
         }
-    }, [user, isOpen])
+    }, [user, isOpen, defaultRole])
 
     // Reset form when user changes
     const resetForm = () => {
@@ -80,7 +81,7 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserMod
         setEmail('')
         setPhone('')
         setCpf('')
-        setRole('professor')
+        setRole(defaultRole || 'professor')
         setSchoolId('')
         setGradeLevel('')
         setIsSuperadmin(false)
@@ -224,9 +225,15 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess }: UserMod
                                 <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="gestor">Gestor</SelectItem>
-                                <SelectItem value="professor">Professor</SelectItem>
-                                <SelectItem value="estudante">Estudante</SelectItem>
+                                {!defaultRole || defaultRole === 'gestor' ? (
+                                    <SelectItem value="gestor">Gestor</SelectItem>
+                                ) : null}
+                                {!defaultRole || defaultRole === 'professor' ? (
+                                    <SelectItem value="professor">Professor</SelectItem>
+                                ) : null}
+                                {!defaultRole || defaultRole === 'estudante' ? (
+                                    <SelectItem value="estudante">Estudante</SelectItem>
+                                ) : null}
                             </SelectContent>
                         </Select>
                         {isEditing && (

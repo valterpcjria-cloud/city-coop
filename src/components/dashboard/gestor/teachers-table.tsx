@@ -98,7 +98,7 @@ export function TeachersTable({ initialTeachers, schools }: TeachersTableProps) 
                                 <TableHead>Email / CPF</TableHead>
                                 <TableHead>Escola</TableHead>
                                 <TableHead>Telefone</TableHead>
-                                <TableHead Rizt-right>Status</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -132,7 +132,7 @@ export function TeachersTable({ initialTeachers, schools }: TeachersTableProps) 
                                     <TableCell className="text-sm text-[#6B7C93]">
                                         {teacher.phone || '--'}
                                     </TableCell>
-                                    <TableCell Rizt-right>
+                                    <TableCell>
                                         <Badge
                                             variant={teacher.is_active ? "outline" : "secondary"}
                                             className={teacher.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-100 text-slate-500"}
@@ -186,6 +186,7 @@ export function TeachersTable({ initialTeachers, schools }: TeachersTableProps) 
                 user={selectedTeacher}
                 schools={schools}
                 onSuccess={handleSuccess}
+                defaultRole="professor"
             />
         </Card>
     )

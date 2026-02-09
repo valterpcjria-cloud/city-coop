@@ -96,7 +96,7 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                                 <TableHead>Email / CPF</TableHead>
                                 <TableHead>Escola</TableHead>
                                 <TableHead>Ano/Série</TableHead>
-                                <TableHead Rizt-right>Status</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -130,7 +130,7 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                                     <TableCell>
                                         <Badge variant="outline" className="font-semibold">{student.grade_level}</Badge>
                                     </TableCell>
-                                    <TableCell Rizt-right>
+                                    <TableCell>
                                         <Badge
                                             variant={student.is_active ? "outline" : "secondary"}
                                             className={student.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-100 text-slate-500"}
@@ -184,6 +184,7 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                 user={selectedStudent}
                 schools={schools}
                 onSuccess={handleSuccess}
+                defaultRole="estudante"
             />
         </Card>
     )
