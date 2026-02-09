@@ -68,6 +68,7 @@ async function getUsers() {
             name: g.name,
             email: g.email,
             phone: g.phone,
+            cpf: g.cpf,
             role: 'gestor' as const,
             school_id: null,
             school_name: null,

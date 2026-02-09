@@ -270,8 +270,15 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
                                                 )}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-muted-foreground">
-                                            {user.email}
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="text-slate-700">{user.email}</span>
+                                                {(user as any).cpf && (
+                                                    <span className="text-xs font-mono text-slate-400">
+                                                        {(user as any).cpf}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="secondary" className={config.color}>

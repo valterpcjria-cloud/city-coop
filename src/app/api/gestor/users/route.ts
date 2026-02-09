@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
                 name: g.name,
                 email: g.email,
                 phone: g.phone,
+                cpf: g.cpf,
                 role: 'gestor' as const,
                 school_id: null,
                 school_name: null,
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
                 name: t.name,
                 email: t.email,
                 phone: t.phone,
+                cpf: t.cpf,
                 role: 'professor' as const,
                 school_id: t.school_id,
                 school_name: t.schools?.name || null,
@@ -68,6 +70,7 @@ export async function GET(request: NextRequest) {
                 name: s.name,
                 email: s.email,
                 phone: null,
+                cpf: s.cpf,
                 role: 'estudante' as const,
                 school_id: s.school_id,
                 school_name: s.schools?.name || null,
@@ -270,7 +273,7 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// DELETE - Deactivate user (soft delete)
+// DELETE - Toggle user active status
 export async function DELETE(request: NextRequest) {
     try {
         const auth = await validateSuperadminAccess()
@@ -295,16 +298,29 @@ export async function DELETE(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         )
 
-        // Soft delete: set is_active = false
+        // Get current status
         const tableName = role === 'gestor' ? 'gestors' : role === 'professor' ? 'teachers' : 'students'
+        const { data: current, error: fetchError } = await supabase
+            .from(tableName)
+            .select('is_active')
+            .eq('id', id)
+            .single()
+
+        if (fetchError) throw fetchError
+
+        // Toggle: set is_active to the opposite
         const { error } = await supabase
             .from(tableName)
-            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .update({ is_active: !current.is_active, updated_at: new Date().toISOString() })
             .eq('id', id)
 
         if (error) throw error
 
-        return NextResponse.json({ success: true, message: 'Usuário desativado' })
+        return NextResponse.json({
+            success: true,
+            message: current.is_active ? 'Usuário desativado' : 'Usuário ativado',
+            is_active: !current.is_active
+        })
     } catch (error: any) {
         console.error('[API_USERS_DELETE] Error:', error.message)
         return NextResponse.json({ error: error.message }, { status: 500 })

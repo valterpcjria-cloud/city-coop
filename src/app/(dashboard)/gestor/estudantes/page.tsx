@@ -21,7 +21,7 @@ export default async function GestorStudentsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-city-blue">Estudantes</h2>
-                    <p className="text-tech-gray">Ouvidoria e gestão de alunos cadastrados.</p>
+                    <p className="text-tech-gray">Gestão de matrículas, alocação de séries e ouvidoria.</p>
                 </div>
             </div>
 
