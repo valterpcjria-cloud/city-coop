@@ -80,10 +80,6 @@ export async function POST(
             return NextResponse.json({ error: 'Nucleus not found and could not be created' }, { status: 404 })
         }
 
-        if (!nucleus) {
-            return NextResponse.json({ error: 'Nucleus not found and could not be created' }, { status: 404 })
-        }
-
         if (action === 'add_member') {
             if (!studentId) return NextResponse.json({ error: 'Student ID required' }, { status: 400 })
 
