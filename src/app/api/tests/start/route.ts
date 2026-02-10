@@ -12,7 +12,7 @@ export async function POST(request: Request) {
             .select('status')
             .eq('student_id', studentId)
             .eq('test_id', testId)
-            .single()
+            .single() as any
 
         if (existing && existing.status === 'Concluído') {
             return NextResponse.json({ error: 'Você já concluiu este teste.' }, { status: 400 })
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         }
 
         // Create or Upsert initial result record (Consent/Start)
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('student_test_results')
             .upsert({
                 student_id: studentId,

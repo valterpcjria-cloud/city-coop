@@ -48,7 +48,7 @@ export async function POST(
             .from('gestors')
             .select('id')
             .eq('user_id', user.id)
-            .single()
+            .single() as any
 
         if (!gestor) {
             return NextResponse.json({ error: 'Gestor record not found' }, { status: 403 })

@@ -3,10 +3,11 @@ import { TestEngine } from '@/components/coop/test-engine'
 import { redirect } from 'next/navigation'
 
 interface TestPageProps {
-    params: { id: string }
+    params: Promise<{ id: string }>
 }
 
 export default async function TestPage({ params }: TestPageProps) {
+    const { id } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -25,7 +26,7 @@ export default async function TestPage({ params }: TestPageProps) {
     const { data: test, error } = await supabase
         .from('cycle_tests')
         .select('*, questions:test_questions(*)')
-        .eq('id', params.id)
+        .eq('id', id)
         .single() as any
 
     if (error || !test) return <div>Teste não encontrado</div>
@@ -36,7 +37,7 @@ export default async function TestPage({ params }: TestPageProps) {
         .select('status')
         .eq('student_id', student.id)
         .eq('test_id', test.id)
-        .single()
+        .single() as any
 
     if (!attempt || attempt.status !== 'Em Andamento') {
         redirect('/estudante/formacao')

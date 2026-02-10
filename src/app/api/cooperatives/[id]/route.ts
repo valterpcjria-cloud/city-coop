@@ -38,7 +38,7 @@ export async function PATCH(
         const isAuthorized = await checkIsGestor(supabase, user)
         if (!isAuthorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('cooperatives')
             .update({
                 ...body,
