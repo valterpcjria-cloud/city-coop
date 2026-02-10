@@ -52,9 +52,13 @@ export async function POST(
             .eq('name', nucleusName)
             .maybeSingle()
 
-        if (fetchError) throw fetchError
+        if (fetchError) {
+            console.error('Error fetching nucleus:', fetchError)
+            throw fetchError
+        }
 
         if (!nucleus && action === 'add_member') {
+            console.log(`Creating new nucleus: ${nucleusName} for class: ${classId}`)
             const { data: newNucleus, error: createError } = await (supabase as any)
                 .from('nuclei')
                 .insert({
@@ -63,10 +67,17 @@ export async function POST(
                     description: `Núcleo de ${nucleusName}`
                 })
                 .select()
-                .maybeSingle()
+                .single()
 
-            if (createError) throw createError
+            if (createError) {
+                console.error('Error creating nucleus:', createError)
+                throw createError
+            }
             nucleus = newNucleus
+        }
+
+        if (!nucleus) {
+            return NextResponse.json({ error: 'Nucleus not found and could not be created' }, { status: 404 })
         }
 
         if (!nucleus) {
