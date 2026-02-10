@@ -43,10 +43,14 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
     }
 
     // Buscar estudantes
-    const { data: estudantes } = await supabase
+    const { data: estudantes, error: estudantesError } = await supabase
         .from('class_students')
-        .select('*, student:students(*)')
+        .select('*, student:students(id, name, email)')
         .eq('class_id', id)
+
+    if (estudantesError) {
+        console.error('Erro ao buscar estudantes:', estudantesError)
+    }
 
     // Buscar núcleos com IDs dos estudantes para mapeamento
     const { data: nucleos } = await supabase
