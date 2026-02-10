@@ -45,7 +45,7 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
     // Buscar estudantes
     const { data: estudantes, error: estudantesError } = await supabase
         .from('class_students')
-        .select('*, student:students(id, name, email)')
+        .select('id, student_id, student:students(id, name, email)')
         .eq('class_id', id)
 
     if (estudantesError) {
