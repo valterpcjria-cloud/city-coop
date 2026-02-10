@@ -45,11 +45,11 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
     // Buscar estudantes
     const { data: estudantes, error: estudantesError } = await supabase
         .from('class_students')
-        .select('id, student_id, student:students(id, name, email)')
+        .select('student:students(id, name, email)')
         .eq('class_id', id)
 
     if (estudantesError) {
-        console.error('Erro ao buscar estudantes:', estudantesError)
+        console.error('Erro ao buscar estudantes:', JSON.stringify(estudantesError, null, 2))
     }
 
     // Buscar núcleos com IDs dos estudantes para mapeamento
@@ -165,17 +165,17 @@ export default async function TurmaDetalhesPage({ params }: PageProps) {
                                                     </p>
                                                 </div>
                                             </div>
-                                            {alunoNucleoMap[item.student_id] ? (
+                                            {item.student && alunoNucleoMap[item.student.id] ? (
                                                 <Badge
                                                     className={
-                                                        alunoNucleoMap[item.student_id] === 'Financeiro' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                            alunoNucleoMap[item.student_id] === 'Logística' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                                alunoNucleoMap[item.student_id] === 'Comunicação' ? 'bg-purple-100 text-purple-700 border-purple-200' :
-                                                                    alunoNucleoMap[item.student_id] === 'Parcerias' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                                                        alunoNucleoMap[item.student.id] === 'Financeiro' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                            alunoNucleoMap[item.student.id] === 'Logística' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                                alunoNucleoMap[item.student.id] === 'Comunicação' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                                                                    alunoNucleoMap[item.student.id] === 'Parcerias' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                                                                         'bg-blue-100 text-blue-700 border-blue-200'
                                                     }
                                                 >
-                                                    {alunoNucleoMap[item.student_id]}
+                                                    {alunoNucleoMap[item.student.id]}
                                                 </Badge>
                                             ) : (
                                                 <Badge variant="outline" className="text-slate-400 border-slate-200">
