@@ -45,30 +45,32 @@ export async function POST(
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
         // 1. Get or Create Nucleus
-        let { data: nucleus } = await supabase
+        let { data: nucleus, error: fetchError } = await supabase
             .from('nuclei')
             .select('id')
             .eq('class_id', classId)
             .eq('name', nucleusName)
-            .single()
+            .maybeSingle()
+
+        if (fetchError) throw fetchError
 
         if (!nucleus && action === 'add_member') {
-            const { data: newNucleus, error: createError } = await supabase
+            const { data: newNucleus, error: createError } = await (supabase as any)
                 .from('nuclei')
                 .insert({
                     class_id: classId,
                     name: nucleusName,
                     description: `Núcleo de ${nucleusName}`
-                } as any)
+                })
                 .select()
-                .single()
+                .maybeSingle()
 
             if (createError) throw createError
             nucleus = newNucleus
         }
 
         if (!nucleus) {
-            return NextResponse.json({ error: 'Nucleus not found and could not be created' }, { status: 500 })
+            return NextResponse.json({ error: 'Nucleus not found and could not be created' }, { status: 404 })
         }
 
         if (action === 'add_member') {
