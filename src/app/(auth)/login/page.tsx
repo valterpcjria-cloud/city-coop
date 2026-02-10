@@ -21,13 +21,28 @@ export default function LoginPage() {
 
     useEffect(() => {
         const checkSession = async () => {
+            // Safety timeout after 5 seconds
+            const timeout = setTimeout(() => {
+                console.warn("Session check timed out")
+                setIsCheckingSession(false)
+            }, 5000)
+
             try {
+                if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+                    console.error("Missing Supabase environment variables")
+                    setIsCheckingSession(false)
+                    clearTimeout(timeout)
+                    return
+                }
+
                 const { data: { session } } = await supabase.auth.getSession()
+                clearTimeout(timeout)
+
                 if (session) {
                     const role = session.user.user_metadata?.role
                     if (role === 'gestor' || role === 'manager') {
                         router.push('/gestor')
-                    } else if (role === 'teacher') {
+                    } else if (role === 'teacher' || role === 'professor') {
                         router.push('/professor')
                     } else {
                         router.push('/estudante')
@@ -37,6 +52,7 @@ export default function LoginPage() {
                 }
             } catch (err) {
                 console.error("Session check error:", err)
+                clearTimeout(timeout)
                 setIsCheckingSession(false)
             }
         }
