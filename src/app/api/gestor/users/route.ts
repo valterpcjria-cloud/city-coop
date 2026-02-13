@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
         // Fetch all user types in parallel
         const [gestorsRes, teachersRes, studentsRes] = await Promise.all([
-            supabase.from('gestors').select('*, schools:school_id(name)').order('name'),
+            supabase.from('gestors').select('*'),
             supabase.from('teachers').select('*, schools:school_id(name)').order('name'),
             supabase.from('students').select('*, schools:school_id(name)').order('name')
         ])

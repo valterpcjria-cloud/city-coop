@@ -56,7 +56,7 @@ async function getUsers() {
     )
 
     const [gestorsRes, teachersRes, studentsRes] = await Promise.all([
-        supabase.from('gestors').select('*, schools:school_id(name)').order('name'),
+        supabase.from('gestors').select('*').order('name'),
         supabase.from('teachers').select('*, schools:school_id(name)').order('name'),
         supabase.from('students').select('*, schools:school_id(name)').order('name')
     ])
