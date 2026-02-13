@@ -37,10 +37,11 @@ export default function GestorSchoolsPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
     const [totalItems, setTotalItems] = useState(0)
+    const [newThisMonth, setNewThisMonth] = useState(0)
     const limit = 25
 
     // Cached data for prefetching
-    const [prefetchCache, setPrefetchCache] = useState<Record<number, { schools: SchoolData[], totalItems: number, totalPages: number }>>({})
+    const [prefetchCache, setPrefetchCache] = useState<Record<number, { schools: SchoolData[], totalItems: number, totalPages: number, newThisMonth: number }>>({})
 
     const fetchSchools = async (page: number = 1, isPrefetch = false) => {
         if (!isPrefetch) setLoading(true)
@@ -52,6 +53,7 @@ export default function GestorSchoolsPage() {
                 setSchools(cached.schools)
                 setTotalPages(cached.totalPages)
                 setTotalItems(cached.totalItems)
+                setNewThisMonth(cached.newThisMonth)
                 setLoading(false)
                 setIsInitialLoading(false)
                 return
@@ -65,7 +67,8 @@ export default function GestorSchoolsPage() {
                 const newData = {
                     schools: data.schools || [],
                     totalItems: data.pagination.total,
-                    totalPages: data.pagination.totalPages
+                    totalPages: data.pagination.totalPages,
+                    newThisMonth: data.pagination.newThisMonth || 0
                 }
 
                 if (isPrefetch) {
@@ -74,6 +77,7 @@ export default function GestorSchoolsPage() {
                     setSchools(newData.schools)
                     setTotalPages(newData.totalPages)
                     setTotalItems(newData.totalItems)
+                    setNewThisMonth(newData.newThisMonth)
                     setCurrentPage(data.pagination.page)
                     setPrefetchCache(prev => ({ ...prev, [page]: newData }))
                 }
@@ -230,11 +234,7 @@ export default function GestorSchoolsPage() {
                                 <div>
                                     <p className="text-sm text-muted-foreground font-medium">Novas este Mês</p>
                                     <p className="text-2xl font-bold text-orange-600">
-                                        {schools.filter(s => {
-                                            const created = new Date(s.created_at)
-                                            const now = new Date()
-                                            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
-                                        }).length}
+                                        {newThisMonth}
                                     </p>
                                 </div>
                                 <div className="h-10 w-10 bg-orange-50 rounded-full flex items-center justify-center">

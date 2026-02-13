@@ -35,6 +35,15 @@ export async function GET(request: NextRequest) {
 
         if (error) throw error
 
+        // Count schools created this month
+        const now = new Date()
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+
+        const { count: monthCount } = await supabase
+            .from('schools')
+            .select('id', { count: 'exact', head: true })
+            .gte('created_at', firstDayOfMonth)
+
         return NextResponse.json({
             success: true,
             schools,
@@ -42,7 +51,8 @@ export async function GET(request: NextRequest) {
                 page,
                 limit,
                 total: count || 0,
-                totalPages: Math.ceil((count || 0) / limit)
+                totalPages: Math.ceil((count || 0) / limit),
+                newThisMonth: monthCount || 0
             }
         })
     } catch (error: any) {
