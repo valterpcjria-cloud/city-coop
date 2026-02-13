@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -8,8 +9,9 @@ import { Icons } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { SchoolModal } from '@/components/dashboard/gestor/school-modal'
 import { toast } from 'sonner'
-import { motion } from 'framer-motion'
-import { School, MapPin, Users, GraduationCap, BookOpen } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { School, MapPin, Users, GraduationCap, BookOpen, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SchoolData {
     id: string
@@ -26,27 +28,75 @@ interface SchoolData {
 export default function GestorSchoolsPage() {
     const [schools, setSchools] = useState<SchoolData[]>([])
     const [loading, setLoading] = useState(true)
+    const [isInitialLoading, setIsInitialLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedSchool, setSelectedSchool] = useState<SchoolData | undefined>()
     const [deleting, setDeleting] = useState<string | null>(null)
 
-    const fetchSchools = async () => {
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [totalItems, setTotalItems] = useState(0)
+    const limit = 25
+
+    // Cached data for prefetching
+    const [prefetchCache, setPrefetchCache] = useState<Record<number, { schools: SchoolData[], totalItems: number, totalPages: number }>>({})
+
+    const fetchSchools = async (page: number = 1, isPrefetch = false) => {
+        if (!isPrefetch) setLoading(true)
+
         try {
-            const response = await fetch('/api/gestor/schools')
+            // Check cache first
+            if (!isPrefetch && prefetchCache[page]) {
+                const cached = prefetchCache[page]
+                setSchools(cached.schools)
+                setTotalPages(cached.totalPages)
+                setTotalItems(cached.totalItems)
+                setLoading(false)
+                setIsInitialLoading(false)
+                return
+            }
+
+            const response = await fetch(`/api/gestor/schools?page=${page}&limit=${limit}`)
+            if (!response.ok) throw new Error('Falha ao carregar dados')
             const data = await response.json()
+
             if (data.success) {
-                setSchools(data.schools || [])
+                const newData = {
+                    schools: data.schools || [],
+                    totalItems: data.pagination.total,
+                    totalPages: data.pagination.totalPages
+                }
+
+                if (isPrefetch) {
+                    setPrefetchCache(prev => ({ ...prev, [page]: newData }))
+                } else {
+                    setSchools(newData.schools)
+                    setTotalPages(newData.totalPages)
+                    setTotalItems(newData.totalItems)
+                    setCurrentPage(data.pagination.page)
+                    setPrefetchCache(prev => ({ ...prev, [page]: newData }))
+                }
             }
         } catch (error) {
-            toast.error('Erro ao carregar escolas')
+            if (!isPrefetch) toast.error('Erro ao carregar escolas')
         } finally {
-            setLoading(false)
+            if (!isPrefetch) {
+                setLoading(false)
+                setIsInitialLoading(false)
+            }
         }
     }
 
     useEffect(() => {
-        fetchSchools()
-    }, [])
+        fetchSchools(currentPage)
+    }, [currentPage])
+
+    const handlePrefetch = (page: number) => {
+        if (page > 0 && page <= totalPages && !prefetchCache[page]) {
+            fetchSchools(page, true)
+        }
+    }
 
     const handleAdd = () => {
         setSelectedSchool(undefined)
@@ -74,7 +124,8 @@ export default function GestorSchoolsPage() {
             }
 
             toast.success('Escola removida com sucesso!')
-            fetchSchools()
+            setPrefetchCache({})
+            fetchSchools(currentPage)
         } catch (error: any) {
             toast.error(error.message)
         } finally {
@@ -83,10 +134,11 @@ export default function GestorSchoolsPage() {
     }
 
     const handleSuccess = () => {
-        fetchSchools()
+        setPrefetchCache({})
+        fetchSchools(currentPage)
     }
 
-    if (loading) {
+    if (isInitialLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <Icons.spinner className="h-8 w-8 animate-spin text-city-blue" />
@@ -96,206 +148,265 @@ export default function GestorSchoolsPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="flex items-center justify-between">
-                <div>
+                <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                >
                     <h2 className="text-2xl font-bold tracking-tight text-city-blue">Escolas</h2>
                     <p className="text-tech-gray">Gerencie as instituições parceiras da plataforma.</p>
+                </motion.div>
+                <div className="flex items-center gap-2">
+                    <Link href="/gestor/escolas/importar">
+                        <Button variant="outline">
+                            <Icons.upload className="mr-2 h-4 w-4" />
+                            Importar Escolas
+                        </Button>
+                    </Link>
+                    <Button variant="brand" onClick={handleAdd}>
+                        <Icons.add className="mr-2 h-4 w-4" />
+                        Nova Escola
+                    </Button>
                 </div>
-                <Button variant="brand" onClick={handleAdd}>
-                    <Icons.add className="mr-2 h-4 w-4" />
-                    Nova Escola
-                </Button>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid gap-4 md:grid-cols-4">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0 }}
-                >
-                    <Card className="border-l-4 border-l-city-blue">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
+                    <Card className="border-l-4 border-l-city-blue shadow-sm">
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Total de Escolas</p>
-                                    <p className="text-2xl font-bold text-city-blue">{schools.length}</p>
+                                    <p className="text-sm text-muted-foreground font-medium">Total de Escolas</p>
+                                    <p className="text-2xl font-bold text-city-blue">{totalItems}</p>
                                 </div>
-                                <School className="h-8 w-8 text-city-blue/20" />
+                                <div className="h-10 w-10 bg-city-blue/10 rounded-full flex items-center justify-center">
+                                    <School className="h-5 w-5 text-city-blue" />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                >
-                    <Card className="border-l-4 border-l-green-500">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                    <Card className="border-l-4 border-l-emerald-500 shadow-sm">
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Estados</p>
-                                    <p className="text-2xl font-bold text-green-600">
+                                    <p className="text-sm text-muted-foreground font-medium">Estados</p>
+                                    <p className="text-2xl font-bold text-emerald-600">
                                         {new Set(schools.filter(s => s.state).map(s => s.state)).size}
                                     </p>
                                 </div>
-                                <MapPin className="h-8 w-8 text-green-500/20" />
+                                <div className="h-10 w-10 bg-emerald-50 rounded-full flex items-center justify-center">
+                                    <MapPin className="h-5 w-5 text-emerald-500" />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <Card className="border-l-4 border-l-purple-500">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <Card className="border-l-4 border-l-violet-500 shadow-sm">
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Cidades</p>
-                                    <p className="text-2xl font-bold text-purple-600">
+                                    <p className="text-sm text-muted-foreground font-medium">Cidades</p>
+                                    <p className="text-2xl font-bold text-violet-600">
                                         {new Set(schools.filter(s => s.city).map(s => s.city)).size}
                                     </p>
                                 </div>
-                                <GraduationCap className="h-8 w-8 text-purple-500/20" />
+                                <div className="h-10 w-10 bg-violet-50 rounded-full flex items-center justify-center">
+                                    <GraduationCap className="h-5 w-5 text-violet-500" />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <Card className="border-l-4 border-l-amber-500">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                    <Card className="border-l-4 border-l-orange-500 shadow-sm">
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Este Mês</p>
-                                    <p className="text-2xl font-bold text-amber-600">
+                                    <p className="text-sm text-muted-foreground font-medium">Novas este Mês</p>
+                                    <p className="text-2xl font-bold text-orange-600">
                                         {schools.filter(s => {
                                             const created = new Date(s.created_at)
                                             const now = new Date()
-                                            return created.getMonth() === now.getMonth() &&
-                                                created.getFullYear() === now.getFullYear()
+                                            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
                                         }).length}
                                     </p>
                                 </div>
-                                <BookOpen className="h-8 w-8 text-amber-500/20" />
+                                <div className="h-10 w-10 bg-orange-50 rounded-full flex items-center justify-center">
+                                    <BookOpen className="h-5 w-5 text-orange-500" />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </motion.div>
             </div>
 
-            {/* Table */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
             >
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Instituições Cadastradas</CardTitle>
-                        <CardDescription>
-                            Lista de todas as escolas parceiras do programa City Coop.
-                        </CardDescription>
+                <Card className="overflow-hidden shadow-premium bg-white/80 backdrop-blur-sm">
+                    <CardHeader className="border-b bg-slate-50/50">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="text-lg font-bold">Instituições Cadastradas</CardTitle>
+                                <CardDescription>Gerenciamento centralizado de escolas.</CardDescription>
+                            </div>
+                            {loading && (
+                                <div className="flex items-center gap-2 text-xs text-city-blue font-medium">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    Carregando...
+                                </div>
+                            )}
+                        </div>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Nome</TableHead>
-                                    <TableHead>Código</TableHead>
-                                    <TableHead>Cidade/UF</TableHead>
-                                    <TableHead>Contato</TableHead>
-                                    <TableHead>Data Cadastro</TableHead>
-                                    <TableHead className="text-right">Ações</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {schools.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-12">
-                                            <School className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                                            <p className="text-muted-foreground">Nenhuma escola cadastrada ainda.</p>
-                                            <Button variant="link" onClick={handleAdd} className="mt-2">
-                                                Cadastrar primeira escola
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    schools.map((school) => (
-                                        <TableRow key={school.id}>
-                                            <TableCell className="font-medium">{school.name}</TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className="font-mono">
-                                                    {school.code}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                {school.city && school.state ? (
-                                                    <span className="flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                                                        {school.city} / {school.state}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-muted-foreground">--</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {school.email || school.phone ? (
-                                                    <div className="text-sm">
-                                                        {school.email && <div className="truncate max-w-[150px]">{school.email}</div>}
-                                                        {school.phone && <div className="text-muted-foreground">{school.phone}</div>}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-muted-foreground">--</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(school.created_at).toLocaleDateString('pt-BR')}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleEdit(school)}
-                                                    >
-                                                        <Icons.settings className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleDelete(school)}
-                                                        disabled={deleting === school.id}
-                                                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                    >
-                                                        {deleting === school.id ? (
-                                                            <Icons.spinner className="h-4 w-4 animate-spin" />
-                                                        ) : (
-                                                            <Icons.trash className="h-4 w-4" />
-                                                        )}
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
+                    <CardContent className="p-0">
+                        <div className="relative">
+                            <AnimatePresence>
+                                {loading && (
+                                    <motion.div
+                                        initial={{ scaleX: 0, opacity: 0 }}
+                                        animate={{ scaleX: 1, opacity: 1 }}
+                                        exit={{ scaleX: 0, opacity: 0 }}
+                                        className="absolute top-0 left-0 right-0 h-0.5 bg-city-blue origin-left z-20"
+                                    />
                                 )}
-                            </TableBody>
-                        </Table>
+                            </AnimatePresence>
+
+                            <Table>
+                                <TableHeader className="bg-slate-50/30">
+                                    <TableRow>
+                                        <TableHead className="w-[30%]">Nome</TableHead>
+                                        <TableHead>Código</TableHead>
+                                        <TableHead>Cidade/UF</TableHead>
+                                        <TableHead>Contato</TableHead>
+                                        <TableHead>Data Cadastro</TableHead>
+                                        <TableHead className="text-right">Ações</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <AnimatePresence mode="wait">
+                                        {schools.length === 0 && !loading ? (
+                                            <motion.tr
+                                                key="empty"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                            >
+                                                <TableCell colSpan={6} className="text-center py-16">
+                                                    <div className="flex flex-col items-center">
+                                                        <School className="h-10 w-10 text-slate-300 mb-2" />
+                                                        <p className="text-slate-500">Nenhuma escola cadastrada.</p>
+                                                        <Button variant="link" onClick={handleAdd}>Cadastrar primeira escola</Button>
+                                                    </div>
+                                                </TableCell>
+                                            </motion.tr>
+                                        ) : (
+                                            schools.map((school, idx) => (
+                                                <motion.tr
+                                                    key={`${currentPage}-${school.id}`}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -10 }}
+                                                    transition={{ delay: idx * 0.01, duration: 0.2 }}
+                                                    className={cn("group transition-colors hover:bg-slate-50", loading && "opacity-60")}
+                                                >
+                                                    <TableCell className="font-semibold text-slate-700">{school.name}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant="outline" className="font-mono">{school.code}</Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {school.city && school.state ? (
+                                                            <span className="flex items-center gap-1 text-slate-600 text-sm">
+                                                                <MapPin className="h-3 w-3" /> {school.city} / {school.state}
+                                                            </span>
+                                                        ) : '--'}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="text-sm">
+                                                            <div className="text-slate-600 truncate max-w-[150px]">{school.email || '--'}</div>
+                                                            <div className="text-slate-400 text-xs">{school.phone || ''}</div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-sm text-slate-500">
+                                                        {new Date(school.created_at).toLocaleDateString('pt-BR')}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-1">
+                                                            <Button variant="ghost" size="sm" onClick={() => handleEdit(school)} className="h-8 w-8 p-0">
+                                                                <Icons.settings className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleDelete(school)}
+                                                                disabled={deleting === school.id}
+                                                                className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                                                            >
+                                                                {deleting === school.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icons.trash className="h-4 w-4" />}
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </motion.tr>
+                                            ))
+                                        )}
+                                    </AnimatePresence>
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between p-4 border-t bg-slate-50/20">
+                                <p className="text-sm text-slate-500">
+                                    Mostrando <b>{((currentPage - 1) * limit) + 1}</b> a <b>{Math.min(currentPage * limit, totalItems)}</b> de <b>{totalItems}</b>
+                                </p>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                                        disabled={currentPage === 1 || loading}
+                                        onMouseEnter={() => handlePrefetch(currentPage - 1)}
+                                    >
+                                        Anterior
+                                    </Button>
+                                    <div className="flex gap-1">
+                                        {Array.from({ length: totalPages }).map((_, i) => (
+                                            <Button
+                                                key={i + 1}
+                                                variant={currentPage === i + 1 ? 'brand' : 'outline'}
+                                                size="sm"
+                                                className="w-8 h-8 p-0"
+                                                onClick={() => setCurrentPage(i + 1)}
+                                                onMouseEnter={() => handlePrefetch(i + 1)}
+                                                disabled={loading}
+                                            >
+                                                {i + 1}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                                        disabled={currentPage === totalPages || loading}
+                                        onMouseEnter={() => handlePrefetch(currentPage + 1)}
+                                    >
+                                        Próxima
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </motion.div>
 
-            {/* Modal */}
             <SchoolModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

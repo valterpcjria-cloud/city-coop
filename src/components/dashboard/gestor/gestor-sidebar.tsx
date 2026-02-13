@@ -22,6 +22,11 @@ const routes = [
         href: '/gestor/escolas',
     },
     {
+        label: 'Importar Escolas',
+        icon: Icons.upload,
+        href: '/gestor/escolas/importar',
+    },
+    {
         label: 'Professores',
         icon: Icons.user,
         href: '/gestor/professores',
