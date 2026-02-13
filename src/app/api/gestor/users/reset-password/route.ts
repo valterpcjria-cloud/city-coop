@@ -30,14 +30,18 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'ID do usuário é obrigatório para reset manual' }, { status: 400 })
             }
 
+            console.log(`[API_RESET_PASSWORD] Manual reset attempt for user_id: ${user_id}`)
+
             const { error } = await supabase.auth.admin.updateUserById(user_id, {
                 password: password
             })
 
             if (error) {
-                console.error('[API_RESET_PASSWORD] Manual error:', error.message)
+                console.error(`[API_RESET_PASSWORD] Manual reset error for ${user_id}:`, error.message)
                 throw error
             }
+
+            console.log(`[API_RESET_PASSWORD] Manual reset success for user_id: ${user_id}`)
 
             return NextResponse.json({
                 success: true,
@@ -49,20 +53,24 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'Email é obrigatório' }, { status: 400 })
             }
 
-            // Generate password reset link
-            const { error } = await supabase.auth.admin.generateLink({
-                type: 'recovery',
-                email
+            console.log(`[API_RESET_PASSWORD] Email reset request for: ${email}`)
+
+            // Use resetPasswordForEmail which actually sends the email
+            // Note: This uses the client created with service role, so it should bypass rate limits or email provider restrictions if configured correctly in Supabase
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${request.nextUrl.origin}/reset-password`,
             })
 
             if (error) {
-                console.error('[API_RESET_PASSWORD] Email link error:', error.message)
+                console.error(`[API_RESET_PASSWORD] Email reset error for ${email}:`, error.message)
                 throw error
             }
 
+            console.log(`[API_RESET_PASSWORD] Email reset success for: ${email}`)
+
             return NextResponse.json({
                 success: true,
-                message: 'Link de recuperação enviado com sucesso'
+                message: 'Link de recuperação enviado com sucesso para o email cadastrado'
             })
         }
     } catch (error: any) {

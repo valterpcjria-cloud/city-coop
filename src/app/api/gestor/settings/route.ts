@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { validateGestorAccess } from '@/lib/auth-guard'
+import { validateSuperadminAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
 
 export async function GET(request: NextRequest) {
     try {
-        // Auth validation
-        const auth = await validateGestorAccess()
+        // Auth validation - Only Superadmins can see API keys
+        const auth = await validateSuperadminAccess()
         if (!auth.success) return auth.response!
 
         // Rate limiting
@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        // Auth validation
-        const auth = await validateGestorAccess()
+        // Auth validation - Only Superadmins can update API keys
+        const auth = await validateSuperadminAccess()
         if (!auth.success) return auth.response!
 
         // Rate limiting

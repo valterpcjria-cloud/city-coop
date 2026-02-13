@@ -33,10 +33,12 @@ export async function POST(request: Request) {
         const { name, role, schoolCode, gradeLevel } = user.user_metadata || {}
 
         // 3. Check if profile already exists to prevent duplicates
-        if (role === 'manager') {
-            const { data: existing } = await supabaseAdmin.from('managers').select('id').eq('user_id', userId).single()
+        const isGestor = role === 'manager' || role === 'gestor' || role === 'superadmin'
+
+        if (isGestor) {
+            const { data: existing } = await supabaseAdmin.from('gestors').select('id').eq('user_id', userId).single()
             if (existing) return NextResponse.json({ success: true, message: 'Perfil de gestor já existe' })
-        } else if (role === 'teacher') {
+        } else if (role === 'teacher' || role === 'professor') {
             const { data: existing } = await supabaseAdmin.from('teachers').select('id').eq('user_id', userId).single()
             if (existing) return NextResponse.json({ success: true, message: 'Perfil de professor já existe' })
         } else {
@@ -45,18 +47,19 @@ export async function POST(request: Request) {
         }
 
         // 4. Create Profile
-        if (role === 'manager') {
+        if (isGestor) {
             const { error: profileError } = await supabaseAdmin
-                .from('managers')
+                .from('gestors')
                 .insert({
                     user_id: userId,
                     name: name || 'Gestor',
-                    email: user.email
+                    email: user.email,
+                    is_superadmin: role === 'superadmin'
                 })
 
             if (profileError) throw profileError
 
-        } else if (role === 'teacher') {
+        } else if (role === 'teacher' || role === 'professor') {
             let schoolId = null
             if (schoolCode) {
                 const { data: school } = await supabaseAdmin

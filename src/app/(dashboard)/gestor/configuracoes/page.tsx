@@ -15,6 +15,7 @@ export default function GestorSettingsPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [settings, setSettings] = useState<any[]>([])
+    const [isSuperadmin, setIsSuperadmin] = useState(false)
     const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({})
 
     useEffect(() => {
@@ -22,11 +23,20 @@ export default function GestorSettingsPage() {
             try {
                 const response = await fetch('/api/gestor/settings')
                 const data = await response.json()
+
+                // If the user isn't a superadmin, the API will return 403
+                if (response.status === 403) {
+                    setIsSuperadmin(false)
+                    setSettings([])
+                    return
+                }
+
                 if (data.settings) {
                     setSettings(data.settings)
+                    setIsSuperadmin(true)
                 }
             } catch (error) {
-                toast.error('Erro ao carregar configurações')
+                console.error('Settings fetch error:', error)
             } finally {
                 setIsLoading(false)
             }
@@ -101,77 +111,81 @@ export default function GestorSettingsPage() {
             </div>
 
             <div className="grid gap-6 max-w-2xl">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Provedores de Inteligência Artificial</CardTitle>
-                        <CardDescription>
-                            Configure as chaves necessárias para que o DOT Assistente e as avaliações funcionem.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        {settings.map((setting) => (
-                            <div key={setting.key} className="space-y-2">
-                                <Label htmlFor={setting.key} className="capitalize">
-                                    {setting.description || setting.key.replace(/_/g, ' ')}
-                                </Label>
-                                <div className="relative">
-                                    <Input
-                                        id={setting.key}
-                                        type={showKeys[setting.key] ? 'text' : 'password'}
-                                        value={setting.value || ''}
-                                        onChange={(e) => updateSetting(setting.key, e.target.value)}
-                                        onFocus={() => handleFocus(setting.key, setting.value || '')}
-                                        placeholder="sk-..."
-                                        className="pr-10"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleShow(setting.key)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                                    >
-                                        {showKeys[setting.key] ? (
-                                            <EyeOff className="h-4 w-4" />
+                {isSuperadmin && (
+                    <>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Provedores de Inteligência Artificial</CardTitle>
+                                <CardDescription>
+                                    Configure as chaves necessárias para que o DOT Assistente e as avaliações funcionem.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                {settings.map((setting) => (
+                                    <div key={setting.key} className="space-y-2">
+                                        <Label htmlFor={setting.key} className="capitalize">
+                                            {setting.description || setting.key.replace(/_/g, ' ')}
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                id={setting.key}
+                                                type={showKeys[setting.key] ? 'text' : 'password'}
+                                                value={setting.value || ''}
+                                                onChange={(e) => updateSetting(setting.key, e.target.value)}
+                                                onFocus={() => handleFocus(setting.key, setting.value || '')}
+                                                placeholder="sk-..."
+                                                className="pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleShow(setting.key)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                            >
+                                                {showKeys[setting.key] ? (
+                                                    <EyeOff className="h-4 w-4" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground">
+                                            Última atualização: {new Date(setting.updated_at).toLocaleString('pt-BR')}
+                                        </p>
+                                    </div>
+                                ))}
+
+                                <div className="pt-4">
+                                    <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto" variant="brand">
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Salvando...
+                                            </>
                                         ) : (
-                                            <Eye className="h-4 w-4" />
+                                            'Salvar Configurações'
                                         )}
-                                    </button>
+                                    </Button>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground">
-                                    Última atualização: {new Date(setting.updated_at).toLocaleString('pt-BR')}
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-yellow-200 bg-yellow-50/50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-bold text-yellow-800 flex items-center gap-2">
+                                    <Icons.settings className="h-4 w-4 text-yellow-600" />
+                                    Nota de Segurança
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-xs text-yellow-700 leading-relaxed">
+                                    As chaves de API são armazenadas de forma segura no banco de dados e acessadas apenas pelo servidor.
+                                    Certifique-se de não compartilhar o acesso à sua conta de administrador.
+                                    Caso uma chave seja comprometida, apague o valor e clique em salvar para removê-la.
                                 </p>
-                            </div>
-                        ))}
-
-                        <div className="pt-4">
-                            <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto" variant="brand">
-                                {isSaving ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Salvando...
-                                    </>
-                                ) : (
-                                    'Salvar Configurações'
-                                )}
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-yellow-200 bg-yellow-50/50">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-bold text-yellow-800 flex items-center gap-2">
-                            <Icons.settings className="h-4 w-4 text-yellow-600" />
-                            Nota de Segurança
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-xs text-yellow-700 leading-relaxed">
-                            As chaves de API são armazenadas de forma segura no banco de dados e acessadas apenas pelo servidor.
-                            Certifique-se de não compartilhar o acesso à sua conta de administrador.
-                            Caso uma chave seja comprometida, apague o valor e clique em salvar para removê-la.
-                        </p>
-                    </CardContent>
-                </Card>
+                            </CardContent>
+                        </Card>
+                    </>
+                )}
             </div>
 
             <div className="pt-12 border-t border-slate-200">

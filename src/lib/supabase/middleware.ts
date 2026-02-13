@@ -58,14 +58,25 @@ export async function updateSession(request: NextRequest) {
     // If logged in user tries to access auth pages, redirect to appropriate dashboard
     if (user && isAuthRoute) {
         // Get user role from profile using a single optimized query
-        const { data: profile } = await (supabase as any).rpc('get_user_role', {
+        const { data: profile, error: roleError } = await (supabase as any).rpc('get_user_role', {
             p_user_id: user.id
         })
 
+        if (roleError || !profile) {
+            console.error('[MIDDLEWARE] Role detection error or profile not found:', { roleError, profile, userId: user.id })
+            // If we can't determine role, we might be stuck. 
+            // Better to let them through to /login but with a sign out or clear session?
+            // For now, redirect to a safe default or show error
+            const url = request.nextUrl.clone()
+            url.pathname = '/login'
+            url.searchParams.set('error', 'profile_not_found')
+            return NextResponse.redirect(url)
+        }
+
         const url = request.nextUrl.clone()
-        if (profile?.role === 'gestor') {
+        if (profile.role === 'gestor' || profile.role === 'manager') {
             url.pathname = '/gestor'
-        } else if (profile?.role === 'teacher') {
+        } else if (profile.role === 'teacher' || profile.role === 'professor') {
             url.pathname = '/professor'
         } else {
             url.pathname = '/estudante'

@@ -24,19 +24,19 @@ export default async function GestorDashboardLayout({
     let manager = null
     try {
         const { data } = await adminAuth
-            .from('managers')
+            .from('gestors')
             .select('*')
             .eq('user_id', user.id)
-            .single() as any
+            .maybeSingle() as any
         manager = data
     } catch (err) {
-        console.error('Error fetching manager profile:', err)
+        console.error('Error fetching gestor profile:', err)
     }
 
     if (!manager) {
         // Fallback to metadata check before giving up
         const role = user.user_metadata?.role
-        if (role === 'manager') {
+        if (role === 'manager' || role === 'gestor' || role === 'superadmin') {
             // Create a temporary manager object from metadata to allow access 
             // while table/record issues are resolved
             manager = {

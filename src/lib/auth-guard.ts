@@ -77,10 +77,10 @@ export async function validateAuth(): Promise<AuthResult> {
 
         // Determine user role
         const { data: manager } = await supabase
-            .from('managers')
+            .from('gestors')
             .select('id')
             .eq('user_id', user.id)
-            .single()
+            .maybeSingle()
 
         const { data: teacher } = await supabase
             .from('teachers')
