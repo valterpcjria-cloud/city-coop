@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserModal } from './user-modal'
+import { PasswordResetDialog } from './password-reset-dialog'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { toast } from '@/components/ui/sonner'
 import { useRouter } from 'next/navigation'
@@ -80,6 +81,8 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
     const [confirmOpen, setConfirmOpen] = useState(false)
     const [confirmAction, setConfirmAction] = useState<{ type: 'deactivate' | 'activate', user: User } | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
+    const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
+    const [userToReset, setUserToReset] = useState<User | null>(null)
 
     // Filter users
     const filteredUsers = users.filter(user => {
@@ -141,25 +144,9 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
         }
     }
 
-    const handleResetPassword = async (user: User) => {
-        try {
-            const response = await fetch('/api/gestor/users/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user.user_id, email: user.email })
-            })
-
-            if (!response.ok) {
-                const data = await response.json()
-                throw new Error(data.error)
-            }
-
-            toast.success('Email enviado!', {
-                description: `Um link para redefinir a senha foi enviado para ${user.email}`
-            })
-        } catch (error: any) {
-            toast.error('Erro', { description: error.message })
-        }
+    const handleResetPassword = (user: User) => {
+        setUserToReset(user)
+        setIsResetDialogOpen(true)
     }
 
     const handleSuccess = () => {
@@ -369,6 +356,15 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
                 cancelText="Cancelar"
                 onConfirm={handleConfirmAction}
                 loading={isProcessing}
+            />
+
+            <PasswordResetDialog
+                isOpen={isResetDialogOpen}
+                onClose={() => {
+                    setIsResetDialogOpen(false)
+                    setUserToReset(null)
+                }}
+                user={userToReset}
             />
         </div>
     )

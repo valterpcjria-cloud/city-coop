@@ -17,32 +17,54 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
 
-        const { email } = await request.json()
-
-        if (!email) {
-            return NextResponse.json({ error: 'Email é obrigatório' }, { status: 400 })
-        }
+        const { email, user_id, password } = await request.json()
 
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         )
 
-        // Generate password reset link
-        const { error } = await supabase.auth.admin.generateLink({
-            type: 'recovery',
-            email
-        })
+        if (password) {
+            // Manual password reset
+            if (!user_id) {
+                return NextResponse.json({ error: 'ID do usuário é obrigatório para reset manual' }, { status: 400 })
+            }
 
-        if (error) {
-            console.error('[API_RESET_PASSWORD] Error:', error.message)
-            throw error
+            const { error } = await supabase.auth.admin.updateUserById(user_id, {
+                password: password
+            })
+
+            if (error) {
+                console.error('[API_RESET_PASSWORD] Manual error:', error.message)
+                throw error
+            }
+
+            return NextResponse.json({
+                success: true,
+                message: 'Senha alterada com sucesso'
+            })
+        } else {
+            // Email-based password reset
+            if (!email) {
+                return NextResponse.json({ error: 'Email é obrigatório' }, { status: 400 })
+            }
+
+            // Generate password reset link
+            const { error } = await supabase.auth.admin.generateLink({
+                type: 'recovery',
+                email
+            })
+
+            if (error) {
+                console.error('[API_RESET_PASSWORD] Email link error:', error.message)
+                throw error
+            }
+
+            return NextResponse.json({
+                success: true,
+                message: 'Link de recuperação enviado com sucesso'
+            })
         }
-
-        return NextResponse.json({
-            success: true,
-            message: 'Link de recuperação enviado com sucesso'
-        })
     } catch (error: any) {
         console.error('[API_RESET_PASSWORD] Error:', error.message)
         return NextResponse.json({ error: error.message }, { status: 500 })
