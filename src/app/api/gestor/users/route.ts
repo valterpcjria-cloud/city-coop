@@ -313,7 +313,35 @@ export async function DELETE(request: NextRequest) {
 
             if (fetchError || !userRecord) throw new Error('Usuário não encontrado')
 
-            // Delete from specific table (cascading might handle others, but let's be explicit if needed)
+            // Handle Dependencies (Teacher only)
+            if (role === 'professor') {
+                console.log(`[API_USERS_DELETE] Nullifying references for teacher ${id}`)
+
+                // Update assessments
+                const { error: err1 } = await supabase
+                    .from('assessments')
+                    .update({ created_by: null })
+                    .eq('created_by', id)
+
+                // Update assemblies
+                const { error: err2 } = await supabase
+                    .from('assemblies')
+                    .update({ created_by: null })
+                    .eq('created_by', id)
+
+                // Update event_plans
+                const { error: err3 } = await supabase
+                    .from('event_plans')
+                    .update({ reviewed_by: null })
+                    .eq('reviewed_by', id)
+
+                if (err1 || err2 || err3) {
+                    console.error('[API_USERS_DELETE] Error nullifying teacher references:', { err1, err2, err3 })
+                    throw new Error('Erro ao limpar referências do professor. Tente desativar em vez de excluir.')
+                }
+            }
+
+            // Delete from specific table
             const { error: dbError } = await supabase
                 .from(tableName)
                 .delete()
