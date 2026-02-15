@@ -6,9 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserModal } from './user-modal'
+import { PasswordResetDialog } from './password-reset-dialog'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Edit, MoreHorizontal, UserCheck, UserX, School, Loader2 } from 'lucide-react'
+import { Edit, MoreHorizontal, UserCheck, UserX, School, Loader2, Key } from 'lucide-react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -47,6 +48,8 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
     const [currentPage, setCurrentPage] = useState(1)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedStudent, setSelectedStudent] = useState<any>(null)
+    const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
+    const [userToReset, setUserToReset] = useState<any>(null)
     const [isLoading, setIsLoading] = useState<string | null>(null)
     const limit = 25
     const totalItems = initialStudents.length
@@ -64,6 +67,14 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
             role: 'estudante'
         })
         setIsModalOpen(true)
+    }
+
+    const handleResetPassword = (student: Student) => {
+        setUserToReset({
+            ...student,
+            role: 'estudante'
+        })
+        setIsResetDialogOpen(true)
     }
 
     const toggleStatus = async (student: Student) => {
@@ -170,6 +181,10 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                                                         <Edit className="h-4 w-4 mr-2" />
                                                         Alocar / Editar
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleResetPassword(student)}>
+                                                        <Key className="h-4 w-4 mr-2" />
+                                                        Resetar Senha
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
                                                         onClick={() => toggleStatus(student)}
@@ -245,6 +260,15 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                 schools={schools}
                 onSuccess={handleSuccess}
                 defaultRole="estudante"
+            />
+
+            <PasswordResetDialog
+                isOpen={isResetDialogOpen}
+                onClose={() => {
+                    setIsResetDialogOpen(false)
+                    setUserToReset(null)
+                }}
+                user={userToReset}
             />
         </Card>
     )

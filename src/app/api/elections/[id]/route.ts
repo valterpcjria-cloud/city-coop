@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             .from('elections') as any)
             .select(`
                 *,
-                class:classes(id, name, code, teacher_id)
+                class:classes(id, name, code, teacher_id, schools(id, name))
             `)
             .eq('id', id)
             .single()
@@ -29,7 +29,48 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Eleição não encontrada' }, { status: 404 })
         }
 
-        return NextResponse.json({ election })
+        // Authorization Check
+        const adminClient = await createAdminClient()
+        const [teacherRes, managerRes, studentRes] = await Promise.all([
+            adminClient.from('teachers').select('id').eq('user_id', user.id).maybeSingle() as any,
+            adminClient.from('managers').select('id, is_superadmin').eq('user_id', user.id).maybeSingle() as any,
+            adminClient.from('students').select('id').eq('user_id', user.id).maybeSingle() as any
+        ])
+
+        const teacher = teacherRes.data
+        const manager = managerRes.data
+        const student = studentRes.data
+        const isSuperadmin = (user as any).app_metadata?.role === 'superadmin' || manager?.is_superadmin
+
+        // 1. gestor/superadmin -> allow
+        if (manager || isSuperadmin) {
+            return NextResponse.json({ election })
+        }
+
+        // 2. professor -> must be owner of the class
+        if (teacher) {
+            if (election.class?.teacher_id === teacher.id) {
+                return NextResponse.json({ election })
+            }
+            return NextResponse.json({ error: 'Você não tem permissão para visualizar esta eleição' }, { status: 403 })
+        }
+
+        // 3. student -> must be in the class
+        if (student) {
+            const { data: enrollment } = await adminClient
+                .from('class_students')
+                .select('id')
+                .eq('class_id', election.class_id)
+                .eq('student_id', student.id)
+                .maybeSingle()
+
+            if (enrollment) {
+                return NextResponse.json({ election })
+            }
+            return NextResponse.json({ error: 'Você não faz parte da turma desta eleição' }, { status: 403 })
+        }
+
+        return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
     } catch (error) {
         console.error('Error in GET /api/elections/[id]:', error)
         return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { validateGestorAccess, validateSuperadminAccess } from '@/lib/auth-guard'
+import { validateGestorAccess, validateSuperadminAccess, validateProfessorAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
 import { isValidCPF } from '@/lib/validators'
 
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new user
 export async function POST(request: NextRequest) {
     try {
-        const auth = await validateGestorAccess()
+        const auth = await validateProfessorAccess()
         if (!auth.success) return auth.response!
 
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
@@ -104,7 +104,12 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, email, phone, cpf, role, school_id, grade_level, is_superadmin } = body
+        const { name, email, phone, cpf, role, school_id, grade_level, is_superadmin, class_id } = body
+
+        // If professor is creating, role must be "estudante"
+        if (auth.role === 'professor' && role !== 'estudante') {
+            return NextResponse.json({ error: 'Professores só podem cadastrar estudantes' }, { status: 403 })
+        }
 
         if (!name || !email || !role) {
             return NextResponse.json(
@@ -140,11 +145,33 @@ export async function POST(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         )
 
-        // Create auth user with temporary password
-        const tempPassword = `City${Date.now().toString(36)}!`
+        // If professor, verify school_id matches their school
+        if (auth.role === 'professor') {
+            const { data: teacher } = await supabase
+                .from('teachers')
+                .select('school_id')
+                .eq('user_id', auth.user?.id)
+                .single()
+
+            if (!teacher || teacher.school_id !== school_id) {
+                return NextResponse.json({ error: 'Você só pode cadastrar alunos para sua própria escola' }, { status: 403 })
+            }
+        }
+
+        // Create auth user with temporary password or CPF for students
+        let userPassword = `City${Date.now().toString(36)}!`
+
+        if (role === 'estudante' && cpf) {
+            // Clean CPF for password (only numbers)
+            const cleanCPF = cpf.replace(/[^\d]+/g, '')
+            if (cleanCPF.length === 11) {
+                userPassword = cleanCPF
+            }
+        }
+
         const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
             email,
-            password: tempPassword,
+            password: userPassword,
             email_confirm: true,
             user_metadata: { role, name }
         })
@@ -199,6 +226,18 @@ export async function POST(request: NextRequest) {
             throw insertError
         }
 
+        // Handle class allocation if student and class_id provided
+        if (role === 'estudante' && class_id) {
+            // Need the student UUID from the record we just created
+            const { data: studentRecord } = await supabase.from('students').select('id').eq('user_id', userId).single()
+            if (studentRecord) {
+                await supabase.from('class_students').insert({
+                    class_id,
+                    student_id: studentRecord.id
+                })
+            }
+        }
+
         return NextResponse.json({
             success: true,
             message: 'Usuário criado com sucesso',
@@ -213,7 +252,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update user
 export async function PUT(request: NextRequest) {
     try {
-        const auth = await validateGestorAccess()
+        const auth = await validateProfessorAccess()
         if (!auth.success) return auth.response!
 
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)

@@ -4,6 +4,7 @@ import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { getAIKeys } from '@/lib/ai/config'
 import { TEACHER_SYSTEM_PROMPT, STUDENT_SYSTEM_PROMPT } from '@/lib/ai/claude'
+import { performWebSearch, formatSearchResults } from '@/lib/ai/search'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
 export const maxDuration = 30
@@ -75,7 +76,7 @@ async function retrieveKnowledge(query: string, limit: number = 5): Promise<stri
 export async function POST(req: Request) {
     try {
         const body = await req.json()
-        let { messages, conversationId, model: requestedModel, text } = body
+        let { messages, conversationId, model: requestedModel, text, webSearch } = body
 
         // ... existing robustness logic ...
         if (!messages && text) {
@@ -107,14 +108,29 @@ export async function POST(req: Request) {
         // Get the last user message for knowledge retrieval
         const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop()?.content || ''
 
-        // Retrieve relevant knowledge from the database
+        // Retrieve relevant knowledge from the database (Priority 1: Brain)
         const knowledgeContext = await retrieveKnowledge(lastUserMessage)
+
+        // Retrieve web results if requested (Priority 2: Internet)
+        let webContext = ''
+        if (webSearch) {
+            const webResults = await performWebSearch(lastUserMessage)
+            webContext = formatSearchResults(webResults)
+        }
 
         // Build enhanced system prompt with knowledge context
         let basePrompt = teacher ? TEACHER_SYSTEM_PROMPT : STUDENT_SYSTEM_PROMPT
 
         if (knowledgeContext) {
-            basePrompt += `\n\n## BASE DE CONHECIMENTO DISPONÍVEL\n\nVocê tem acesso aos seguintes documentos e informações da base de conhecimento. Use estas informações para responder de forma precisa e contextualizada:\n\n${knowledgeContext}\n\n---\n\nIMPORTANTE: Use as informações acima para responder perguntas relacionadas. Cite as fontes quando apropriado.`
+            basePrompt += `\n\n## BASE DE CONHECIMENTO INTERNA (PRIORIDADE)\n\nUse estas informações da nossa plataforma como base principal para sua resposta:\n\n${knowledgeContext}`
+        }
+
+        if (webContext) {
+            basePrompt += `\n\n## PESQUISA NA WEB (COMPLEMENTAR)\n\nSe necessário, complemente sua resposta com estas informações recentes encontradas na internet:\n\n${webContext}`
+        }
+
+        if (knowledgeContext || webContext) {
+            basePrompt += `\n\n---\n\nIMPORTANTE: Priorize sempre as informações da Base de Conhecimento Interna quando houver conflito. Cite as fontes quando apropriado.`
         }
 
         const aiModel = requestedModel === 'gpt'

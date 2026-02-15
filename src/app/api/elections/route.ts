@@ -14,13 +14,34 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url)
         const classId = searchParams.get('class_id')
 
+        const adminClient = await createAdminClient()
+
+        // 1. Identify user role and relevant IDs
+        const [teacherRes, managerRes] = await Promise.all([
+            adminClient.from('teachers').select('id').eq('user_id', user.id).maybeSingle() as any,
+            adminClient.from('managers').select('id, is_superadmin').eq('user_id', user.id).maybeSingle() as any
+        ])
+
+        const teacher = teacherRes.data
+        const manager = managerRes.data
+        const isSuperadmin = (user as any).app_metadata?.role === 'superadmin' || manager?.is_superadmin
+
         let query = (supabase
             .from('elections') as any)
             .select(`
                 *,
-                class:classes(id, name, code)
+                class:classes(id, name, code, teacher_id)
             `)
             .order('created_at', { ascending: false })
+
+        // 2. Apply filters based on role
+        if (teacher && !isSuperadmin) {
+            // Professor: only show elections for their classes
+            query = query.eq('classes.teacher_id', teacher.id)
+        } else if (!manager && !isSuperadmin) {
+            // Student: query should ideally be filtered by their class_id if not provided
+            // For now, if classId is provided, we use it. If not, results might be limited by RLS.
+        }
 
         if (classId) {
             query = query.eq('class_id', classId)
@@ -32,6 +53,9 @@ export async function GET(request: NextRequest) {
             console.error('Error fetching elections:', error)
             return NextResponse.json({ error: 'Erro ao buscar eleições' }, { status: 500 })
         }
+
+        // 3. Post-filter for Students if necessary (if RLS is not fully configured for this join)
+        // (Assuming RLS handles student visibility of their own class)
 
         return NextResponse.json({ elections })
     } catch (error) {

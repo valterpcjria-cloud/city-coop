@@ -31,6 +31,7 @@ const SUGGESTED_PROMPTS = [
 export default function ProfessorAIPage() {
     const [selectedModel, setSelectedModel] = useState<'claude' | 'gpt'>('gpt');
     const [localInput, setLocalInput] = useState('');
+    const [searchInternet, setSearchInternet] = useState(false);
     const conversationIdRef = useRef<string | null>(null);
 
     const {
@@ -71,7 +72,8 @@ export default function ProfessorAIPage() {
             await sendMessage({ text: message } as any, {
                 body: {
                     conversationId: conversationIdRef.current,
-                    model: selectedModel
+                    model: selectedModel,
+                    webSearch: searchInternet
                 }
             });
         }
@@ -275,8 +277,22 @@ export default function ProfessorAIPage() {
                                 selectedModel === 'gpt' ? "bg-[#F5A623]" : "bg-[#4A90D9]"
                             )} />
                             <span className="text-[11px] font-bold text-[#1a2332]">
-                                {selectedModel === 'gpt' ? 'GPT-4o' : 'Claude 3.5 Sonnet'}
+                                {selectedModel === 'gpt' ? 'GPT-4o' : 'Claude 3.5'}
                             </span>
+                            <div className="h-4 w-[1px] bg-[#6B7C93]/20 mx-1" />
+                            <button
+                                type="button"
+                                onClick={() => setSearchInternet(!searchInternet)}
+                                className={cn(
+                                    "flex items-center gap-1 px-2 py-0.5 rounded-full transition-all border",
+                                    searchInternet
+                                        ? "bg-green-50 border-green-200 text-green-700"
+                                        : "bg-slate-50 border-slate-200 text-slate-500"
+                                )}
+                            >
+                                <Icons.globe className={cn("h-3 w-3", searchInternet && "animate-pulse")} />
+                                <span className="text-[10px] font-bold uppercase">Pesquisa Web: {searchInternet ? 'ON' : 'OFF'}</span>
+                            </button>
                         </div>
                         <div className="flex gap-3 items-center">
                             <button

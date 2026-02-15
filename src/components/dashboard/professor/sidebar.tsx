@@ -36,6 +36,12 @@ export function Sidebar({ className }: SidebarProps) {
             active: pathname === '/professor',
         },
         {
+            label: 'Estudantes',
+            icon: Icons.users,
+            href: '/professor/estudantes',
+            active: pathname.startsWith('/professor/estudantes'),
+        },
+        {
             label: 'Minhas Turmas',
             icon: Icons.user,
             href: '/professor/turmas',

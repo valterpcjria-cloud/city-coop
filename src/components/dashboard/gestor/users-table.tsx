@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useDebounce } from '@/hooks/use-debounce'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -59,6 +61,7 @@ interface UsersTableProps {
     initialUsers: User[]
     schools: School[]
     isSuperadmin?: boolean
+    currentUserId?: string
 }
 
 const roleConfig = {
@@ -67,7 +70,7 @@ const roleConfig = {
     estudante: { label: 'Estudante', icon: School, color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' }
 }
 
-export function UsersTable({ initialUsers, schools, isSuperadmin = false }: UsersTableProps) {
+export function UsersTable({ initialUsers, schools, isSuperadmin = false, currentUserId }: UsersTableProps) {
     const router = useRouter()
     const [users, setUsers] = useState(initialUsers)
     const [search, setSearch] = useState('')
@@ -86,17 +89,23 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false }: User
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
     const [userToReset, setUserToReset] = useState<User | null>(null)
 
-    // Filter users
-    const filteredUsers = users.filter(user => {
-        const matchesSearch =
-            user.name.toLowerCase().includes(search.toLowerCase()) ||
-            user.email.toLowerCase().includes(search.toLowerCase())
-        const matchesRole = roleFilter === 'all' || user.role === roleFilter
-        const matchesSchool = schoolFilter === 'all' || user.school_id === schoolFilter
-        const matchesStatus = statusFilter === 'all' ||
-            (statusFilter === 'active' ? user.is_active : !user.is_active)
-        return matchesSearch && matchesRole && matchesSchool && matchesStatus
-    })
+    // Debounced search for performance
+    const debouncedSearch = useDebounce(search, 300)
+
+    // Filter users with useMemo for performance
+    const filteredUsers = useMemo(() => {
+        return users.filter(user => {
+            const matchesSearch =
+                user.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                user.email.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                (user as any).cpf?.includes(debouncedSearch)
+            const matchesRole = roleFilter === 'all' || user.role === roleFilter
+            const matchesSchool = schoolFilter === 'all' || user.school_id === schoolFilter
+            const matchesStatus = statusFilter === 'all' ||
+                (statusFilter === 'active' ? user.is_active : !user.is_active)
+            return matchesSearch && matchesRole && matchesSchool && matchesStatus
+        })
+    }, [users, debouncedSearch, roleFilter, schoolFilter, statusFilter])
 
     const handleEdit = (user: User) => {
         setSelectedUser(user)
@@ -185,7 +194,7 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false }: User
             </div>
 
             {/* Filters */}
-            <Card>
+            <Card glass className="border-none shadow-lg">
                 <CardContent className="pt-6">
                     <div className="flex flex-wrap gap-4">
                         <div className="flex-1 min-w-[200px]">
@@ -238,7 +247,7 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false }: User
             </Card>
 
             {/* Table */}
-            <Card>
+            <Card glass className="border-none shadow-lg overflow-hidden">
                 <CardHeader>
                     <CardTitle>Usuários ({filteredUsers.length})</CardTitle>
                     <CardDescription>
@@ -258,94 +267,108 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false }: User
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredUsers.map((user) => {
-                                const config = roleConfig[user.role]
-                                const Icon = config.icon
-                                return (
-                                    <TableRow key={`${user.role}-${user.id}`} className={!user.is_active ? 'opacity-50' : ''}>
-                                        <TableCell className="font-medium">
-                                            <div className="flex items-center gap-2">
-                                                {user.name}
-                                                {user.is_superadmin && (
-                                                    <Crown className="h-4 w-4 text-amber-500" />
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col">
-                                                <span className="text-slate-700">{user.email}</span>
-                                                {(user as any).cpf && (
-                                                    <span className="text-xs font-mono text-slate-400">
-                                                        {(user as any).cpf}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary" className={config.color}>
-                                                <Icon className="h-3 w-3 mr-1" />
-                                                {config.label}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {user.school_name || '-'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                                                {user.is_active ? 'Ativo' : 'Inativo'}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                                        <Edit className="h-4 w-4 mr-2" />
-                                                        Editar
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleResetPassword(user)}>
-                                                        <Key className="h-4 w-4 mr-2" />
-                                                        Resetar Senha
-                                                    </DropdownMenuItem>
-
-                                                    {isSuperadmin && (
-                                                        <>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleToggleStatus(user)}
-                                                                className={user.is_active ? 'text-amber-600' : 'text-green-600'}
-                                                            >
-                                                                {user.is_active ? (
-                                                                    <>
-                                                                        <UserX className="h-4 w-4 mr-2" />
-                                                                        Desativar
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <UserCheck className="h-4 w-4 mr-2" />
-                                                                        Ativar
-                                                                    </>
-                                                                )}
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleDelete(user)}
-                                                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                                                            >
-                                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                                Excluir Permanentemente
-                                                            </DropdownMenuItem>
-                                                        </>
+                            <AnimatePresence mode="popLayout">
+                                {filteredUsers.map((user, index) => {
+                                    const config = roleConfig[user.role]
+                                    const Icon = config.icon
+                                    return (
+                                        <motion.tr
+                                            key={`${user.role}-${user.id}`}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }}
+                                            className={cn(
+                                                "group transition-colors border-b",
+                                                !user.is_active ? 'opacity-50 bg-slate-50/50' : 'hover:bg-slate-50/50'
+                                            )}
+                                        >
+                                            <TableCell className="font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    {user.name}
+                                                    {user.is_superadmin && (
+                                                        <Crown className="h-4 w-4 text-amber-500" />
                                                     )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col">
+                                                    <span className="text-slate-700">{user.email}</span>
+                                                    {(user as any).cpf && (
+                                                        <span className="text-xs font-mono text-slate-400">
+                                                            {(user as any).cpf}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary" className={config.color}>
+                                                    <Icon className="h-3 w-3 mr-1" />
+                                                    {config.label}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {user.school_name || '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={user.is_active ? 'default' : 'secondary'} className={user.is_active ? "bg-green-500 hover:bg-green-600" : ""}>
+                                                    {user.is_active ? 'Ativo' : 'Inativo'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="hover:bg-city-blue/10">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-52">
+                                                        <DropdownMenuItem onClick={() => handleEdit(user)}>
+                                                            <Edit className="h-4 w-4 mr-2" />
+                                                            Editar
+                                                        </DropdownMenuItem>
+                                                        {(!user.is_superadmin || (user.is_superadmin && user.user_id === currentUserId)) && (
+                                                            <DropdownMenuItem onClick={() => handleResetPassword(user)}>
+                                                                <Key className="h-4 w-4 mr-2" />
+                                                                Resetar Senha
+                                                            </DropdownMenuItem>
+                                                        )}
+
+                                                        {isSuperadmin && (
+                                                            <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleToggleStatus(user)}
+                                                                    className={user.is_active ? 'text-amber-600' : 'text-green-600'}
+                                                                >
+                                                                    {user.is_active ? (
+                                                                        <>
+                                                                            <UserX className="h-4 w-4 mr-2" />
+                                                                            Desativar
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <UserCheck className="h-4 w-4 mr-2" />
+                                                                            Ativar
+                                                                        </>
+                                                                    )}
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleDelete(user)}
+                                                                    className="text-red-600 focus:text-red-600 focus:bg-red-50 font-medium"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                                    Excluir Permanentemente
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </motion.tr>
+                                    )
+                                })}
+                            </AnimatePresence>
                             {filteredUsers.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={6} className="text-center py-8 text-tech-gray">

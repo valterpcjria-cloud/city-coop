@@ -1,6 +1,7 @@
 import React from 'react'
 import { Sidebar } from '@/components/dashboard/professor/sidebar'
 import { DashboardHeader } from '@/components/dashboard/professor/header'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -62,7 +63,9 @@ export default async function ProfessorDashboardLayout({
                     title="Painel do Professor"
                 />
                 <main className="flex-1 p-6 bg-slate-50/50">
-                    {children}
+                    <PageTransition>
+                        {children}
+                    </PageTransition>
                 </main>
             </div>
         </div>

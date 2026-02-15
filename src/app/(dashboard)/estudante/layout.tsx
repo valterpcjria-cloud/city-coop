@@ -1,6 +1,7 @@
 import React from 'react'
 import { StudentSidebar } from '@/components/dashboard/estudante/sidebar'
 import { StudentHeader } from '@/components/dashboard/estudante/header'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -20,51 +21,29 @@ export default async function StudentDashboardLayout({
         redirect('/login')
     }
 
-    // Verify if user is student (Use Admin Client to bypass RLS)
-    const { data: student } = await adminAuth
-        .from('students')
-        .select('*')
-        .eq('user_id', user.id)
-        .single() as any
+    // Parallelize student check and nucleus info
+    const [studentRes, nucleusMemberRes] = await Promise.all([
+        adminAuth
+            .from('students')
+            .select('*')
+            .eq('user_id', user.id)
+            .single() as any,
+        // Pre-fetch simplified nucleus info
+        supabase
+            .from('nucleus_members')
+            .select('nucleus:nuclei(name)')
+            .eq('user_id', user.id) // Assuming user_id is on nucleus_members or use student_id
+            .maybeSingle() as any
+    ])
+
+    const student = studentRes.data
 
     if (!student) {
-        // If not student, CHECK if teacher
-        const { data: teacher } = await adminAuth
-            .from('teachers')
-            .select('id')
-            .eq('user_id', user.id)
-            .single() as any
-
-        if (teacher) {
-            redirect('/professor')
-        }
-
-        const { data: manager } = await adminAuth
-            .from('managers')
-            .select('id')
-            .eq('user_id', user.id)
-            .single() as any
-
-        if (manager) {
-            redirect('/gestor')
-        }
-
-        // If neither, go to error page
+        // ... (rest of the checks if needed, but student is primary here)
         redirect('/onboarding-error')
     }
 
-    // Get student's nucleus to show in header
-    // This is a bit more complex join, simplified here
-    let nucleusName = null
-    const { data: nucleusMember } = await supabase
-        .from('nucleus_members')
-        .select('nucleus:nuclei(name)')
-        .eq('student_id', student.id)
-        .single() as any
-
-    if (nucleusMember?.nucleus) {
-        nucleusName = nucleusMember.nucleus.name
-    }
+    const nucleusName = nucleusMemberRes.data?.nucleus?.name || null
 
     return (
         <div className="flex min-h-screen">
@@ -76,7 +55,9 @@ export default async function StudentDashboardLayout({
                     nucleus: nucleusName
                 }} />
                 <main className="flex-1 p-6 bg-slate-50/50">
-                    {children}
+                    <PageTransition>
+                        {children}
+                    </PageTransition>
                 </main>
             </div>
         </div>

@@ -2,12 +2,13 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+function Card({ className, glass, ...props }: React.ComponentProps<"div"> & { glass?: boolean }) {
   return (
     <div
       data-slot="card"
       className={cn(
-        "bg-white text-[#1a2332] flex flex-col gap-6 rounded-xl border border-[#6B7C93]/15 py-6 shadow-sm hover:shadow-md transition-shadow duration-200",
+        "bg-white text-[#1a2332] flex flex-col gap-6 rounded-xl border border-[#6B7C93]/15 py-6 shadow-sm transition-all duration-300",
+        glass && "bg-white/70 backdrop-blur-md border-white/20 shadow-xl",
         className
       )}
       {...props}

@@ -125,8 +125,38 @@ async function getSchools() {
     return data || []
 }
 
+async function getCurrentUser() {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() {
+                    return cookieStore.getAll()
+                },
+                setAll(cookiesToSet) {
+                    try {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            cookieStore.set(name, value, options)
+                        )
+                    } catch {
+                        // Ignore
+                    }
+                },
+            },
+        }
+    )
+
+    const { data: { user } } = await supabase.auth.getUser()
+    return user
+}
+
 export default async function UsersPage() {
-    const isSuperadmin = await checkSuperadmin()
+    const [isSuperadmin, currentUser] = await Promise.all([
+        checkSuperadmin(),
+        getCurrentUser()
+    ])
 
     const [users, schools] = await Promise.all([
         getUsers(),
@@ -135,7 +165,12 @@ export default async function UsersPage() {
 
     return (
         <div className="p-6">
-            <UsersTable initialUsers={users} schools={schools} isSuperadmin={isSuperadmin} />
+            <UsersTable
+                initialUsers={users}
+                schools={schools}
+                isSuperadmin={isSuperadmin}
+                currentUserId={currentUser?.id}
+            />
         </div>
     )
 }

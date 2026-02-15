@@ -37,6 +37,7 @@ interface UserModalProps {
     schools: School[]
     onSuccess: () => void
     defaultRole?: 'gestor' | 'professor' | 'estudante'
+    classId?: string
 }
 
 const gradeOptions = [
@@ -47,7 +48,7 @@ const gradeOptions = [
     { value: 'EJA', label: 'EJA - Jovens e Adultos' },
 ]
 
-export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRole }: UserModalProps) {
+export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRole, classId: propClassId }: UserModalProps) {
     const isEditing = !!user
     const [isLoading, setIsLoading] = useState(false)
 
@@ -59,6 +60,8 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRo
     const [role, setRole] = useState<string>('professor')
     const [schoolId, setSchoolId] = useState<string>('')
     const [gradeLevel, setGradeLevel] = useState<string>('')
+    const [classId, setClassId] = useState<string>('')
+    const [classes, setClasses] = useState<{ id: string, name: string }[]>([])
     const [isSuperadmin, setIsSuperadmin] = useState(false)
 
     // Sync form state when user prop changes or modal opens
@@ -71,9 +74,10 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRo
             setRole(user?.role || defaultRole || 'professor')
             setSchoolId(user?.school_id || '')
             setGradeLevel(user?.grade_level || '')
+            setClassId(propClassId || '')
             setIsSuperadmin(user?.is_superadmin || false)
         }
-    }, [user, isOpen, defaultRole])
+    }, [user, isOpen, defaultRole, propClassId])
 
     // Reset form when user changes
     const resetForm = () => {
@@ -84,8 +88,30 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRo
         setRole(defaultRole || 'professor')
         setSchoolId('')
         setGradeLevel('')
+        setClassId('')
+        setClasses([])
         setIsSuperadmin(false)
     }
+
+    // Fetch classes when schoolId changes
+    useEffect(() => {
+        const fetchClasses = async () => {
+            if (schoolId && (role === 'estudante')) {
+                try {
+                    const response = await fetch(`/api/gestor/schools/${schoolId}/classes`)
+                    const data = await response.json()
+                    if (data.success) {
+                        setClasses(data.classes)
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar turmas:', error)
+                }
+            } else {
+                setClasses([])
+            }
+        }
+        fetchClasses()
+    }, [schoolId, role])
 
     const handleOpenChange = (open: boolean) => {
         if (!open) {
@@ -115,6 +141,7 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRo
                 role,
                 school_id: (role === 'professor' || role === 'estudante') && schoolId ? schoolId : null,
                 grade_level: role === 'estudante' && gradeLevel ? gradeLevel : null,
+                class_id: role === 'estudante' && classId ? classId : null,
                 is_superadmin: role === 'gestor' ? isSuperadmin : false
             }
 
@@ -264,20 +291,38 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRo
 
                     {/* Grade Level - for estudante */}
                     {role === 'estudante' && (
-                        <div className="space-y-2">
-                            <Label>Série *</Label>
-                            <Select value={gradeLevel} onValueChange={setGradeLevel}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione a série" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {gradeOptions.map(option => (
-                                        <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Série *</Label>
+                                <Select value={gradeLevel} onValueChange={setGradeLevel}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione a série" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {gradeOptions.map(option => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Turma</Label>
+                                <Select value={classId} onValueChange={setClassId}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione a turma" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Nenhuma</SelectItem>
+                                        {classes.map(c => (
+                                            <SelectItem key={c.id} value={c.id}>
+                                                {c.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     )}
 
