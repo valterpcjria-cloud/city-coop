@@ -24,7 +24,8 @@ import {
     Key,
     UserX,
     UserCheck,
-    Crown
+    Crown,
+    Trash2
 } from 'lucide-react'
 import {
     DropdownMenu,
@@ -57,6 +58,7 @@ interface School {
 interface UsersTableProps {
     initialUsers: User[]
     schools: School[]
+    isSuperadmin?: boolean
 }
 
 const roleConfig = {
@@ -65,7 +67,7 @@ const roleConfig = {
     estudante: { label: 'Estudante', icon: School, color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' }
 }
 
-export function UsersTable({ initialUsers, schools }: UsersTableProps) {
+export function UsersTable({ initialUsers, schools, isSuperadmin = false }: UsersTableProps) {
     const router = useRouter()
     const [users, setUsers] = useState(initialUsers)
     const [search, setSearch] = useState('')
@@ -79,7 +81,7 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
 
     // Confirm dialog states
     const [confirmOpen, setConfirmOpen] = useState(false)
-    const [confirmAction, setConfirmAction] = useState<{ type: 'deactivate' | 'activate', user: User } | null>(null)
+    const [confirmAction, setConfirmAction] = useState<{ type: 'deactivate' | 'activate' | 'delete', user: User } | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
     const [userToReset, setUserToReset] = useState<User | null>(null)
@@ -114,13 +116,22 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
         setConfirmOpen(true)
     }
 
+    const handleDelete = (user: User) => {
+        setConfirmAction({
+            type: 'delete',
+            user
+        })
+        setConfirmOpen(true)
+    }
+
     const handleConfirmAction = async () => {
         if (!confirmAction) return
 
         setIsProcessing(true)
         try {
+            const isDeleteAction = confirmAction.type === 'delete'
             const response = await fetch(
-                `/api/gestor/users?id=${confirmAction.user.id}&role=${confirmAction.user.role}`,
+                `/api/gestor/users?id=${confirmAction.user.id}&role=${confirmAction.user.role}${isDeleteAction ? '&action=delete' : ''}`,
                 { method: 'DELETE' }
             )
 
@@ -129,12 +140,15 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
                 throw new Error(data.error)
             }
 
-            toast.success(
-                confirmAction.type === 'deactivate'
+            const message = isDeleteAction
+                ? 'Usuário excluído permanentemente'
+                : confirmAction.type === 'deactivate'
                     ? 'Usuário desativado'
-                    : 'Usuário ativado',
-                { description: `${confirmAction.user.name} foi ${confirmAction.type === 'deactivate' ? 'desativado' : 'ativado'} com sucesso.` }
-            )
+                    : 'Usuário ativado'
+
+            toast.success(message, {
+                description: `${confirmAction.user.name} foi ${isDeleteAction ? 'excluído' : confirmAction.type === 'deactivate' ? 'desativado' : 'ativado'} com sucesso.`
+            })
             router.refresh()
         } catch (error: any) {
             toast.error('Erro', { description: error.message })
@@ -297,23 +311,35 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
                                                         <Key className="h-4 w-4 mr-2" />
                                                         Resetar Senha
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleToggleStatus(user)}
-                                                        className={user.is_active ? 'text-red-600' : 'text-green-600'}
-                                                    >
-                                                        {user.is_active ? (
-                                                            <>
-                                                                <UserX className="h-4 w-4 mr-2" />
-                                                                Desativar
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <UserCheck className="h-4 w-4 mr-2" />
-                                                                Ativar
-                                                            </>
-                                                        )}
-                                                    </DropdownMenuItem>
+
+                                                    {isSuperadmin && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleToggleStatus(user)}
+                                                                className={user.is_active ? 'text-amber-600' : 'text-green-600'}
+                                                            >
+                                                                {user.is_active ? (
+                                                                    <>
+                                                                        <UserX className="h-4 w-4 mr-2" />
+                                                                        Desativar
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <UserCheck className="h-4 w-4 mr-2" />
+                                                                        Ativar
+                                                                    </>
+                                                                )}
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleDelete(user)}
+                                                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                                            >
+                                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                                Excluir Permanentemente
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -345,14 +371,28 @@ export function UsersTable({ initialUsers, schools }: UsersTableProps) {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                variant={confirmAction?.type === 'deactivate' ? 'danger' : 'success'}
-                title={confirmAction?.type === 'deactivate' ? 'Desativar Usuário' : 'Ativar Usuário'}
-                description={
-                    confirmAction?.type === 'deactivate'
-                        ? `Tem certeza que deseja desativar ${confirmAction?.user.name}? O usuário não conseguirá mais acessar o sistema.`
-                        : `Deseja reativar ${confirmAction?.user.name}? O usuário poderá acessar o sistema novamente.`
+                variant={confirmAction?.type === 'activate' ? 'success' : 'danger'}
+                title={
+                    confirmAction?.type === 'delete'
+                        ? 'Excluir Usuário'
+                        : confirmAction?.type === 'deactivate'
+                            ? 'Desativar Usuário'
+                            : 'Ativar Usuário'
                 }
-                confirmText={confirmAction?.type === 'deactivate' ? 'Desativar' : 'Ativar'}
+                description={
+                    confirmAction?.type === 'delete'
+                        ? `ATENÇÃO: Deseja realmente excluir PERMANENTEMENTE ${confirmAction?.user.name}? Esta ação não pode ser desfeita e todos os dados vinculados podem ser afetados.`
+                        : confirmAction?.type === 'deactivate'
+                            ? `Tem certeza que deseja desativar ${confirmAction?.user.name}? O usuário não conseguirá mais acessar o sistema.`
+                            : `Deseja reativar ${confirmAction?.user.name}? O usuário poderá acessar o sistema novamente.`
+                }
+                confirmText={
+                    confirmAction?.type === 'delete'
+                        ? 'Excluir Permanentemente'
+                        : confirmAction?.type === 'deactivate'
+                            ? 'Desativar'
+                            : 'Ativar'
+                }
                 cancelText="Cancelar"
                 onConfirm={handleConfirmAction}
                 loading={isProcessing}

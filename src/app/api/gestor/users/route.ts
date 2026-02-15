@@ -1,19 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSuperadminAccess } from '@/lib/auth-guard'
+import { validateGestorAccess, validateSuperadminAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
 import { isValidCPF } from '@/lib/validators'
 
 /**
  * ===========================================
- * Users Management API - Superadmin Only
+ * Users Management API
  * ===========================================
  */
 
 // GET - List all users (unified view)
 export async function GET(request: NextRequest) {
     try {
-        const auth = await validateSuperadminAccess()
+        const auth = await validateGestorAccess()
         if (!auth.success) return auth.response!
 
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new user
 export async function POST(request: NextRequest) {
     try {
-        const auth = await validateSuperadminAccess()
+        const auth = await validateGestorAccess()
         if (!auth.success) return auth.response!
 
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update user
 export async function PUT(request: NextRequest) {
     try {
-        const auth = await validateSuperadminAccess()
+        const auth = await validateGestorAccess()
         if (!auth.success) return auth.response!
 
         const rateLimitKey = getRateLimitKey(request, auth.user?.id)
@@ -273,9 +273,10 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// DELETE - Toggle user active status
+// DELETE - Toggle status OR permanent Delete
 export async function DELETE(request: NextRequest) {
     try {
+        // PERMANENT DELETION and TOGGLE STATUS are Superadmin Only
         const auth = await validateSuperadminAccess()
         if (!auth.success) return auth.response!
 
@@ -288,6 +289,7 @@ export async function DELETE(request: NextRequest) {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
         const role = searchParams.get('role')
+        const action = searchParams.get('action') || 'toggle' // 'toggle' or 'delete'
 
         if (!id || !role) {
             return NextResponse.json({ error: 'ID e role são obrigatórios' }, { status: 400 })
@@ -298,8 +300,41 @@ export async function DELETE(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         )
 
-        // Get current status
         const tableName = role === 'gestor' ? 'gestors' : role === 'professor' ? 'teachers' : 'students'
+
+        // 1. Permanent Deletion
+        if (action === 'delete') {
+            // Get user_id first to delete from auth
+            const { data: userRecord, error: fetchError } = await supabase
+                .from(tableName)
+                .select('user_id')
+                .eq('id', id)
+                .single()
+
+            if (fetchError || !userRecord) throw new Error('Usuário não encontrado')
+
+            // Delete from specific table (cascading might handle others, but let's be explicit if needed)
+            const { error: dbError } = await supabase
+                .from(tableName)
+                .delete()
+                .eq('id', id)
+
+            if (dbError) throw dbError
+
+            // Delete from auth.users
+            const { error: authError } = await supabase.auth.admin.deleteUser(userRecord.user_id)
+            if (authError) {
+                console.error('[API_USERS_DELETE] Auth delete error:', authError.message)
+                // We don't throw here because DB record is already gone, but log it
+            }
+
+            return NextResponse.json({
+                success: true,
+                message: 'Usuário excluído permanentemente'
+            })
+        }
+
+        // 2. Toggle Status (Desativar/Ativar)
         const { data: current, error: fetchError } = await supabase
             .from(tableName)
             .select('is_active')
@@ -308,7 +343,6 @@ export async function DELETE(request: NextRequest) {
 
         if (fetchError) throw fetchError
 
-        // Toggle: set is_active to the opposite
         const { error } = await supabase
             .from(tableName)
             .update({ is_active: !current.is_active, updated_at: new Date().toISOString() })

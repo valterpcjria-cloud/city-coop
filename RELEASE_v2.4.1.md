@@ -1,3 +1,4 @@
+
 # Versão 2.4.1 - Correção Visibilidade de Gestores 🚀👥
 
 Esta versão corrige um problema na listagem de usuários onde usuários do tipo Gestor não estavam sendo exibidos mesmo após a criação bem-sucedida.

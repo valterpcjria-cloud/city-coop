@@ -128,10 +128,6 @@ async function getSchools() {
 export default async function UsersPage() {
     const isSuperadmin = await checkSuperadmin()
 
-    if (!isSuperadmin) {
-        redirect('/gestor')
-    }
-
     const [users, schools] = await Promise.all([
         getUsers(),
         getSchools()
@@ -139,7 +135,7 @@ export default async function UsersPage() {
 
     return (
         <div className="p-6">
-            <UsersTable initialUsers={users} schools={schools} />
+            <UsersTable initialUsers={users} schools={schools} isSuperadmin={isSuperadmin} />
         </div>
     )
 }
