@@ -14,6 +14,7 @@ import { PasswordResetDialog } from './password-reset-dialog'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { toast } from '@/components/ui/sonner'
 import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 import {
     Users,
     Search,

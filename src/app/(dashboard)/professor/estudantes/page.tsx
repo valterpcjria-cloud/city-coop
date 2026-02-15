@@ -63,6 +63,7 @@ async function getStudents(schoolId: string) {
         user_id: s.user_id,
         name: s.name,
         email: s.email,
+        cpf: s.cpf || null,
         role: 'estudante' as const,
         school_id: s.school_id,
         school_name: s.schools?.name || null,
