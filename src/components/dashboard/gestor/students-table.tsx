@@ -42,9 +42,19 @@ interface StudentsTableProps {
 
 export function StudentsTable({ initialStudents, schools }: StudentsTableProps) {
     const router = useRouter()
+    const [currentPage, setCurrentPage] = useState(1)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedStudent, setSelectedStudent] = useState<any>(null)
     const [isLoading, setIsLoading] = useState<string | null>(null)
+    const limit = 25
+    const totalItems = initialStudents.length
+    const totalPages = Math.ceil(totalItems / limit)
+
+    // Calculate paginated students
+    const paginatedStudents = initialStudents.slice(
+        (currentPage - 1) * limit,
+        currentPage * limit
+    )
 
     const handleEdit = (student: Student) => {
         setSelectedStudent({
@@ -87,7 +97,7 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                     Novo Aluno
                 </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
@@ -101,7 +111,7 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {initialStudents.map((student) => (
+                            {paginatedStudents.map((student) => (
                                 <TableRow key={student.id} className="hover:bg-slate-50 transition-colors">
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-3">
@@ -176,6 +186,45 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                         </TableBody>
                     </Table>
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between p-4 border-t bg-slate-50/20">
+                        <p className="text-sm text-slate-500">
+                            Mostrando <b>{((currentPage - 1) * limit) + 1}</b> a <b>{Math.min(currentPage * limit, totalItems)}</b> de <b>{totalItems}</b>
+                        </p>
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                                disabled={currentPage === 1}
+                            >
+                                Anterior
+                            </Button>
+                            <div className="flex gap-1">
+                                {Array.from({ length: totalPages }).map((_, i) => (
+                                    <Button
+                                        key={i + 1}
+                                        variant={currentPage === i + 1 ? 'brand' : 'outline'}
+                                        size="sm"
+                                        className="w-8 h-8 p-0"
+                                        onClick={() => setCurrentPage(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </Button>
+                                ))}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                            >
+                                Próxima
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </CardContent>
 
             <UserModal
