@@ -1,21 +1,26 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { calculateStudentIndicators } from '@/lib/indicators'
+import { validateProfessorAccess } from '@/lib/auth-guard'
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
+import { recordAuditLog } from '@/lib/audit'
 
 export async function POST(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const auth = await validateProfessorAccess()
+        if (!auth.success) return auth.response!
+
+        const rateLimitKey = getRateLimitKey(request, auth.user?.id)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.POST)
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: rateLimit.error }, { status: 429 })
+        }
+
         const supabase = await createClient()
         const { id: classId } = await params
-
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-        // Only teachers should trigger this manually for whole class, 
-        // or automatic trigger on individual grading.
-        // For now, let's allow teachers to "Refresh Indicators" for the whole class.
 
         const { data: students } = await (supabase
             .from('class_students') as any)
@@ -28,7 +33,18 @@ export async function POST(
             }
         }
 
-        return NextResponse.json({ success: true, message: 'Indicators updated' })
+        const response = NextResponse.json({ success: true, message: 'Indicators updated' })
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'RECALCULATE_CLASS_INDICATORS',
+            resource: 'classes',
+            resourceId: classId,
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
+
+        return response
 
     } catch (error: any) {
         console.error('Error recalculating:', error)

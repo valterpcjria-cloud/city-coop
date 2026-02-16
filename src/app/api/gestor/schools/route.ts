@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateGestorAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
 import { validate, schoolSchema, schoolUpdateSchema, isValidUUID } from '@/lib/validators'
+import { recordAuditLog } from '@/lib/audit'
 
 export async function GET(request: NextRequest) {
     try {
@@ -140,8 +141,19 @@ export async function POST(request: NextRequest) {
 
         if (error) throw error
 
-        console.log(`[API_SCHOOLS_POST] School created by gestor ${auth.user?.id}: ${school.id}`)
-        return NextResponse.json({ success: true, school })
+        const response = NextResponse.json({ success: true, school })
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'CREATE_SCHOOL',
+            resource: 'schools',
+            resourceId: school.id,
+            newData: data,
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
+
+        return response
     } catch (error: any) {
         console.error('[API_SCHOOLS_POST] Error:', error.message)
         return NextResponse.json({ error: error.message }, { status: 500 })
@@ -231,8 +243,19 @@ export async function PUT(request: NextRequest) {
 
         if (error) throw error
 
-        console.log(`[API_SCHOOLS_PUT] School updated by gestor ${auth.user?.id}: ${school.id}`)
-        return NextResponse.json({ success: true, school })
+        const response = NextResponse.json({ success: true, school })
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'UPDATE_SCHOOL',
+            resource: 'schools',
+            resourceId: school.id,
+            newData: data,
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
+
+        return response
     } catch (error: any) {
         console.error('[API_SCHOOLS_PUT] Error:', error.message)
         return NextResponse.json({ error: error.message }, { status: 500 })
@@ -288,8 +311,18 @@ export async function DELETE(request: NextRequest) {
 
         if (error) throw error
 
-        console.log(`[API_SCHOOLS_DELETE] School deleted by gestor ${auth.user?.id}: ${id}`)
-        return NextResponse.json({ success: true })
+        const response = NextResponse.json({ success: true })
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'DELETE_SCHOOL',
+            resource: 'schools',
+            resourceId: id,
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
+
+        return response
     } catch (error: any) {
         console.error('[API_SCHOOLS_DELETE] Error:', error.message)
         return NextResponse.json({ error: error.message }, { status: 500 })

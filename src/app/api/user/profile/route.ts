@@ -1,28 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { validateAuth } from '@/lib/auth-guard'
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
+import { recordAuditLog } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const supabase = await createClient()
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        const auth = await validateAuth()
+        if (!auth.success) return auth.response!
 
-        console.log('[API_PROFILE] Auth check:', {
-            userId: user?.id,
-            email: user?.email,
-            error: authError?.message
-        })
-
-        if (authError || !user) {
-            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+        const rateLimitKey = getRateLimitKey(request, auth.user?.id)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.GET)
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
+
+        const supabase = await createClient()
+        const user = auth.user!
 
         // Tenta capturar os dados do usuário autenticado como fallback garantido
         const authData = {
             id: user.id,
             email: user.email,
-            name: user.user_metadata?.name || '',
+            name: (user as any).user_metadata?.name || '',
         }
 
         let userProfile: any = null
@@ -88,13 +90,13 @@ export async function GET() {
 
         // 5. Fallback para metadados (garante que gestores sempre vejam algo)
         if (!userProfile) {
-            const metaRole = user.user_metadata?.role
+            const metaRole = (user as any).user_metadata?.role
             if (metaRole === 'manager' || metaRole === 'gestor') {
                 console.log('[API_PROFILE] Using metadata fallback')
                 userProfile = {
-                    name: user.user_metadata?.name || 'Gestor',
+                    name: (user as any).user_metadata?.name || 'Gestor',
                     email: user.email,
-                    avatar_url: user.user_metadata?.avatar_url || null
+                    avatar_url: (user as any).user_metadata?.avatar_url || null
                 }
                 role = 'gestor'
             }
@@ -123,14 +125,19 @@ export async function GET() {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        const supabase = await createClient()
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        const auth = await validateAuth()
+        if (!auth.success) return auth.response!
 
-        if (authError || !user) {
-            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+        const rateLimitKey = getRateLimitKey(request, auth.user?.id)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.POST)
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
+
+        const supabase = await createClient()
+        const user = auth.user!
 
         const body = await request.json()
         const { name, phone, bio, avatar_url } = body
@@ -168,6 +175,17 @@ export async function POST(request: Request) {
         if (student) {
             const { error } = await (supabase.from('students') as any).update({ name, phone, bio, avatar_url }).eq('id', (student as any).id)
             if (error) throw error
+
+            // Audit log
+            await recordAuditLog({
+                userId: user.id,
+                action: 'UPDATE_PROFILE',
+                resource: 'students',
+                resourceId: student.id,
+                newData: { name, phone, bio },
+                ip: request.headers.get('x-forwarded-for') || 'unknown'
+            })
+
             return NextResponse.json({ success: true })
         }
 

@@ -46,9 +46,53 @@ class InMemoryStore implements RateLimitStore {
     }
 }
 
-// Global store instance - Default to In-Memory
-// In a production environment with Redis, you would initialize a RedisStore here if REDIS_URL exists
-const rateLimitStore: RateLimitStore = new InMemoryStore()
+/**
+ * Redis Store for Persistent Rate Limiting
+ * Uses Upstash REST API for serverless compatibility
+ */
+class RedisStore implements RateLimitStore {
+    private url = process.env.UPSTASH_REDIS_REST_URL
+    private token = process.env.UPSTASH_REDIS_REST_TOKEN
+
+    private async fetchRedis(command: string[]) {
+        if (!this.url || !this.token) return null
+
+        const response = await fetch(this.url, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(command)
+        })
+        return response.json()
+    }
+
+    async get(key: string): Promise<RateLimitEntry | undefined> {
+        const redisKey = `ratelimit:${key}`
+        const res = await this.fetchRedis(['GET', redisKey])
+        if (!res?.result) return undefined
+        try {
+            return JSON.parse(res.result)
+        } catch {
+            return undefined
+        }
+    }
+
+    async set(key: string, entry: RateLimitEntry) {
+        const redisKey = `ratelimit:${key}`
+        const ttl = Math.ceil((entry.resetTime - Date.now()) / 1000)
+        if (ttl > 0) {
+            await this.fetchRedis(['SETEX', redisKey, ttl.toString(), JSON.stringify(entry)])
+        }
+    }
+
+    async delete(key: string) {
+        await this.fetchRedis(['DEL', `ratelimit:${key}`])
+    }
+}
+
+// Global store instance - Default to Redis if env vars exist, otherwise In-Memory
+const rateLimitStore: RateLimitStore = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+    ? new RedisStore()
+    : new InMemoryStore()
 
 export interface RateLimitConfig {
     maxRequests: number

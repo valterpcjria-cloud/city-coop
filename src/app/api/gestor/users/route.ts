@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateGestorAccess, validateSuperadminAccess, validateProfessorAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
 import { isValidCPF } from '@/lib/validators'
+import { recordAuditLog } from '@/lib/audit'
 
 /**
  * ===========================================
@@ -246,11 +247,23 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             success: true,
             message: 'Usuário criado com sucesso',
             user: { id: userId, name, email, role }
         })
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'CREATE_USER',
+            resource: 'users',
+            resourceId: userId,
+            newData: { name, email, role, school_id },
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
+
+        return response
     } catch (error: any) {
         console.error('[API_USERS_POST] Error:', error.message)
         return NextResponse.json({ error: error.message }, { status: 500 })
@@ -312,6 +325,16 @@ export async function PUT(request: NextRequest) {
         }
 
         if (updateError) throw updateError
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'UPDATE_USER',
+            resource: 'users',
+            resourceId: id,
+            newData: { name, phone, cpf, school_id, grade_level, is_active, is_superadmin },
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
 
         return NextResponse.json({ success: true, message: 'Usuário atualizado' })
     } catch (error: any) {
@@ -425,11 +448,23 @@ export async function DELETE(request: NextRequest) {
 
         if (error) throw error
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             success: true,
             message: current.is_active ? 'Usuário desativado' : 'Usuário ativado',
             is_active: !current.is_active
         })
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: action === 'delete' ? 'PERMANENT_DELETE_USER' : 'TOGGLE_USER_STATUS',
+            resource: 'users',
+            resourceId: id,
+            newData: action === 'toggle' ? { is_active: !current.is_active } : null,
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
+
+        return response
     } catch (error: any) {
         console.error('[API_USERS_DELETE] Error:', error.message)
         return NextResponse.json({ error: error.message }, { status: 500 })

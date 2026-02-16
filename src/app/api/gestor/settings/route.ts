@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { validateSuperadminAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
+import { recordAuditLog } from '@/lib/audit'
 
 export async function GET(request: NextRequest) {
     try {
@@ -100,7 +101,15 @@ export async function POST(request: NextRequest) {
             if (error) throw error
         }
 
-        console.log(`[API_SETTINGS_POST] Settings updated by gestor ${auth.user?.id}`)
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'UPDATE_SYSTEM_SETTINGS',
+            resource: 'system_settings',
+            newData: settings.map((s: any) => ({ key: s.key, value: '***' })), // Hide sensitive values in logs
+            ip: request.headers.get('x-forwarded-for') || 'unknown'
+        })
+
         return NextResponse.json({ success: true })
     } catch (error: any) {
         console.error('[API_SETTINGS_POST] Error:', error.message)

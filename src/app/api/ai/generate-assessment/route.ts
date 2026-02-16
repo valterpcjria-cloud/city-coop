@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateAssessment } from '@/lib/ai/claude'
 import { createClient } from '@/lib/supabase/server'
+import { validateProfessorAccess } from '@/lib/auth-guard'
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
+import { recordAuditLog } from '@/lib/audit'
 
 export async function POST(req: NextRequest) {
     try {
-        const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const auth = await validateProfessorAccess()
+        if (!auth.success) return auth.response!
 
-        if (!user) {
-            return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+        const rateLimitKey = getRateLimitKey(req, auth.user?.id)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.AI)
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
 
         const body = await req.json()
@@ -25,6 +30,15 @@ export async function POST(req: NextRequest) {
             format,
             optionsCount,
             questionsCount
+        })
+
+        // Audit log
+        await recordAuditLog({
+            userId: auth.user!.id,
+            action: 'AI_GENERATE_ASSESSMENT',
+            resource: 'assessments',
+            newData: { topic, assessmentType, classId },
+            ip: req.headers.get('x-forwarded-for') || 'unknown'
         })
 
         return NextResponse.json(assessment)

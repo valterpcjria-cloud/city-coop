@@ -1,16 +1,23 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { validateAuth } from '@/lib/auth-guard'
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     try {
-        const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const auth = await validateAuth()
+        if (!auth.success) return auth.response!
 
-        if (!user) {
-            return new Response('Unauthorized', { status: 401 })
+        const rateLimitKey = getRateLimitKey(req, auth.user?.id)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.GET)
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
+
+        const supabase = await createClient()
+        const user = auth.user!
 
         const { data: conversation, error } = await (supabase as any)
             .from('ai_conversations')
@@ -33,14 +40,19 @@ export async function GET(req: Request) {
     }
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
     try {
-        const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
+        const auth = await validateAuth()
+        if (!auth.success) return auth.response!
 
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        const rateLimitKey = getRateLimitKey(req, auth.user?.id)
+        const rateLimit = await checkRateLimit(rateLimitKey, RATE_LIMITS.DELETE)
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: rateLimit.error }, { status: 429 })
         }
+
+        const supabase = await createClient()
+        const user = auth.user!
 
         const { error } = await (supabase as any)
             .from('ai_conversations')
