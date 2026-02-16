@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ConfirmDialog } from '@/components/ui/alert-dialog'
+import { ConfirmModal } from '@/components/shared/confirm-modal'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
-import { toast } from 'sonner'
+import { useActionToast } from '@/hooks/use-action-toast'
 
 interface DeleteAssessmentButtonProps {
     assessmentId: string
@@ -15,35 +15,34 @@ interface DeleteAssessmentButtonProps {
 
 export function DeleteAssessmentButton({ assessmentId, title, hasResponses }: DeleteAssessmentButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const [isDeleting, setIsDeleting] = useState(false)
     const router = useRouter()
+    const { executeAction } = useActionToast()
 
     if (hasResponses) {
         return null
     }
 
     const handleDelete = async () => {
-        try {
-            setIsDeleting(true)
-            const response = await fetch(`/api/assessments/${assessmentId}`, {
-                method: 'DELETE',
-            })
+        await executeAction(
+            async () => {
+                const response = await fetch(`/api/assessments/${assessmentId}`, {
+                    method: 'DELETE',
+                })
 
-            const data = await response.json()
+                if (!response.ok) {
+                    const data = await response.json()
+                    throw new Error(data.error || 'Erro ao excluir avaliação')
+                }
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Erro ao excluir avaliação')
+                router.refresh()
+            },
+            {
+                loadingMessage: 'Excluindo avaliação...',
+                successMessage: 'Avaliação excluída com sucesso.',
+                errorMessage: 'Erro ao excluir avaliação'
             }
-
-            toast.success('Avaliação excluída com sucesso.')
-
-            router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setIsDeleting(false)
-            setIsOpen(false)
-        }
+        )
+        setIsOpen(false)
     }
 
     return (
@@ -58,16 +57,14 @@ export function DeleteAssessmentButton({ assessmentId, title, hasResponses }: De
                 Excluir
             </Button>
 
-            <ConfirmDialog
-                open={isOpen}
-                onOpenChange={setIsOpen}
-                title="Excluir Avaliação"
-                description={`Tem certeza que deseja excluir "${title}"? Esta ação não poderá ser desfeita.`}
-                confirmText="Sim, Excluir"
-                cancelText="Cancelar"
-                variant="danger"
+            <ConfirmModal
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
                 onConfirm={handleDelete}
-                loading={isDeleting}
+                title="Excluir Avaliação?"
+                description={`Tem certeza que deseja excluir "${title}"? Esta ação não pode ser desfeita.`}
+                confirmText="Sim, Excluir"
+                variant="destructive"
             />
         </>
     )

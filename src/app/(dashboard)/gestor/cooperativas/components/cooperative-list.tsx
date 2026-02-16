@@ -6,17 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Cooperative } from '@/types/coop-mgmt'
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { toast } from 'sonner'
+import { ConfirmModal } from '@/components/shared/confirm-modal'
+import { useActionToast } from '@/hooks/use-action-toast'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 export interface CooperativeListProps {
@@ -28,6 +19,7 @@ export function CooperativeList({ onEdit, refreshTrigger }: CooperativeListProps
     const [cooperatives, setCooperatives] = useState<Cooperative[]>([])
     const [loading, setLoading] = useState(true)
     const [coopToDelete, setCoopToDelete] = useState<string | null>(null)
+    const { executeAction } = useActionToast()
 
     const fetchCooperatives = async () => {
         try {
@@ -52,18 +44,22 @@ export function CooperativeList({ onEdit, refreshTrigger }: CooperativeListProps
 
     const handleDelete = async () => {
         if (!coopToDelete) return
-        try {
-            const response = await fetch(`/api/cooperatives/${coopToDelete}`, {
-                method: 'DELETE'
-            })
-            if (!response.ok) throw new Error('Erro ao excluir cooperativa')
-            toast.success('Cooperativa removida com sucesso')
-            fetchCooperatives()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setCoopToDelete(null)
-        }
+
+        await executeAction(
+            async () => {
+                const response = await fetch(`/api/cooperatives/${coopToDelete}`, {
+                    method: 'DELETE'
+                })
+                if (!response.ok) throw new Error('Erro ao excluir cooperativa')
+                fetchCooperatives()
+            },
+            {
+                loadingMessage: 'Removendo cooperativa...',
+                successMessage: 'Cooperativa removida com sucesso',
+                errorMessage: 'Erro ao excluir cooperativa'
+            }
+        )
+        setCoopToDelete(null)
     }
 
     if (loading) return <p className="text-sm text-muted-foreground animate-pulse">Carregando cooperativas...</p>
@@ -131,22 +127,15 @@ export function CooperativeList({ onEdit, refreshTrigger }: CooperativeListProps
                 )}
             </div>
 
-            <AlertDialog open={!!coopToDelete} onOpenChange={() => setCoopToDelete(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir Cooperativa?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. Isso removerá permanentemente a cooperativa e todas as suas oportunidades vinculadas.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600">
-                            Confirmar Exclusão
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmModal
+                isOpen={!!coopToDelete}
+                onClose={() => setCoopToDelete(null)}
+                onConfirm={handleDelete}
+                title="Excluir Cooperativa?"
+                description="Esta ação não pode ser desfeita. Isso removerá permanentemente a cooperativa e todas as suas oportunidades vinculadas."
+                confirmText="Confirmar Exclusão"
+                variant="destructive"
+            />
         </>
     )
 }

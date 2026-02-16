@@ -17,7 +17,8 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { toast } from '@/components/ui/sonner'
+import { ConfirmModal } from '@/components/shared/confirm-modal'
+import { useActionToast } from '@/hooks/use-action-toast'
 import { cn } from '@/lib/utils'
 
 interface Student {
@@ -51,7 +52,9 @@ export function StudentsTable({ initialStudents, schools, isSuperadmin }: Studen
     const [selectedStudent, setSelectedStudent] = useState<any>(null)
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
     const [userToReset, setUserToReset] = useState<any>(null)
-    const [isLoading, setIsLoading] = useState<string | null>(null)
+    const [confirmOpen, setConfirmOpen] = useState(false)
+    const [studentToToggle, setStudentToToggle] = useState<Student | null>(null)
+    const { executeAction } = useActionToast()
     const limit = 25
     const totalItems = initialStudents.length
     const totalPages = Math.ceil(totalItems / limit)
@@ -78,22 +81,32 @@ export function StudentsTable({ initialStudents, schools, isSuperadmin }: Studen
         setIsResetDialogOpen(true)
     }
 
-    const toggleStatus = async (student: Student) => {
-        setIsLoading(student.id)
-        try {
-            const response = await fetch(`/api/gestor/users?id=${student.id}&role=estudante`, {
-                method: 'DELETE'
-            })
+    const handleToggleClick = (student: Student) => {
+        setStudentToToggle(student)
+        setConfirmOpen(true)
+    }
 
-            if (!response.ok) throw new Error('Erro ao alterar status')
+    const toggleStatus = async () => {
+        if (!studentToToggle) return
 
-            toast.success(student.is_active ? 'Aluno desativado' : 'Aluno ativado')
-            router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setIsLoading(null)
-        }
+        await executeAction(
+            async () => {
+                const response = await fetch(`/api/gestor/users?id=${studentToToggle.id}&role=estudante`, {
+                    method: 'DELETE'
+                })
+
+                if (!response.ok) throw new Error('Erro ao alterar status')
+                router.refresh()
+            },
+            {
+                loadingMessage: studentToToggle.is_active ? 'Desativando aluno...' : 'Ativando aluno...',
+                successMessage: studentToToggle.is_active ? 'Aluno desativado' : 'Aluno ativado',
+                errorMessage: 'Erro ao alterar status'
+            }
+        )
+
+        setConfirmOpen(false)
+        setStudentToToggle(null)
     }
 
     const handleSuccess = () => {
@@ -173,7 +186,7 @@ export function StudentsTable({ initialStudents, schools, isSuperadmin }: Studen
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm" disabled={isLoading === student.id}>
+                                                    <Button variant="ghost" size="sm">
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
@@ -188,7 +201,7 @@ export function StudentsTable({ initialStudents, schools, isSuperadmin }: Studen
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
-                                                        onClick={() => toggleStatus(student)}
+                                                        onClick={() => handleToggleClick(student)}
                                                         className={student.is_active ? "text-red-500" : "text-emerald-500"}
                                                     >
                                                         {student.is_active ? (
@@ -271,6 +284,19 @@ export function StudentsTable({ initialStudents, schools, isSuperadmin }: Studen
                     setUserToReset(null)
                 }}
                 user={userToReset}
+            />
+
+            <ConfirmModal
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={toggleStatus}
+                title={studentToToggle?.is_active ? "Desativar Aluno?" : "Ativar Aluno?"}
+                description={
+                    studentToToggle?.is_active
+                        ? `Deseja desativar ${studentToToggle?.name}? Ele perderá o acesso ao sistema.`
+                        : `Deseja reativar ${studentToToggle?.name}? O acesso será restabelecido.`
+                }
+                confirmText={studentToToggle?.is_active ? "Sim, Desativar" : "Sim, Ativar"}
             />
         </Card>
     )

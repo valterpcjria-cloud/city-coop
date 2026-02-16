@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { SchoolModal } from '@/components/dashboard/gestor/school-modal'
-import { toast } from 'sonner'
+import { ConfirmModal } from '@/components/shared/confirm-modal'
+import { useActionToast } from '@/hooks/use-action-toast'
 import { AnimatePresence, motion } from 'framer-motion'
 import { School, MapPin, Users, GraduationCap, BookOpen, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -17,11 +18,22 @@ interface SchoolData {
     id: string
     name: string
     code: string
+    inep_code: string | null
+    administrative_category: string | null
+    education_stages: string[] | null
+    location_type: string | null
+    director_name: string | null
+    cep: string | null
     city: string | null
     state: string | null
+    neighborhood: string | null
     address: string | null
+    address_number: string | null
+    address_complement: string | null
     phone: string | null
+    secondary_phone: string | null
     email: string | null
+    website: string | null
     created_at: string
 }
 
@@ -31,7 +43,8 @@ export default function GestorSchoolsPage() {
     const [isInitialLoading, setIsInitialLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedSchool, setSelectedSchool] = useState<SchoolData | undefined>()
-    const [deleting, setDeleting] = useState<string | null>(null)
+    const [schoolToDelete, setSchoolToDelete] = useState<SchoolData | null>(null)
+    const { executeAction } = useActionToast()
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1)
@@ -43,12 +56,12 @@ export default function GestorSchoolsPage() {
     // Cached data for prefetching
     const [prefetchCache, setPrefetchCache] = useState<Record<number, { schools: SchoolData[], totalItems: number, totalPages: number, newThisMonth: number }>>({})
 
-    const fetchSchools = async (page: number = 1, isPrefetch = false) => {
+    const fetchSchools = async (page: number = 1, isPrefetch = false, ignoreCache = false) => {
         if (!isPrefetch) setLoading(true)
 
         try {
-            // Check cache first
-            if (!isPrefetch && prefetchCache[page]) {
+            // Check cache first (ignore if explicitly told to ignoreCache)
+            if (!isPrefetch && !ignoreCache && prefetchCache[page]) {
                 const cached = prefetchCache[page]
                 setSchools(cached.schools)
                 setTotalPages(cached.totalPages)
@@ -112,34 +125,35 @@ export default function GestorSchoolsPage() {
         setIsModalOpen(true)
     }
 
-    const handleDelete = async (school: SchoolData) => {
-        if (!confirm(`Tem certeza que deseja excluir a escola "${school.name}"?`)) return
+    const handleDelete = async () => {
+        if (!schoolToDelete) return
 
-        setDeleting(school.id)
-        try {
-            const response = await fetch(`/api/gestor/schools?id=${school.id}`, {
-                method: 'DELETE'
-            })
+        await executeAction(
+            async () => {
+                const response = await fetch(`/api/gestor/schools?id=${schoolToDelete.id}`, {
+                    method: 'DELETE'
+                })
 
-            const data = await response.json()
+                if (!response.ok) {
+                    const data = await response.json()
+                    throw new Error(data.error || 'Erro ao excluir escola')
+                }
 
-            if (!response.ok) {
-                throw new Error(data.error)
+                setPrefetchCache({})
+                fetchSchools(currentPage, false, true)
+            },
+            {
+                loadingMessage: 'Excluindo escola...',
+                successMessage: 'Escola removida com sucesso!',
+                errorMessage: 'Erro ao excluir escola'
             }
-
-            toast.success('Escola removida com sucesso!')
-            setPrefetchCache({})
-            fetchSchools(currentPage)
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setDeleting(null)
-        }
+        )
+        setSchoolToDelete(null)
     }
 
     const handleSuccess = () => {
         setPrefetchCache({})
-        fetchSchools(currentPage)
+        fetchSchools(currentPage, false, true)
     }
 
     if (isInitialLoading) {
@@ -317,7 +331,7 @@ export default function GestorSchoolsPage() {
                                                     transition={{ delay: idx * 0.01, duration: 0.2 }}
                                                     className={cn("group transition-colors hover:bg-slate-50", loading && "opacity-60")}
                                                 >
-                                                    <TableCell className="font-semibold text-slate-700">{school.name}</TableCell>
+                                                    <TableCell className={cn("font-semibold text-slate-700", loading && "opacity-60")}>{school.name}</TableCell>
                                                     <TableCell>
                                                         <Badge variant="outline" className="font-mono">{school.code}</Badge>
                                                     </TableCell>
@@ -345,11 +359,10 @@ export default function GestorSchoolsPage() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                onClick={() => handleDelete(school)}
-                                                                disabled={deleting === school.id}
+                                                                onClick={() => setSchoolToDelete(school)}
                                                                 className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
                                                             >
-                                                                {deleting === school.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icons.trash className="h-4 w-4" />}
+                                                                <Icons.trash className="h-4 w-4" />
                                                             </Button>
                                                         </div>
                                                     </TableCell>
@@ -412,6 +425,16 @@ export default function GestorSchoolsPage() {
                 onClose={() => setIsModalOpen(false)}
                 school={selectedSchool}
                 onSuccess={handleSuccess}
+            />
+
+            <ConfirmModal
+                isOpen={!!schoolToDelete}
+                onClose={() => setSchoolToDelete(null)}
+                onConfirm={handleDelete}
+                title="Excluir Escola?"
+                description={`Tem certeza que deseja excluir "${schoolToDelete?.name}"? Todas as turmas e dados vinculados serão afetados.`}
+                confirmText="Confirmar Exclusão"
+                variant="destructive"
             />
         </div>
     )

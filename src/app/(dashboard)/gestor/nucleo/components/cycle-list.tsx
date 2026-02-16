@@ -12,17 +12,8 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import { CycleFormModal } from "./cycle-form-modal"
-import { toast } from "sonner"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { ConfirmModal } from "@/components/shared/confirm-modal"
+import { useActionToast } from "@/hooks/use-action-toast"
 import { NominationModal } from "./nomination-modal"
 
 export function CycleList() {
@@ -32,6 +23,7 @@ export function CycleList() {
     const [selectedCycle, setSelectedCycle] = useState<any>(null)
     const [cycleToDelete, setCycleToDelete] = useState<string | null>(null)
     const [isNominationOpen, setIsNominationOpen] = useState(false)
+    const { executeAction } = useActionToast()
 
     const fetchCycles = async () => {
         try {
@@ -54,39 +46,45 @@ export function CycleList() {
     }, [])
 
     const toggleStatus = async (id: string, currentStatus: boolean) => {
-        const toastId = toast.loading('Atualizando status...')
-        try {
-            const response = await fetch(`/api/tests/cycles/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ativo: !currentStatus })
-            })
+        await executeAction(
+            async () => {
+                const response = await fetch(`/api/tests/cycles/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ativo: !currentStatus })
+                })
 
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.error || 'Falha ao atualizar status')
+                if (!response.ok) {
+                    const error = await response.json()
+                    throw new Error(error.error || 'Falha ao atualizar status')
+                }
+
+                setCycles(prev => prev.map(c => c.id === id ? { ...c, ativo: !currentStatus } : c))
+            },
+            {
+                loadingMessage: 'Atualizando status...',
+                successMessage: currentStatus ? 'Ciclo bloqueado!' : 'Ciclo liberado!',
+                errorMessage: 'Falha ao atualizar status do ciclo'
             }
-
-            setCycles(prev => prev.map(c => c.id === id ? { ...c, ativo: !currentStatus } : c))
-            toast.success(currentStatus ? 'Ciclo bloqueado!' : 'Ciclo liberado!', { id: toastId })
-        } catch (error: any) {
-            toast.error(error.message, { id: toastId })
-            console.error('Toggle status error:', error)
-        }
+        )
     }
 
     const handleDelete = async () => {
         if (!cycleToDelete) return
-        try {
-            const response = await fetch(`/api/tests/cycles/${cycleToDelete}`, { method: 'DELETE' })
-            if (!response.ok) throw new Error('Falha ao excluir ciclo')
-            toast.success('Ciclo excluído!')
-            fetchCycles()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setCycleToDelete(null)
-        }
+
+        await executeAction(
+            async () => {
+                const response = await fetch(`/api/tests/cycles/${cycleToDelete}`, { method: 'DELETE' })
+                if (!response.ok) throw new Error('Falha ao excluir ciclo')
+                fetchCycles()
+            },
+            {
+                loadingMessage: 'Excluindo ciclo...',
+                successMessage: 'Ciclo excluído com sucesso!',
+                errorMessage: 'Erro ao excluir ciclo'
+            }
+        )
+        setCycleToDelete(null)
     }
 
     if (loading) return <p className="text-sm text-muted-foreground animate-pulse">Carregando ciclos...</p>
@@ -220,22 +218,15 @@ export function CycleList() {
                     cycle={selectedCycle}
                 />
 
-                <AlertDialog open={!!cycleToDelete} onOpenChange={() => setCycleToDelete(null)}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir Ciclo?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Esta ação não pode ser desfeita. Isso excluirá permanentemente o ciclo e todos os testes vinculados.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDelete} className="bg-red-600">
-                                Confirmar Exclusão
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmModal
+                    isOpen={!!cycleToDelete}
+                    onClose={() => setCycleToDelete(null)}
+                    onConfirm={handleDelete}
+                    title="Excluir Ciclo?"
+                    description="Esta ação não pode ser desfeita. Isso excluirá permanentemente o ciclo e todos os testes vinculados."
+                    confirmText="Confirmar Exclusão"
+                    variant="destructive"
+                />
 
                 <NominationModal
                     isOpen={isNominationOpen}

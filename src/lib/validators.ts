@@ -57,29 +57,39 @@ export function sanitizeForSQL(value: string): string {
         .replace(/\*\//g, '')
 }
 
-// ========================================
-// School Validators
-// ========================================
+const emptyToNull = z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() === '' ? null : val),
+    z.string().trim().optional().nullable()
+)
 
 export const schoolSchema = z.object({
-    name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(200),
-    code: z.string().min(2, 'Código deve ter pelo menos 2 caracteres').max(20),
-    inep_code: z.string().length(8, 'Código INEP deve ter 8 dígitos').regex(/^\d+$/).optional().nullable(),
+    name: z.string().trim().min(3, 'Nome deve ter pelo menos 3 caracteres').max(200),
+    code: z.string().trim().toUpperCase().min(2, 'Código deve ter pelo menos 2 caracteres').max(20),
+    inep_code: z.preprocess(
+        (val) => (typeof val === 'string' && val.trim() === '' ? null : val),
+        z.string().trim().length(8, 'Código INEP deve ter 8 dígitos').regex(/^\d+$/).optional().nullable()
+    ),
     administrative_category: z.enum(['publica_municipal', 'publica_estadual', 'publica_federal', 'privada']).optional().nullable(),
     education_stages: z.array(z.string()).optional().default([]),
     location_type: z.enum(['urbana', 'rural']).optional().nullable(),
-    director_name: z.string().max(200).optional().nullable(),
-    cep: z.string().max(10).optional().nullable(),
-    city: z.string().max(100).optional().nullable(),
-    state: z.string().max(2).optional().nullable(),
-    neighborhood: z.string().max(100).optional().nullable(),
-    address: z.string().max(300).optional().nullable(),
-    address_number: z.string().max(20).optional().nullable(),
-    address_complement: z.string().max(200).optional().nullable(),
-    phone: z.string().max(20).optional().nullable(),
-    secondary_phone: z.string().max(20).optional().nullable(),
-    email: z.string().email('E-mail inválido').optional().nullable(),
-    website: z.string().url('URL inválida').optional().nullable(),
+    director_name: z.string().trim().max(200).optional().nullable(),
+    cep: z.string().trim().max(10).optional().nullable(),
+    city: z.string().trim().max(100).optional().nullable(),
+    state: z.string().trim().max(2).optional().nullable(),
+    neighborhood: z.string().trim().max(100).optional().nullable(),
+    address: z.string().trim().max(300).optional().nullable(),
+    address_number: z.string().trim().max(20).optional().nullable(),
+    address_complement: z.string().trim().max(200).optional().nullable(),
+    phone: z.string().trim().max(20).optional().nullable(),
+    secondary_phone: z.string().trim().max(20).optional().nullable(),
+    email: z.preprocess(
+        (val) => (typeof val === 'string' && val.trim() === '' ? null : val),
+        z.string().trim().email('E-mail inválido').optional().nullable()
+    ),
+    website: z.preprocess(
+        (val) => (typeof val === 'string' && val.trim() === '' ? null : val),
+        z.string().trim().url('URL inválida').optional().nullable()
+    ),
 })
 
 export const schoolUpdateSchema = schoolSchema.extend({

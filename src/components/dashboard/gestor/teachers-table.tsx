@@ -16,7 +16,8 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { toast } from '@/components/ui/sonner'
+import { ConfirmModal } from '@/components/shared/confirm-modal'
+import { useActionToast } from '@/hooks/use-action-toast'
 import { cn } from '@/lib/utils'
 
 interface Teacher {
@@ -48,7 +49,9 @@ export function TeachersTable({ initialTeachers, schools, isSuperadmin }: Teache
     const [currentPage, setCurrentPage] = useState(1)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedTeacher, setSelectedTeacher] = useState<any>(null)
-    const [isLoading, setIsLoading] = useState<string | null>(null)
+    const [confirmOpen, setConfirmOpen] = useState(false)
+    const [teacherToToggle, setTeacherToToggle] = useState<Teacher | null>(null)
+    const { executeAction } = useActionToast()
     const limit = 25
     const totalItems = initialTeachers.length
     const totalPages = Math.ceil(totalItems / limit)
@@ -67,22 +70,32 @@ export function TeachersTable({ initialTeachers, schools, isSuperadmin }: Teache
         setIsModalOpen(true)
     }
 
-    const toggleStatus = async (teacher: Teacher) => {
-        setIsLoading(teacher.id)
-        try {
-            const response = await fetch(`/api/gestor/users?id=${teacher.id}&role=professor`, {
-                method: 'DELETE'
-            })
+    const handleToggleClick = (teacher: Teacher) => {
+        setTeacherToToggle(teacher)
+        setConfirmOpen(true)
+    }
 
-            if (!response.ok) throw new Error('Erro ao alterar status')
+    const toggleStatus = async () => {
+        if (!teacherToToggle) return
 
-            toast.success(teacher.is_active ? 'Professor desativado' : 'Professor ativado')
-            router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setIsLoading(null)
-        }
+        await executeAction(
+            async () => {
+                const response = await fetch(`/api/gestor/users?id=${teacherToToggle.id}&role=professor`, {
+                    method: 'DELETE'
+                })
+
+                if (!response.ok) throw new Error('Erro ao alterar status')
+                router.refresh()
+            },
+            {
+                loadingMessage: teacherToToggle.is_active ? 'Desativando professor...' : 'Ativando professor...',
+                successMessage: teacherToToggle.is_active ? 'Professor desativado' : 'Professor ativado',
+                errorMessage: 'Erro ao alterar status'
+            }
+        )
+
+        setConfirmOpen(false)
+        setTeacherToToggle(null)
     }
 
     const handleSuccess = () => {
@@ -162,7 +175,7 @@ export function TeachersTable({ initialTeachers, schools, isSuperadmin }: Teache
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm" disabled={isLoading === teacher.id}>
+                                                    <Button variant="ghost" size="sm">
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
@@ -173,7 +186,7 @@ export function TeachersTable({ initialTeachers, schools, isSuperadmin }: Teache
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
-                                                        onClick={() => toggleStatus(teacher)}
+                                                        onClick={() => handleToggleClick(teacher)}
                                                         className={teacher.is_active ? "text-red-500" : "text-emerald-500"}
                                                     >
                                                         {teacher.is_active ? (
@@ -247,6 +260,19 @@ export function TeachersTable({ initialTeachers, schools, isSuperadmin }: Teache
                 onSuccess={handleSuccess}
                 defaultRole="professor"
                 isSuperadmin={isSuperadmin}
+            />
+
+            <ConfirmModal
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={toggleStatus}
+                title={teacherToToggle?.is_active ? "Desativar Professor?" : "Ativar Professor?"}
+                description={
+                    teacherToToggle?.is_active
+                        ? `Deseja desativar ${teacherToToggle?.name}? Ele perderá o acesso ao sistema.`
+                        : `Deseja reativar ${teacherToToggle?.name}? O acesso será restabelecido.`
+                }
+                confirmText={teacherToToggle?.is_active ? "Sim, Desativar" : "Sim, Ativar"}
             />
         </Card>
     )

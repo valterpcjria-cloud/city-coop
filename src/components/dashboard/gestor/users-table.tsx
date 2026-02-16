@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserModal } from './user-modal'
 import { PasswordResetDialog } from './password-reset-dialog'
-import { ConfirmDialog } from '@/components/ui/alert-dialog'
-import { toast } from '@/components/ui/sonner'
+import { ConfirmModal } from '@/components/shared/confirm-modal'
+import { useActionToast } from '@/hooks/use-action-toast'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
@@ -86,9 +86,9 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false, curren
     // Confirm dialog states
     const [confirmOpen, setConfirmOpen] = useState(false)
     const [confirmAction, setConfirmAction] = useState<{ type: 'deactivate' | 'activate' | 'delete', user: User } | null>(null)
-    const [isProcessing, setIsProcessing] = useState(false)
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
     const [userToReset, setUserToReset] = useState<User | null>(null)
+    const { executeAction } = useActionToast()
 
     // Debounced search for performance
     const debouncedSearch = useDebounce(search, 300)
@@ -137,35 +137,34 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false, curren
     const handleConfirmAction = async () => {
         if (!confirmAction) return
 
-        setIsProcessing(true)
-        try {
-            const isDeleteAction = confirmAction.type === 'delete'
-            const response = await fetch(
-                `/api/gestor/users?id=${confirmAction.user.id}&role=${confirmAction.user.role}${isDeleteAction ? '&action=delete' : ''}`,
-                { method: 'DELETE' }
-            )
+        const isDeleteAction = confirmAction.type === 'delete'
+        const isDeactivate = confirmAction.type === 'deactivate'
 
-            if (!response.ok) {
-                const data = await response.json()
-                throw new Error(data.error)
+        await executeAction(
+            async () => {
+                const response = await fetch(
+                    `/api/gestor/users?id=${confirmAction.user.id}&role=${confirmAction.user.role}${isDeleteAction ? '&action=delete' : ''}`,
+                    { method: 'DELETE' }
+                )
+
+                if (!response.ok) {
+                    const data = await response.json()
+                    throw new Error(data.error)
+                }
+
+                router.refresh()
+            },
+            {
+                loadingMessage: isDeleteAction ? 'Excluindo usuário...' : isDeactivate ? 'Desativando...' : 'Ativando...',
+                successMessage: isDeleteAction
+                    ? 'Usuário excluído com sucesso'
+                    : isDeactivate ? 'Usuário desativado' : 'Usuário ativado',
+                errorMessage: 'Erro ao processar ação no usuário'
             }
+        )
 
-            const message = isDeleteAction
-                ? 'Usuário excluído permanentemente'
-                : confirmAction.type === 'deactivate'
-                    ? 'Usuário desativado'
-                    : 'Usuário ativado'
-
-            toast.success(message, {
-                description: `${confirmAction.user.name} foi ${isDeleteAction ? 'excluído' : confirmAction.type === 'deactivate' ? 'desativado' : 'ativado'} com sucesso.`
-            })
-            router.refresh()
-        } catch (error: any) {
-            toast.error('Erro', { description: error.message })
-        } finally {
-            setIsProcessing(false)
-            setConfirmAction(null)
-        }
+        setConfirmOpen(false)
+        setConfirmAction(null)
     }
 
     const handleResetPassword = (user: User) => {
@@ -393,34 +392,32 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false, curren
             />
 
             {/* Confirm Dialog */}
-            <ConfirmDialog
-                open={confirmOpen}
-                onOpenChange={setConfirmOpen}
-                variant={confirmAction?.type === 'activate' ? 'success' : 'danger'}
+            <ConfirmModal
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
                 title={
                     confirmAction?.type === 'delete'
-                        ? 'Excluir Usuário'
+                        ? 'Excluir Usuário?'
                         : confirmAction?.type === 'deactivate'
-                            ? 'Desativar Usuário'
-                            : 'Ativar Usuário'
+                            ? 'Desativar Usuário?'
+                            : 'Ativar Usuário?'
                 }
                 description={
                     confirmAction?.type === 'delete'
-                        ? `ATENÇÃO: Deseja realmente excluir PERMANENTEMENTE ${confirmAction?.user.name}? Esta ação não pode ser desfeita e todos os dados vinculados podem ser afetados.`
+                        ? `ATENÇÃO: Deseja realmente excluir PERMANENTEMENTE ${confirmAction?.user.name}? Esta ação não pode ser desfeita.`
                         : confirmAction?.type === 'deactivate'
-                            ? `Tem certeza que deseja desativar ${confirmAction?.user.name}? O usuário não conseguirá mais acessar o sistema.`
-                            : `Deseja reativar ${confirmAction?.user.name}? O usuário poderá acessar o sistema novamente.`
+                            ? `Deseja desativar ${confirmAction?.user.name}? Ele não conseguirá mais acessar o sistema.`
+                            : `Deseja reativar ${confirmAction?.user.name}? O acesso será restabelecido.`
                 }
                 confirmText={
                     confirmAction?.type === 'delete'
-                        ? 'Excluir Permanentemente'
+                        ? 'Sim, Excluir'
                         : confirmAction?.type === 'deactivate'
-                            ? 'Desativar'
-                            : 'Ativar'
+                            ? 'Sim, Desativar'
+                            : 'Sim, Ativar'
                 }
-                cancelText="Cancelar"
+                variant={confirmAction?.type === 'delete' ? 'destructive' : 'default'}
                 onConfirm={handleConfirmAction}
-                loading={isProcessing}
             />
 
             <PasswordResetDialog
