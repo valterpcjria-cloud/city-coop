@@ -66,7 +66,7 @@ async function getStudents(schoolId: string) {
         cpf: s.cpf || null,
         role: 'estudante' as const,
         school_id: s.school_id,
-        school_name: s.schools?.name || null,
+        school: s.schools ? { name: s.schools.name } : undefined,
         is_active: s.is_active ?? true,
         grade_level: s.grade_level,
         created_at: s.created_at

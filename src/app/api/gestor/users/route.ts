@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
                 cpf: g.cpf,
                 role: 'gestor' as const,
                 school_id: null,
-                school_name: null,
+                school: null,
                 is_superadmin: g.is_superadmin,
                 is_active: g.is_active ?? true,
                 created_at: g.created_at
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
                 cpf: t.cpf,
                 role: 'professor' as const,
                 school_id: t.school_id,
-                school_name: t.schools?.name || null,
+                school: t.schools ? { name: t.schools.name } : null,
                 is_superadmin: false,
                 is_active: t.is_active ?? true,
                 created_at: t.created_at
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
                 cpf: s.cpf,
                 role: 'estudante' as const,
                 school_id: s.school_id,
-                school_name: s.schools?.name || null,
+                school: s.schools ? { name: s.schools.name } : null,
                 is_superadmin: false,
                 is_active: s.is_active ?? true,
                 grade_level: s.grade_level,

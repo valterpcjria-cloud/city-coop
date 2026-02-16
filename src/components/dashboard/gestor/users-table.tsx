@@ -46,7 +46,7 @@ interface User {
     phone: string | null
     role: 'gestor' | 'professor' | 'estudante'
     school_id: string | null
-    school_name: string | null
+    school: { name: string } | null
     is_superadmin: boolean
     is_active: boolean
     grade_level?: string
@@ -309,7 +309,7 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false, curren
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                {user.school_name || '-'}
+                                                {user.school?.name || '-'}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={user.is_active ? 'default' : 'secondary'} className={user.is_active ? "bg-green-500 hover:bg-green-600" : ""}>
