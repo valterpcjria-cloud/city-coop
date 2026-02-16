@@ -23,6 +23,9 @@ Esta versão traz avanços significativos na inteligência do assistente DOT, me
 ## 🛠️ Outras Melhorias
 *   **Senha Padrão**: Novos alunos agora utilizam o CPF (apenas números) como senha inicial.
 *   **Debounce em Pesquisas**: Filtros de tabelas otimizados para evitar lag ao digitar.
+*   **Correções de Bugs**:
+    *   Resolvido erro de runtime no dashboard do estudante (adição do `'use client'`).
+    *   Corrigida falha na exibição do nome da escola para alunos nas tabelas do professor e gestor.
 
 ---
 *City Coop Platform - Inteligência e Cooperação em cada detalhe.*
