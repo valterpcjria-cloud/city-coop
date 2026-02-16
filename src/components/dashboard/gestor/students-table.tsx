@@ -41,9 +41,10 @@ interface School {
 interface StudentsTableProps {
     initialStudents: Student[]
     schools: School[]
+    isSuperadmin?: boolean
 }
 
-export function StudentsTable({ initialStudents, schools }: StudentsTableProps) {
+export function StudentsTable({ initialStudents, schools, isSuperadmin }: StudentsTableProps) {
     const router = useRouter()
     const [currentPage, setCurrentPage] = useState(1)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -260,6 +261,7 @@ export function StudentsTable({ initialStudents, schools }: StudentsTableProps) 
                 schools={schools}
                 onSuccess={handleSuccess}
                 defaultRole="estudante"
+                isSuperadmin={isSuperadmin}
             />
 
             <PasswordResetDialog

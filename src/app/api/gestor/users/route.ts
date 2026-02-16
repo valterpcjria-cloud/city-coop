@@ -111,6 +111,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Professores só podem cadastrar estudantes' }, { status: 403 })
         }
 
+        // Only superadmins can create gestors
+        if (role === 'gestor') {
+            const superadminAuth = await validateSuperadminAccess()
+            if (!superadminAuth.success) {
+                return NextResponse.json({ error: 'Apenas superadministradores podem cadastrar novos gestores' }, { status: 403 })
+            }
+        }
+
         if (!name || !email || !role) {
             return NextResponse.json(
                 { error: 'Nome, email e role são obrigatórios' },

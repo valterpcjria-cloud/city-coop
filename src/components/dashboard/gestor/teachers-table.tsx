@@ -40,9 +40,10 @@ interface School {
 interface TeachersTableProps {
     initialTeachers: Teacher[]
     schools: School[]
+    isSuperadmin?: boolean
 }
 
-export function TeachersTable({ initialTeachers, schools }: TeachersTableProps) {
+export function TeachersTable({ initialTeachers, schools, isSuperadmin }: TeachersTableProps) {
     const router = useRouter()
     const [currentPage, setCurrentPage] = useState(1)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -245,6 +246,7 @@ export function TeachersTable({ initialTeachers, schools }: TeachersTableProps) 
                 schools={schools}
                 onSuccess={handleSuccess}
                 defaultRole="professor"
+                isSuperadmin={isSuperadmin}
             />
         </Card>
     )

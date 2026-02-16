@@ -389,6 +389,7 @@ export function UsersTable({ initialUsers, schools, isSuperadmin = false, curren
                 user={selectedUser}
                 schools={schools}
                 onSuccess={handleSuccess}
+                isSuperadmin={isSuperadmin}
             />
 
             {/* Confirm Dialog */}

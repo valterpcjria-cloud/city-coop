@@ -18,6 +18,10 @@ export default function RegisterPage() {
     const router = useRouter()
     const supabase = getSupabaseClient()
 
+    React.useEffect(() => {
+        router.replace('/login')
+    }, [router])
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',

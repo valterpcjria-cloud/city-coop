@@ -38,6 +38,7 @@ interface UserModalProps {
     onSuccess: () => void
     defaultRole?: 'gestor' | 'professor' | 'estudante'
     classId?: string
+    isSuperadmin?: boolean
 }
 
 const gradeOptions = [
@@ -48,7 +49,7 @@ const gradeOptions = [
     { value: 'EJA', label: 'EJA - Jovens e Adultos' },
 ]
 
-export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRole, classId: propClassId }: UserModalProps) {
+export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRole, classId: propClassId, isSuperadmin: propIsSuperadmin }: UserModalProps) {
     const isEditing = !!user
     const [isLoading, setIsLoading] = useState(false)
 
@@ -252,7 +253,7 @@ export function UserModal({ isOpen, onClose, user, schools, onSuccess, defaultRo
                                 <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                             <SelectContent>
-                                {!defaultRole || defaultRole === 'gestor' ? (
+                                {propIsSuperadmin && (!defaultRole || defaultRole === 'gestor') ? (
                                     <SelectItem value="gestor">Gestor</SelectItem>
                                 ) : null}
                                 {!defaultRole || defaultRole === 'professor' ? (

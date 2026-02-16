@@ -91,14 +91,6 @@ export default function LoginPage() {
                 </div>
             </CardHeader>
             <LoginForm />
-            <CardFooter className="flex flex-col space-y-2 text-center text-sm pt-4 border-t border-[#6B7C93]/10">
-                <div className="text-[#6B7C93]">
-                    Não tem uma conta?{' '}
-                    <Link href="/register" className="text-[#F5A623] hover:text-[#E09000] underline-offset-4 hover:underline font-semibold">
-                        Cadastre-se
-                    </Link>
-                </div>
-            </CardFooter>
         </Card>
     )
 }
@@ -192,12 +184,6 @@ function LoginForm() {
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <Label htmlFor="password" className="text-[#1a2332] font-medium">Senha</Label>
-                        <Link
-                            href="/reset-password"
-                            className="text-xs text-[#F5A623] hover:text-[#E09000] underline-offset-4 hover:underline font-medium"
-                        >
-                            Esqueceu a senha?
-                        </Link>
                     </div>
                     <Input
                         id="password"
@@ -221,19 +207,6 @@ function LoginForm() {
                 </Button>
             </form>
 
-            <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-[#6B7C93]/20" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-3 text-[#6B7C93]">Ou continue com</span>
-                </div>
-            </div>
-
-            <Button variant="outline" type="button" className="w-full h-11" onClick={handleGoogleLogin} disabled={isLoading}>
-                <Icons.google className="mr-2 h-4 w-4" />
-                Google
-            </Button>
         </CardContent>
     )
 }

@@ -16,6 +16,15 @@ export default async function GestorStudentsPage() {
         .select('id, name')
         .order('name')
 
+    const { data: { user } } = await adminAuth.auth.getUser()
+    const { data: gestor } = await adminAuth
+        .from('gestors')
+        .select('is_superadmin')
+        .eq('user_id', user?.id as string)
+        .single() as { data: { is_superadmin: boolean } | null, error: any }
+
+    const isSuperadmin = gestor?.is_superadmin || false
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -28,6 +37,7 @@ export default async function GestorStudentsPage() {
             <StudentsTable
                 initialStudents={students || []}
                 schools={schools || []}
+                isSuperadmin={isSuperadmin}
             />
         </div>
     )

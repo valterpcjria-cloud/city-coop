@@ -22,9 +22,6 @@ export default function Home() {
           <Link href="/login" className="text-sm font-semibold text-[#6B7C93] hover:text-[#4A90D9] transition-colors">
             Entrar
           </Link>
-          <Button variant="brand" asChild>
-            <Link href="/register">Cadastre-se</Link>
-          </Button>
         </div>
       </header>
 
@@ -51,14 +48,9 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button size="lg" variant="brand" className="h-12 px-8 text-base shadow-xl shadow-[#4A90D9]/20" asChild>
-                <Link href="/register">
-                  Começar agora
-                  <Icons.arrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
                 <Link href="/login">
-                  Já tenho conta
+                  Entrar na plataforma
+                  <Icons.arrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
