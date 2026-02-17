@@ -22,6 +22,7 @@ interface BulkDeleteDialogProps {
     municipality: string
     schoolsCount: number
     schoolIds: string[]
+    type?: 'schools' | 'students' | 'teachers'
     onConfirm: (confirmMunicipality: string) => Promise<void>
 }
 
@@ -31,6 +32,7 @@ export function BulkDeleteDialog({
     municipality,
     schoolsCount,
     schoolIds,
+    type = 'schools',
     onConfirm
 }: BulkDeleteDialogProps) {
     const [step, setStep] = useState(1)
@@ -74,6 +76,18 @@ export function BulkDeleteDialog({
         onClose()
     }
 
+    const getTargetLabel = () => {
+        if (type === 'students') return 'Estudantes'
+        if (type === 'teachers') return 'Professores'
+        return 'Escolas'
+    }
+
+    const getImpactMessage = () => {
+        if (type === 'students') return 'Todos os dados vinculados aos estudantes (notas, avaliações, presenças) serão apagados para SEMPRE.'
+        if (type === 'teachers') return 'O acesso dos professores será revogado e seus vínculos com as turmas e avaliações serão removidos.'
+        return 'Todos os alunos, professores, turmas e notas serão apagados para SEMPRE.'
+    }
+
     return (
         <AlertDialog open={isOpen} onOpenChange={reset}>
             <AlertDialogContent className="sm:max-w-[500px] border-2 border-red-100">
@@ -94,8 +108,9 @@ export function BulkDeleteDialog({
                                 <h4 className="font-semibold text-red-800 mb-2">Resumo da Exclusão:</h4>
                                 <ul className="text-sm text-red-700 space-y-1">
                                     <li>• <strong>Município:</strong> {municipality}</li>
-                                    <li>• <strong>Escolas:</strong> {schoolIds.length === 0 ? 'Todas do município' : `${schoolIds.length} selecionada(s)`}</li>
-                                    <li>• <strong>Impacto:</strong> Todos os alunos, professores, turmas e notas serão apagados para SEMPRE.</li>
+                                    <li>• <strong>Tipo:</strong> {getTargetLabel()}</li>
+                                    <li>• <strong>{getTargetLabel()}:</strong> {schoolIds.length === 0 ? `Todos(as) do município` : `${schoolIds.length} selecionado(s)`}</li>
+                                    <li>• <strong>Impacto:</strong> {getImpactMessage()}</li>
                                 </ul>
                             </div>
                             <p className="text-sm text-slate-600 italic">

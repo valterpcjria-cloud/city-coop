@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url)
         const city = searchParams.get('city')
+        const type = searchParams.get('type') || 'schools' // schools, students, teachers
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '25')
         const offset = (page - 1) * limit
@@ -23,20 +24,40 @@ export async function GET(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         )
 
-        // If a specific city is requested, return paginated schools for that city
+        // If a specific city is requested, return paginated results for that city and type
         if (city) {
-            const { data: schools, error, count } = await supabase
-                .from('schools')
-                .select('id, name, city', { count: 'exact' })
-                .eq('city', city)
-                .order('name', { ascending: true })
-                .range(offset, offset + limit - 1)
+            let dataQuery: any
+
+            if (type === 'students') {
+                // To get students by city, we need to join with schools
+                dataQuery = supabase
+                    .from('students')
+                    .select('id, name, school_id, schools!inner(name, city)', { count: 'exact' })
+                    .eq('schools.city', city)
+                    .order('name', { ascending: true })
+            } else if (type === 'teachers') {
+                // To get teachers by city, we need to join with schools
+                dataQuery = supabase
+                    .from('teachers')
+                    .select('id, name, school_id, schools!inner(name, city)', { count: 'exact' })
+                    .eq('schools.city', city)
+                    .order('name', { ascending: true })
+            } else {
+                // Default: schools
+                dataQuery = supabase
+                    .from('schools')
+                    .select('id, name, city', { count: 'exact' })
+                    .eq('city', city)
+                    .order('name', { ascending: true })
+            }
+
+            const { data: results, error, count } = await dataQuery.range(offset, offset + limit - 1)
 
             if (error) throw error
 
             return NextResponse.json({
                 success: true,
-                schools,
+                results: results || [],
                 pagination: {
                     page,
                     limit,

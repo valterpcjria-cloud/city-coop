@@ -20,12 +20,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 export default function BulkDeletePage() {
     const router = useRouter()
     const [isLoadingMunicipalities, setIsLoadingMunicipalities] = useState(true)
-    const [isLoadingSchools, setIsLoadingSchools] = useState(false)
+    const [isLoadingResults, setIsLoadingResults] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     const [municipalities, setMunicipalities] = useState<string[]>([])
     const [selectedMunicipality, setSelectedMunicipality] = useState<string>('')
-    const [schools, setSchools] = useState<any[]>([])
-    const [selectedSchools, setSelectedSchools] = useState<string[]>([])
+    const [deletionType, setDeletionType] = useState<'schools' | 'students' | 'teachers'>('schools')
+    const [results, setResults] = useState<any[]>([])
+    const [selectedIds, setSelectedIds] = useState<string[]>([])
     const [isDialogOpen, setIsDialogOpen] = useState(false)
 
     // Pagination state
@@ -56,72 +57,78 @@ export default function BulkDeletePage() {
         }
     }
 
-    const fetchSchools = async (city: string, page: number) => {
-        setIsLoadingSchools(true)
+    const fetchResults = async (city: string, type: string, page: number) => {
+        setIsLoadingResults(true)
         try {
-            const response = await fetch(`/api/superadmin/municipalities?city=${city}&page=${page}&limit=${limit}`)
+            const response = await fetch(`/api/superadmin/municipalities?city=${city}&type=${type}&page=${page}&limit=${limit}`)
             const data = await response.json()
             if (data.success) {
-                setSchools(data.schools || [])
+                setResults(data.results || [])
                 setTotalPages(data.pagination.totalPages)
                 setTotalItems(data.pagination.total)
             } else {
-                toast.error(data.error || 'Erro ao carregar escolas')
+                toast.error(data.error || 'Erro ao carregar dados')
             }
         } catch (error) {
-            toast.error('Erro ao buscar escolas')
+            toast.error('Erro ao buscar dados')
         } finally {
-            setIsLoadingSchools(false)
+            setIsLoadingResults(false)
         }
     }
 
     useEffect(() => {
         if (selectedMunicipality) {
-            fetchSchools(selectedMunicipality, currentPage)
+            fetchResults(selectedMunicipality, deletionType, currentPage)
         } else {
-            setSchools([])
+            setResults([])
         }
-    }, [selectedMunicipality, currentPage])
+    }, [selectedMunicipality, deletionType, currentPage])
 
-    const toggleSchool = (schoolId: string) => {
-        setSelectedSchools(prev =>
-            prev.includes(schoolId)
-                ? prev.filter(id => id !== schoolId)
-                : [...prev, schoolId]
+    const toggleItem = (id: string) => {
+        setSelectedIds(prev =>
+            prev.includes(id)
+                ? prev.filter(i => i !== id)
+                : [...prev, id]
         )
     }
 
     const toggleAllOnPage = () => {
-        const pageSchoolIds = schools.map(s => s.id)
-        const allSelected = pageSchoolIds.every(id => selectedSchools.includes(id))
+        const pageIds = results.map(r => r.id)
+        const allSelected = pageIds.every(id => selectedIds.includes(id))
 
         if (allSelected) {
-            setSelectedSchools(prev => prev.filter(id => !pageSchoolIds.includes(id)))
+            setSelectedIds(prev => prev.filter(id => !pageIds.includes(id)))
         } else {
-            setSelectedSchools(prev => [...new Set([...prev, ...pageSchoolIds])])
+            setSelectedIds(prev => [...new Set([...prev, ...pageIds])])
         }
     }
 
     const handleBulkDelete = async (confirmText: string) => {
         setIsDeleting(true)
         try {
+            const body: any = {
+                municipality: selectedMunicipality,
+                type: deletionType,
+                confirmMunicipality: confirmText
+            }
+
+            if (deletionType === 'schools') body.schoolIds = selectedIds
+            else if (deletionType === 'students') body.studentIds = selectedIds
+            else if (deletionType === 'teachers') body.teacherIds = selectedIds
+
             const response = await fetch('/api/superadmin/bulk-delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    municipality: selectedMunicipality,
-                    schoolIds: selectedSchools,
-                    confirmMunicipality: confirmText
-                })
+                body: JSON.stringify(body)
             })
 
             const data = await response.json()
             if (data.success) {
-                toast.success(`Sucesso! ${data.details.schoolsDeleted} escolas e ${data.details.studentsDeleted} alunos removidos.`)
+                toast.success(data.message)
                 setSelectedMunicipality('')
-                setSelectedSchools([])
+                setSelectedIds([])
                 setCurrentPage(1)
-                fetchMunicipalities() // Refresh data
+                fetchMunicipalities()
             } else {
                 toast.error(data.error || 'Erro ao realizar exclusão')
             }
@@ -143,6 +150,12 @@ export default function BulkDeletePage() {
 
     const startItem = ((currentPage - 1) * limit) + 1
     const endItem = Math.min(currentPage * limit, totalItems)
+
+    const getTargetTitle = () => {
+        if (deletionType === 'students') return 'Estudantes Encontrados'
+        if (deletionType === 'teachers') return 'Professores Encontrados'
+        return 'Escolas Encontradas'
+    }
 
     return (
         <div className="space-y-6 container mx-auto py-8 animate-in fade-in duration-500">
@@ -167,8 +180,8 @@ export default function BulkDeletePage() {
                 {/* Filters sidebar */}
                 <Card className="lg:col-span-1 shadow-sm border-slate-200/60 h-fit">
                     <CardHeader>
-                        <CardTitle className="text-lg">Filtros</CardTitle>
-                        <CardDescription>Selecione a abrangência da exclusão</CardDescription>
+                        <CardTitle className="text-lg">Configurações</CardTitle>
+                        <CardDescription>Defina o que você deseja apagar</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -177,7 +190,7 @@ export default function BulkDeletePage() {
                                 value={selectedMunicipality}
                                 onValueChange={(val) => {
                                     setSelectedMunicipality(val)
-                                    setSelectedSchools([])
+                                    setSelectedIds([])
                                     setCurrentPage(1)
                                 }}
                             >
@@ -192,6 +205,27 @@ export default function BulkDeletePage() {
                             </Select>
                         </div>
 
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Tipo de Exclusão</label>
+                            <Select
+                                value={deletionType}
+                                onValueChange={(val: any) => {
+                                    setDeletionType(val)
+                                    setSelectedIds([])
+                                    setCurrentPage(1)
+                                }}
+                            >
+                                <SelectTrigger className="premium-input h-12 bg-white">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="schools">Escolas (Completo)</SelectItem>
+                                    <SelectItem value="students">Apenas Estudantes</SelectItem>
+                                    <SelectItem value="teachers">Apenas Professores</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         {selectedMunicipality && (
                             <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 space-y-2">
                                 <div className="flex items-center gap-2 text-amber-800 text-sm font-bold">
@@ -199,7 +233,7 @@ export default function BulkDeletePage() {
                                     Atenção
                                 </div>
                                 <p className="text-xs text-amber-700 leading-relaxed">
-                                    Ao selecionar um município, você pode optar por apagar <strong>todas</strong> as suas escolas ou apenas as selecionadas na lista ao lado.
+                                    Você está prestes a excluir <strong>{deletionType === 'schools' ? 'Escolas' : deletionType === 'students' ? 'Estudantes' : 'Professores'}</strong> em <strong>{selectedMunicipality}</strong>.
                                 </p>
                             </div>
                         )}
@@ -209,32 +243,32 @@ export default function BulkDeletePage() {
                             disabled={!selectedMunicipality || isDeleting}
                             onClick={() => setIsDialogOpen(true)}
                         >
-                            {selectedSchools.length > 0
-                                ? `Excluir ${selectedSchools.length} selecionada(s)`
-                                : 'Excluir TODAS do município'}
+                            {selectedIds.length > 0
+                                ? `Excluir ${selectedIds.length} selecionado(s)`
+                                : 'Excluir TUDO do município'}
                         </Button>
                     </CardContent>
                 </Card>
 
-                {/* School List */}
+                {/* Results List */}
                 <Card className="lg:col-span-2 shadow-sm border-slate-200/60 min-h-[500px] flex flex-col">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-lg">Escolas Encontradas</CardTitle>
+                            <CardTitle className="text-lg">{getTargetTitle()}</CardTitle>
                             <CardDescription>
                                 {selectedMunicipality
-                                    ? `Total: ${totalItems} escolas em ${selectedMunicipality}`
-                                    : 'Selecione um município para listar as escolas'}
+                                    ? `Total: ${totalItems} registros em ${selectedMunicipality}`
+                                    : 'Selecione um município para listar os registros'}
                             </CardDescription>
                         </div>
-                        {selectedMunicipality && (
+                        {selectedMunicipality && totalItems > 0 && (
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={toggleAllOnPage}
                                 className="text-xs font-semibold"
                             >
-                                {schools.length > 0 && schools.every(s => selectedSchools.includes(s.id))
+                                {results.length > 0 && results.every(r => selectedIds.includes(r.id))
                                     ? 'Limpar Página'
                                     : 'Selecionar Página'}
                             </Button>
@@ -246,34 +280,44 @@ export default function BulkDeletePage() {
                                 <Icons.search className="h-12 w-12 opacity-20" />
                                 <p className="text-sm font-medium">Aguardando filtro de município...</p>
                             </div>
-                        ) : isLoadingSchools ? (
+                        ) : isLoadingResults ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {[...Array(6)].map((_, i) => (
                                     <Skeleton key={i} className="h-20 w-full rounded-xl" />
                                 ))}
                             </div>
+                        ) : results.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                <p className="text-sm font-medium">Nenhum registro encontrado para este tipo no município.</p>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {schools.map((school) => (
+                                {results.map((item) => (
                                     <div
-                                        key={school.id}
-                                        onClick={() => toggleSchool(school.id)}
-                                        className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer group ${selectedSchools.includes(school.id)
+                                        key={item.id}
+                                        onClick={() => toggleItem(item.id)}
+                                        className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer group ${selectedIds.includes(item.id)
                                             ? 'bg-red-50/50 border-red-200 ring-1 ring-red-200'
                                             : 'bg-slate-50 border-slate-200 hover:border-red-200'
                                             }`}
                                     >
                                         <Checkbox
-                                            checked={selectedSchools.includes(school.id)}
-                                            onCheckedChange={() => toggleSchool(school.id)}
+                                            checked={selectedIds.includes(item.id)}
+                                            onCheckedChange={() => toggleItem(item.id)}
                                             className="mt-1"
                                         />
-                                        <div className="space-y-1">
-                                            <p className={`text-sm font-bold ${selectedSchools.includes(school.id) ? 'text-red-700' : 'text-slate-700'
+                                        <div className="space-y-1 overflow-hidden">
+                                            <p className={`text-sm font-bold truncate ${selectedIds.includes(item.id) ? 'text-red-700' : 'text-slate-700'
                                                 }`}>
-                                                {school.name}
+                                                {item.name}
                                             </p>
-                                            <p className="text-xs text-tech-gray font-mono">ID: {school.id.slice(0, 8)}...</p>
+                                            {item.schools && (
+                                                <p className="text-[10px] text-tech-gray font-medium flex items-center gap-1">
+                                                    <Icons.school className="h-3 w-3" />
+                                                    {item.schools.name}
+                                                </p>
+                                            )}
+                                            <p className="text-[10px] text-slate-400 font-mono">ID: {item.id.slice(0, 8)}...</p>
                                         </div>
                                     </div>
                                 ))}
@@ -292,19 +336,19 @@ export default function BulkDeletePage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                                    disabled={currentPage === 1 || isLoadingSchools}
+                                    disabled={currentPage === 1 || isLoadingResults}
                                 >
                                     Anterior
                                 </Button>
-                                <div className="flex gap-1">
+                                <div className="flex gap-1 overflow-x-auto max-w-[200px] no-scrollbar">
                                     {Array.from({ length: totalPages }).map((_, i) => (
                                         <Button
                                             key={i + 1}
                                             variant={currentPage === i + 1 ? 'brand' : 'outline'}
                                             size="sm"
-                                            className="w-8 h-8 p-0"
+                                            className="w-8 h-8 p-0 shrink-0"
                                             onClick={() => setCurrentPage(i + 1)}
-                                            disabled={isLoadingSchools}
+                                            disabled={isLoadingResults}
                                         >
                                             {i + 1}
                                         </Button>
@@ -314,7 +358,7 @@ export default function BulkDeletePage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-                                    disabled={currentPage === totalPages || isLoadingSchools}
+                                    disabled={currentPage === totalPages || isLoadingResults}
                                 >
                                     Próxima
                                 </Button>
@@ -329,7 +373,8 @@ export default function BulkDeletePage() {
                 onClose={() => setIsDialogOpen(false)}
                 municipality={selectedMunicipality}
                 schoolsCount={totalItems}
-                schoolIds={selectedSchools}
+                schoolIds={selectedIds}
+                type={deletionType}
                 onConfirm={handleBulkDelete}
             />
         </div>
