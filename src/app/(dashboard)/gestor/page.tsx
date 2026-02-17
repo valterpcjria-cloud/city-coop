@@ -1,16 +1,27 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { StatCard } from '@/components/dashboard/gestor/stat-card'
 import { Icons } from '@/components/ui/icons'
+import { getRecentAuditLogs } from '@/lib/audit'
+import { ActivityList } from '@/components/dashboard/shared/activity-list'
 
 export default async function GestorOverviewPage() {
     const supabase = await createClient()
     const adminAuth = await createAdminClient()
 
-    // Fetch Platform Stats
-    const { count: schoolsCount } = await adminAuth.from('schools').select('*', { count: 'exact', head: true })
-    const { count: teachersCount } = await adminAuth.from('teachers').select('*', { count: 'exact', head: true })
-    const { count: studentsCount } = await adminAuth.from('students').select('*', { count: 'exact', head: true })
-    const { count: activeEventsCount } = await adminAuth.from('event_plans').select('*', { count: 'exact', head: true }).eq('status', 'submitted')
+    // Fetch Platform Stats and Activities in parallel
+    const [
+        { count: schoolsCount },
+        { count: teachersCount },
+        { count: studentsCount },
+        { count: activeEventsCount },
+        activities
+    ] = await Promise.all([
+        adminAuth.from('schools').select('*', { count: 'exact', head: true }),
+        adminAuth.from('teachers').select('*', { count: 'exact', head: true }),
+        adminAuth.from('students').select('*', { count: 'exact', head: true }),
+        adminAuth.from('event_plans').select('*', { count: 'exact', head: true }).eq('status', 'submitted'),
+        getRecentAuditLogs(5)
+    ])
 
     return (
         <div className="space-y-6">
@@ -81,49 +92,7 @@ export default async function GestorOverviewPage() {
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors cursor-pointer">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <Icons.user className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-800 truncate">
-                                    Novo professor cadastrado
-                                </p>
-                                <p className="text-xs text-tech-gray">
-                                    Há 2 horas
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors cursor-pointer">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Icons.calendar className="h-5 w-5 text-orange-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-800 truncate">
-                                    Plano de evento submetido
-                                </p>
-                                <p className="text-xs text-tech-gray">
-                                    Há 5 horas
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors cursor-pointer">
-                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                                <Icons.graduationCap className="h-5 w-5 text-green-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-800 truncate">
-                                    5 novos estudantes matriculados
-                                </p>
-                                <p className="text-xs text-tech-gray">
-                                    Ontem
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    <ActivityList activities={activities as any} />
                 </div>
 
                 {/* System Status Card */}

@@ -56,3 +56,34 @@ export async function recordAuditLog({
         console.error('[AUDIT_LOG] Unexpected error:', err)
     }
 }
+
+/**
+ * Fetches recent audit logs for display in dashboards
+ */
+export async function getRecentAuditLogs(limit = 10) {
+    try {
+        const supabase = await createAdminClient()
+
+        const { data, error } = await (supabase as any)
+            .from('audit_logs')
+            .select(`
+                id,
+                action,
+                resource,
+                created_at,
+                user_id
+            `)
+            .order('created_at', { ascending: false })
+            .limit(limit)
+
+        if (error) {
+            console.error('[AUDIT_LOG] Failed to fetch audit logs:', error)
+            return []
+        }
+
+        return data || []
+    } catch (err) {
+        console.error('[AUDIT_LOG] Unexpected error fetching logs:', err)
+        return []
+    }
+}

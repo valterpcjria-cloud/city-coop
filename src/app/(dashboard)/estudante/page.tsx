@@ -27,12 +27,35 @@ export default async function StudentDashboard() {
     const currentClass = student?.classes?.[0]?.class
     const currentNucleus = nucleusMember?.nucleus
 
+    // Fetch counts for Student Dashboard
+    const [pendingAssessmentsRes, nextEventRes] = await Promise.all([
+        currentClass?.id
+            ? supabase
+                .from('assessments')
+                .select('id', { count: 'exact', head: true })
+                .eq('class_id', currentClass.id)
+            // In a real scenario, we'd also filter by assessments the student hasn't completed yet
+            : Promise.resolve({ count: 0 }),
+        currentNucleus?.id
+            ? supabase
+                .from('coop_eventos')
+                .select('*')
+                .eq('nucleo_escolar_id', currentNucleus.id)
+                .gte('data_planejada', new Date().toISOString())
+                .order('data_planejada', { ascending: true })
+                .limit(1)
+                .maybeSingle()
+            : Promise.resolve({ data: null })
+    ])
+
     return (
         <DashboardClient
             student={student}
             nucleusMember={nucleusMember}
             currentClass={currentClass}
             currentNucleus={currentNucleus}
+            pendingAssessmentsCount={pendingAssessmentsRes.count || 0}
+            nextEvent={nextEventRes.data}
         />
     )
 }

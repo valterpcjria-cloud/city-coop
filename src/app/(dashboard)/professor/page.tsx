@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import Link from 'next/link'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { getRecentAuditLogs } from '@/lib/audit'
+import { ActivityList } from '@/components/dashboard/shared/activity-list'
 
 export default async function ProfessorDashboardPage() {
     const supabase = await createClient()
@@ -13,33 +13,45 @@ export default async function ProfessorDashboardPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
-    // Get Teacher Profile and initial counts in parallel
+    // Get Teacher Profile
     const { data: teacher } = await adminAuth
         .from('teachers')
-        .select('id')
+        .select('id, school_id')
         .eq('user_id', user.id)
         .single() as any
 
     // Fetch classes and initial status count
-    const [classesRes, teacherClassesRes] = await Promise.all([
+    const [classesRes, teacherClassesRes, activities, eventsRes] = await Promise.all([
         adminAuth
             .from('classes')
             .select('*', { count: 'exact', head: true })
             .eq('teacher_id', teacher?.id)
             .eq('status', 'active'),
-        teacher ? adminAuth.from('classes').select('id').eq('teacher_id', teacher.id) : Promise.resolve({ data: [] })
+        teacher ? adminAuth.from('classes').select('id').eq('teacher_id', teacher.id) : Promise.resolve({ data: [] }),
+        getRecentAuditLogs(5),
+        teacher?.school_id
+            ? adminAuth.from('coop_eventos').select('*, nucleo:nucleo_gestor_escolar!inner(school_id)', { count: 'exact', head: true }).eq('nucleo.school_id', teacher.school_id)
+            : Promise.resolve({ count: 0 })
     ])
 
     const classesCount = classesRes.count
+    const eventsCount = eventsRes.count
     const classIds = (teacherClassesRes.data as any[])?.map(c => c.id) || []
 
-    // Fetch student count if classes exist
-    const { count: realStudentsCount } = classIds.length > 0
-        ? await adminAuth
-            .from('class_students')
-            .select('*', { count: 'exact', head: true })
-            .in('class_id', classIds)
-        : { count: 0 }
+    // Fetch student count and pending assessments if classes exist
+    const [{ count: realStudentsCount }, { count: pendingAssessmentsCount }] = classIds.length > 0
+        ? await Promise.all([
+            adminAuth
+                .from('class_students')
+                .select('*', { count: 'exact', head: true })
+                .in('class_id', classIds),
+            adminAuth
+                .from('assessments')
+                .select('id', { count: 'exact', head: true })
+                .in('class_id', classIds)
+            // Note: This is a simplification. Ideally, we'd check for responses that need grading.
+        ])
+        : [{ count: 0 }, { count: 0 }]
 
     return (
         <div className="space-y-6">
@@ -91,29 +103,29 @@ export default async function ProfessorDashboardPage() {
                 </Card>
                 <Card glass className="border-l-4 border-l-tech-gray hover:-translate-y-1 group transition-all">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-tech-gray">Avaliações Pendentes</CardTitle>
+                        <CardTitle className="text-sm font-medium text-tech-gray">Avaliações Ativas</CardTitle>
                         <div className="p-2 rounded-full bg-tech-gray/10 group-hover:bg-tech-gray/20 transition-colors">
                             <Icons.check className="h-4 w-4 text-tech-gray" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-tech-gray">0</div>
+                        <div className="text-3xl font-bold text-tech-gray">{pendingAssessmentsCount || 0}</div>
                         <p className="text-xs text-tech-gray">
-                            Aguardando correção
+                            Total de avaliações criadas
                         </p>
                     </CardContent>
                 </Card>
                 <Card glass className="border-l-4 border-l-green-500 hover:-translate-y-1 group transition-all">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-tech-gray">Eventos Aprovados</CardTitle>
+                        <CardTitle className="text-sm font-medium text-tech-gray">Eventos da Escola</CardTitle>
                         <div className="p-2 rounded-full bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
                             <Icons.calendar className="h-4 w-4 text-green-500" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-green-600">0</div>
+                        <div className="text-3xl font-bold text-green-600">{eventsCount || 0}</div>
                         <p className="text-xs text-tech-gray">
-                            Prontos para execução
+                            Acompanhamento de eventos
                         </p>
                     </CardContent>
                 </Card>
@@ -124,25 +136,34 @@ export default async function ProfessorDashboardPage() {
                     <CardHeader className="border-b border-tech-gray/10 bg-gradient-to-r from-city-blue/5 to-transparent">
                         <CardTitle className="text-city-blue">Turmas Recentes</CardTitle>
                         <CardDescription className="text-tech-gray">
-                            Você não tem turmas ativas no momento.
+                            {classesCount === 0 ? 'Você não tem turmas ativas no momento.' : 'Visualize suas turmas e progresso.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <div className="bg-gradient-to-br from-city-blue/10 to-coop-orange/10 p-5 rounded-full mb-4 animate-in zoom-in duration-500">
-                                <Icons.menu className="h-10 w-10 text-city-blue" />
+                        {classesCount === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <div className="bg-gradient-to-br from-city-blue/10 to-coop-orange/10 p-5 rounded-full mb-4 animate-in zoom-in duration-500">
+                                    <Icons.menu className="h-10 w-10 text-city-blue" />
+                                </div>
+                                <h3 className="font-semibold text-lg text-city-blue mb-1">Nenhuma turma encontrada</h3>
+                                <p className="text-tech-gray mb-6 max-w-sm">
+                                    Comece criando sua primeira turma para gerenciar os estudantes e suas cooperativas.
+                                </p>
+                                <Button className="bg-coop-orange hover:bg-coop-orange-dark text-white shadow-md hover:scale-105 transition-transform" asChild>
+                                    <Link href="/professor/turmas/nova">
+                                        <Icons.add className="mr-2 h-4 w-4" />
+                                        Criar minha primeira turma
+                                    </Link>
+                                </Button>
                             </div>
-                            <h3 className="font-semibold text-lg text-city-blue mb-1">Nenhuma turma encontrada</h3>
-                            <p className="text-tech-gray mb-6 max-w-sm">
-                                Comece criando sua primeira turma para gerenciar os estudantes e suas cooperativas.
-                            </p>
-                            <Button className="bg-coop-orange hover:bg-coop-orange-dark text-white shadow-md hover:scale-105 transition-transform" asChild>
-                                <Link href="/professor/turmas/nova">
-                                    <Icons.add className="mr-2 h-4 w-4" />
-                                    Criar minha primeira turma
-                                </Link>
-                            </Button>
-                        </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <p className="text-sm text-tech-gray">Acesse o menu "Turmas" para gerenciar seus alunos.</p>
+                                <Button variant="outline" asChild>
+                                    <Link href="/professor/turmas">Ver todas as turmas</Link>
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -154,19 +175,7 @@ export default async function ProfessorDashboardPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
-                        <div className="space-y-6">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="flex items-center">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-city-blue/20 to-coop-orange/20 flex items-center justify-center mr-4">
-                                        <div className="w-3 h-3 rounded-full bg-gradient-to-r from-city-blue to-coop-orange" />
-                                    </div>
-                                    <div className="space-y-1 flex-1">
-                                        <div className="h-4 bg-tech-gray/10 rounded w-3/4 animate-pulse" />
-                                        <div className="h-3 bg-tech-gray/5 rounded w-1/2 animate-pulse" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <ActivityList activities={activities as any} />
                     </CardContent>
                 </Card>
             </div>

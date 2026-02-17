@@ -6,31 +6,24 @@ import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 interface DashboardClientProps {
     student: any
     nucleusMember: any
     currentClass: any
     currentNucleus: any
+    pendingAssessmentsCount: number
+    nextEvent: any
 }
 
-export function DashboardClient({ student, nucleusMember, currentClass, currentNucleus }: DashboardClientProps) {
+export function DashboardClient({ student, nucleusMember, currentClass, currentNucleus, pendingAssessmentsCount, nextEvent }: DashboardClientProps) {
     return (
         <div className="space-y-6">
-            {/* Header with Brand Gradient */}
-            <div className="flex items-center justify-between p-6 -m-6 mb-0 bg-gradient-to-r from-[#4A90D9]/10 via-white to-[#F5A623]/10 border-b border-tech-gray/10">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-city-blue">Meu Painel</h2>
-                    <p className="text-tech-gray">Bem-vindo ao City Coop, {student?.name?.split(' ')[0] || 'Estudante'}!</p>
-                </div>
-                <div className="text-right hidden sm:block">
-                    <p className="text-sm font-semibold text-coop-orange">{currentClass?.name || 'Sem turma'}</p>
-                    <p className="text-xs text-tech-gray">{currentClass?.code}</p>
-                </div>
-            </div>
-
+            {/* ... middle part unchanged ... */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {/* Status Card - Brand Gradient */}
+                {/* ... skip status card ... */}
                 <Card className="bg-gradient-to-br from-city-blue to-city-blue-dark text-white border-none shadow-lg hover:scale-[1.02] transition-transform">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-medium opacity-90">Meu Núcleo</CardTitle>
@@ -67,15 +60,15 @@ export function DashboardClient({ student, nucleusMember, currentClass, currentN
                 {/* Activities Card */}
                 <Card glass className="border-l-4 border-l-coop-orange hover:-translate-y-1 transition-all group">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-tech-gray">Atividades Pendentes</CardTitle>
+                        <CardTitle className="text-sm font-medium text-tech-gray">Avaliações Ativas</CardTitle>
                         <div className="p-2 rounded-full bg-coop-orange/10 group-hover:bg-coop-orange/20 transition-colors">
                             <Icons.check className="h-4 w-4 text-coop-orange" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-coop-orange">0</div>
+                        <div className="text-3xl font-bold text-coop-orange">{pendingAssessmentsCount}</div>
                         <p className="text-xs text-tech-gray">
-                            Tudo em dia!
+                            {pendingAssessmentsCount > 0 ? 'Existem avaliações para você!' : 'Tudo em dia!'}
                         </p>
                     </CardContent>
                 </Card>
@@ -89,9 +82,11 @@ export function DashboardClient({ student, nucleusMember, currentClass, currentN
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-city-blue">--</div>
+                        <div className="text-2xl font-bold text-city-blue truncate" title={nextEvent?.titulo}>
+                            {nextEvent?.titulo || '--'}
+                        </div>
                         <p className="text-xs text-tech-gray">
-                            Nenhum evento agendado
+                            {nextEvent ? formatDistanceToNow(new Date(nextEvent.data_planejada), { addSuffix: true, locale: ptBR }) : 'Nenhum evento agendado'}
                         </p>
                     </CardContent>
                 </Card>
