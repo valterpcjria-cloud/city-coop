@@ -13,7 +13,11 @@ Para evitar falhas de deploy na Vercel e garantir a estabilidade da plataforma C
 2.  **Correção de Erros**:
     - Se houver erros de **TypeScript**, corrija todos antes de prosseguir.
     - Se houver erros de **Lint**, resolva-os para manter o padrão de código.
-    - Se o build falhar devido a variáveis de ambiente ausentes, verifique o arquivo `.env.local` e compare com as configurações da Vercel.
+    - **Checklist de Prevenção (Antigravity Standard)**:
+        - [ ] **Nulidade**: Garanta fallback para campos do banco (ex: `user_id || ''`) em componentes que exigem valores.
+        - [ ] **Tipos Supabase**: Novos membros e tabelas devem estar em `src/types/database.types.ts`.
+        - [ ] **Imports de UI**: Verifique se componentes como `toast` estão exportados/importados corretamente (ex: de `sonner`).
+    - Se o build falhar por variáveis de ambiente, verifique o `.env.local`.
 
 3.  **Verificação de Tipagem**:
     Certifique-se de que novos dados ou interfaces estão corretamente mapeados em todos os componentes que os utilizam.

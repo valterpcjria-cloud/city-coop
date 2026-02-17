@@ -8,7 +8,9 @@ import { Icons } from '@/components/ui/icons'
 import { getSupabaseClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-interface GestorSidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface GestorSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
+    isSuperadmin?: boolean
+}
 
 const routes = [
     {
@@ -78,10 +80,19 @@ const routes = [
     },
 ]
 
-export function GestorSidebar({ className }: GestorSidebarProps) {
+export function GestorSidebar({ className, isSuperadmin }: GestorSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = getSupabaseClient()
+
+    const allRoutes = [...routes]
+    if (isSuperadmin) {
+        allRoutes.push({
+            label: 'Exclusão Crítica',
+            icon: Icons.trash,
+            href: '/gestor/superadmin/exclusao-em-massa',
+        })
+    }
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
@@ -120,7 +131,7 @@ export function GestorSidebar({ className }: GestorSidebarProps) {
 
             {/* Navigation */}
             <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
-                {routes.map((route, index) => {
+                {allRoutes.map((route, index) => {
                     const active = isActive(route.href)
                     return (
                         <Link

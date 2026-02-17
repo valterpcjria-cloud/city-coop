@@ -1,4 +1,5 @@
 import {
+    AlertTriangle,
     Loader2,
     Github,
     Chrome,
@@ -108,6 +109,7 @@ export const Icons = {
     building: Building2,
     info: Info,
     checkSquare: CheckSquare,
+    alertTriangle: AlertTriangle,
 }
 
 

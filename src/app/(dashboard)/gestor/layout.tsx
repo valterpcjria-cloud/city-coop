@@ -62,11 +62,12 @@ export default async function GestorDashboardLayout({
             redirect('/onboarding-error')
         }
     }
+    const isSuperadmin = manager.is_superadmin || user.user_metadata?.role === 'superadmin'
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100/50">
             {/* Premium Glassmorphism Sidebar */}
-            <GestorSidebar className="hidden md:flex" />
+            <GestorSidebar className="hidden md:flex" isSuperadmin={isSuperadmin} />
 
             {/* Main Content Area */}
             <div className="md:ml-72 min-h-screen flex flex-col">
