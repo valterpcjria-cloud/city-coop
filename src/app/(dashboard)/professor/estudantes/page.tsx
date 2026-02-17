@@ -60,7 +60,7 @@ async function getStudents(schoolId: string) {
 
     return (students || []).map((s: any) => ({
         id: s.id,
-        user_id: s.user_id,
+        user_id: s.user_id || '',
         name: s.name,
         email: s.email,
         cpf: s.cpf || null,

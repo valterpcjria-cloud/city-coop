@@ -35,7 +35,10 @@ export default async function GestorStudentsPage() {
             </div>
 
             <StudentsTable
-                initialStudents={students || []}
+                initialStudents={(students || []).map((s: any) => ({
+                    ...s,
+                    user_id: s.user_id || ''
+                }))}
                 schools={schools || []}
                 isSuperadmin={isSuperadmin}
             />

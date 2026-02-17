@@ -13,6 +13,7 @@ import { useActionToast } from '@/hooks/use-action-toast'
 import { AnimatePresence, motion } from 'framer-motion'
 import { School, MapPin, Users, GraduationCap, BookOpen, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface SchoolData {
     id: string

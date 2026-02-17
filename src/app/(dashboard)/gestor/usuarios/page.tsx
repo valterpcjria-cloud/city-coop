@@ -64,7 +64,7 @@ async function getUsers() {
     const users = [
         ...(gestorsRes.data || []).map((g: any) => ({
             id: g.id,
-            user_id: g.user_id,
+            user_id: g.user_id || '',
             name: g.name,
             email: g.email,
             phone: g.phone,
@@ -78,7 +78,7 @@ async function getUsers() {
         })),
         ...(teachersRes.data || []).map((t: any) => ({
             id: t.id,
-            user_id: t.user_id,
+            user_id: t.user_id || '',
             name: t.name,
             email: t.email,
             phone: t.phone,
@@ -92,7 +92,7 @@ async function getUsers() {
         })),
         ...(studentsRes.data || []).map((s: any) => ({
             id: s.id,
-            user_id: s.user_id,
+            user_id: s.user_id || '',
             name: s.name,
             email: s.email,
             phone: null,
