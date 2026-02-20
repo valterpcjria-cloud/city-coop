@@ -4,15 +4,12 @@ import { validateAuth } from '@/lib/auth-guard'
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id: conversationId } = await params
         const auth = await validateAuth()
         if (!auth.success) return auth.response!
-
-        // Ensure params.id is awaited if necessary in future Next versions, 
-        // but here it's fine as standard dynamic route
-        const conversationId = params.id
 
         const supabase = await createClient()
         const user = auth.user!
