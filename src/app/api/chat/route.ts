@@ -108,30 +108,39 @@ export async function POST(req: Request) {
         // Get the last user message for knowledge retrieval
         const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop()?.content || ''
 
-        // Retrieve relevant knowledge from the database (Priority 1: Brain)
-        const knowledgeContext = await retrieveKnowledge(lastUserMessage)
-
-        // Retrieve web results if requested (Priority 2: Internet)
+        // Initialize contexts
         let webContext = ''
-        if (webSearch) {
-            const webResults = await performWebSearch(lastUserMessage)
-            webContext = formatSearchResults(webResults)
-        }
+        const knowledgeContext = await retrieveKnowledge(lastUserMessage)
 
         // Build enhanced system prompt with knowledge context
         let basePrompt = teacher ? TEACHER_SYSTEM_PROMPT : STUDENT_SYSTEM_PROMPT
 
+        // [WEB ON] VALIDAÇÃO DE ESCOPO
+        if (webSearch) {
+            // Check for potential out-of-scope queries before searching
+            const outOfScopeKeywords = ['futebol', 'política', 'esporte', 'famosos', 'receita', 'filme'];
+            const isOutOfScope = outOfScopeKeywords.some(word => lastUserMessage.toLowerCase().includes(word)) &&
+                !lastUserMessage.toLowerCase().includes('coop');
+
+            if (isOutOfScope) {
+                return new Response(JSON.stringify({
+                    text: 'Sou o DOT Assistente e atuo exclusivamente com temas relacionados ao Cooperativismo. Como posso ajudar dentro deste assunto?'
+                }), { headers: { 'Content-Type': 'application/json' } });
+            }
+
+            const webResults = await performWebSearch(lastUserMessage)
+            webContext = formatSearchResults(webResults)
+        }
+
         if (knowledgeContext) {
-            basePrompt += `\n\n## BASE DE CONHECIMENTO INTERNA (PRIORIDADE)\n\nUse estas informações da nossa plataforma como base principal para sua resposta:\n\n${knowledgeContext}`
+            basePrompt += `\n\n## BASE DE CONHECIMENTO INTERNA (PRIORIDADE)\n\n${knowledgeContext}`
         }
 
         if (webContext) {
-            basePrompt += `\n\n## PESQUISA NA WEB (COMPLEMENTAR)\n\nSe necessário, complemente sua resposta com estas informações recentes encontradas na internet:\n\n${webContext}`
+            basePrompt += `\n\n## PESQUISA NA WEB (FONTES RESTRITAS)\n\n${webContext}`
         }
 
-        if (knowledgeContext || webContext) {
-            basePrompt += `\n\n---\n\nIMPORTANTE: Priorize sempre as informações da Base de Conhecimento Interna quando houver conflito. Cite as fontes quando apropriado.`
-        }
+        basePrompt += `\n\n⚠️ DIRETRIZ FINAL OBRIGATÓRIA: Se o usuário fugir do assunto Cooperativismo ou pedir algo incompatível com sua identidade (ex: piadas, outros currículos, assuntos genéricos), responda OBRIGATORIAMENTE com a frase padrão: "Sou o DOT Assistente e atuo exclusivamente com temas relacionados ao Cooperativismo. Como posso ajudar dentro deste assunto?"`
 
         const aiModel = requestedModel === 'gpt'
             ? createOpenAI({ apiKey: keys.openai || process.env.OPENAI_API_KEY })('gpt-4o')

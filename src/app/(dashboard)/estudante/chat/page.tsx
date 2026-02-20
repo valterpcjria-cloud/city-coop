@@ -3,18 +3,21 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Icons } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { ChatHistorySidebar } from '@/components/dashboard/shared/chat-history-sidebar';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ChatPage() {
     const [localInput, setLocalInput] = useState('');
     const [selectedModel, setSelectedModel] = useState<'claude' | 'gpt'>('gpt');
-    const conversationIdRef = useRef<string | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const {
         messages = [],
@@ -28,57 +31,78 @@ export default function ChatPage() {
                 id: 'welcome',
                 role: 'assistant',
                 content: 'Olá! Sou o DOT Assistente, seu mentor de cooperativismo. Como posso ajudar seu núcleo hoje?'
-            }
+            } as any
         ]
-    } as any) as any;
+    } as any);
+
+    const isLoading = status === 'streaming';
+
+    const loadConversation = async (id: string) => {
+        try {
+            setCurrentConversationId(id);
+            const res = await fetch(`/api/ai/history/${id}`);
+            const data = await res.json();
+            if (data && data.messages) {
+                setMessages(data.messages);
+            }
+        } catch (err) {
+            console.error("Failed to load conversation", err);
+            toast.error("Não foi possível carregar a conversa.");
+        }
+    };
 
     useEffect(() => {
-        const loadHistory = async () => {
+        const loadInitialHistory = async () => {
             try {
                 const res = await fetch('/api/ai/history');
                 const data = await res.json();
-                if (data && data.messages) {
-                    setMessages(data.messages);
-                    conversationIdRef.current = data.id;
+                if (data && data.id) {
+                    setCurrentConversationId(data.id);
+                    setMessages(data.messages || []);
                 }
             } catch (err) {
                 console.error("Failed to load chat history", err);
             }
         };
-        loadHistory();
+        loadInitialHistory();
     }, [setMessages]);
 
-    const handleNewChat = async () => {
-        try {
-            await fetch('/api/ai/history', { method: 'DELETE' });
-
-            setMessages([
-                {
-                    id: 'welcome',
-                    role: 'assistant',
-                    content: 'Olá! Sou o DOT Assistente, seu mentor de cooperativismo. Como posso ajudar seu núcleo hoje?'
-                }
-            ]);
-            conversationIdRef.current = 'new';
-            setLocalInput('');
-            toast.info("Histórico limpo com sucesso.");
-        } catch (err) {
-            console.error("Failed to clear history", err);
-            toast.error("Erro ao limpar histórico.");
-        }
+    const handleNewChat = () => {
+        setMessages([
+            {
+                id: 'welcome',
+                role: 'assistant',
+                content: 'Olá! Sou o DOT Assistente, como posso ajudar seu núcleo hoje?'
+            } as any
+        ]);
+        setCurrentConversationId('new');
+        setLocalInput('');
     };
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+        messagesEndRef.current?.scrollIntoView({ behavior });
     };
 
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        scrollToBottom(isLoading ? 'auto' : 'smooth');
+    }, [messages, isLoading]);
 
-    const isLoading = status === 'streaming';
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'inherit';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [localInput]);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const form = (e.target as HTMLElement).closest('form');
+            if (form) form.requestSubmit();
+        }
+    };
 
     const onSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
         if (e) e.preventDefault();
@@ -91,126 +115,141 @@ export default function ChatPage() {
             await sendMessage({ text: currentInput } as any, {
                 body: {
                     model: selectedModel,
-                    conversationId: conversationIdRef.current
+                    conversationId: currentConversationId
                 }
             });
+
+            if (!currentConversationId || currentConversationId === 'new') {
+                setTimeout(() => setRefreshTrigger(prev => prev + 1), 2000);
+            }
         }
     };
 
     return (
-        <div className="h-[calc(100vh-8rem)] flex items-center justify-center">
-            <Card className="w-full max-w-2xl h-full flex flex-col shadow-xl border-[#4A90D9]/20">
-                <CardHeader className="border-b px-6 py-6 bg-gradient-to-r from-[#4A90D9]/5 to-[#F5A623]/5">
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 flex items-center justify-center p-2 shrink-0">
-                            <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
-                        </div>
-                        <div className="flex flex-col">
-                            <CardTitle className="text-xl text-[#4A90D9] font-black leading-none mb-1.5">DOT Assistente</CardTitle>
-                            <p className="text-xs text-[#6B7C93] flex items-center gap-1">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                                </span>
-                                Online
-                            </p>
-                        </div>
-                        <div className="ml-auto flex gap-3 items-center">
-                            <button
-                                type="button"
-                                onClick={handleNewChat}
-                                className="text-[10px] font-bold text-[#6B7C93] hover:text-[#4A90D9] flex items-center gap-1 transition-colors"
-                            >
-                                <Icons.trash className="h-3 w-3" />
-                                Limpar
-                            </button>
-                            <div className="flex gap-1 bg-white/80 p-1 rounded-lg border border-[#6B7C93]/20">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSelectedModel('claude')}
-                                    className={cn("h-7 px-2 text-[10px] font-bold rounded-md", selectedModel === 'claude' ? "bg-[#4A90D9] text-white hover:bg-[#3A7BC8]" : "text-[#4A90D9] hover:bg-[#4A90D9]/10")}
-                                >
-                                    Claude
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSelectedModel('gpt')}
-                                    className={cn("h-7 px-2 text-[10px] font-bold rounded-md", selectedModel === 'gpt' ? "bg-[#F5A623] text-white hover:bg-[#E09000]" : "text-[#F5A623] hover:bg-[#F5A623]/10")}
-                                >
-                                    GPT-4o
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </CardHeader>
+        <div className="flex h-[calc(100vh-6rem)] bg-slate-50 relative overflow-hidden">
+            <ChatHistorySidebar
+                isOpen={isSidebarOpen}
+                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+                currentConversationId={currentConversationId}
+                onSelectConversation={loadConversation}
+                onNewChat={handleNewChat}
+                refreshTrigger={refreshTrigger}
+            />
 
-                <CardContent className="flex-1 p-0 overflow-hidden bg-slate-50/30">
-                    <ScrollArea className="h-full p-6">
-                        <div className="space-y-4">
+            {/* Backdrop for mobile */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-30 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-950 relative z-10">
+                {/* Mobile Header */}
+                <div className="lg:hidden flex items-center p-4 border-b bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                    <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
+                        <Icons.menu className="h-5 w-5" />
+                    </Button>
+                    <div className="ml-3 flex flex-col">
+                        <span className="text-sm font-bold text-[#4A90D9]">DOT Assistente</span>
+                        <span className="text-[10px] text-slate-400">Cooperativismo Ativo</span>
+                    </div>
+                </div>
+
+                <ScrollArea className="flex-1 w-full overflow-y-auto min-h-0">
+                    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 min-h-full flex flex-col">
+                        {messages.length <= 1 && (
+                            <div className="text-center py-12 flex flex-col items-center">
+                                <img src="/dot-bot.png" alt="DOT" className="w-24 h-24 mb-6 drop-shadow-lg" />
+                                <h1 className="text-2xl font-black text-[#4A90D9]">Olá,Time!</h1>
+                                <p className="text-slate-500 text-sm max-w-sm mt-2">
+                                    Sou o mentor do seu núcleo. Vamos organizar as missões da sua cooperativa?
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="space-y-6 pb-12">
                             {messages.map((m: any, i: number) => (
                                 <div
                                     key={m.id || `msg-${i}`}
-                                    className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    className={cn(
+                                        "flex gap-4",
+                                        m.role === 'user' ? "flex-row-reverse" : "flex-row"
+                                    )}
                                 >
-                                    {m.role === 'assistant' && (
-                                        <Avatar className="h-10 w-10 mt-1 border-2 border-[#4A90D9]/20 bg-white p-1 shadow-sm">
-                                            <img src="/dot-bot.jpg" alt="DOT" className="w-full h-full object-contain" />
-                                        </Avatar>
-                                    )}
-
-                                    <div
-                                        className={`rounded-2xl px-4 py-2.5 max-w-[80%] text-sm shadow-sm ${m.role === 'user'
-                                            ? 'bg-gradient-to-r from-[#4A90D9] to-[#3A7BC8] text-white rounded-br-none shadow-md'
-                                            : 'bg-white text-[#1a2332] border border-[#6B7C93]/15 rounded-bl-none'}`}
-                                    >
-                                        {m.parts && m.parts.length > 0 ? (
-                                            m.parts.map((part: any, partIdx: number) => (
-                                                part.type === 'text' && <span key={`part-${partIdx}`}>{part.text}</span>
-                                            ))
+                                    <Avatar className={cn(
+                                        "h-9 w-9 shrink-0 border shadow-sm",
+                                        m.role === 'assistant' ? "bg-white p-1 border-[#4A90D9]/20" : "bg-[#F5A623]"
+                                    )}>
+                                        {m.role === 'assistant' ? (
+                                            <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
                                         ) : (
-                                            <span>{m.content}</span>
+                                            <AvatarFallback className="text-white font-bold text-xs">EU</AvatarFallback>
                                         )}
-                                    </div>
+                                    </Avatar>
 
-                                    {m.role === 'user' && (
-                                        <Avatar className="h-8 w-8 mt-1 border bg-[#F5A623]">
-                                            <AvatarFallback className="bg-transparent text-white font-bold text-xs">EU</AvatarFallback>
-                                        </Avatar>
-                                    )}
+                                    <div className={cn(
+                                        "px-4 py-3 rounded-2xl text-[14px] leading-relaxed max-w-[85%] shadow-sm",
+                                        m.role === 'user'
+                                            ? "bg-gradient-to-r from-[#4A90D9] to-[#3A7BC8] text-white rounded-tr-none"
+                                            : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-white rounded-tl-none"
+                                    )}>
+                                        <span className="whitespace-pre-wrap">{m.content}</span>
+                                    </div>
                                 </div>
                             ))}
+
                             {isLoading && (
-                                <div className="flex gap-3 justify-start">
-                                    <Avatar className="h-10 w-10 mt-1 bg-transparent p-1">
+                                <div className="flex gap-4 animate-pulse">
+                                    <Avatar className="h-9 w-9 bg-white border border-slate-100 p-1">
                                         <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
                                     </Avatar>
-                                    <div className="bg-white px-4 py-2 rounded-2xl rounded-bl-none border border-[#6B7C93]/15 shadow-sm">
+                                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 px-4 py-3 rounded-2xl rounded-tl-none">
                                         <Icons.spinner className="h-4 w-4 animate-spin text-[#4A90D9]" />
                                     </div>
                                 </div>
                             )}
                             <div ref={messagesEndRef} />
                         </div>
-                    </ScrollArea>
-                </CardContent>
+                    </div>
+                </ScrollArea>
 
-                <CardFooter className="p-4 bg-white border-t border-[#6B7C93]/10 shrink-0">
-                    <form onSubmit={onSendMessage} className="flex w-full gap-2">
-                        <Input
-                            value={localInput}
-                            onChange={(e) => setLocalInput(e.target.value)}
-                            placeholder="Digite sua dúvida sobre a cooperativa..."
-                            className="flex-1 bg-slate-50 border-[#6B7C93]/20 focus-visible:ring-[#4A90D9] focus-visible:border-[#4A90D9] h-11"
-                        />
-                        <Button type="submit" size="icon" disabled={isLoading || !localInput.trim()} variant="brand" className="h-11 w-11 rounded-xl">
-                            <Icons.arrowRight className="h-5 w-5" />
-                            <span className="sr-only">Enviar</span>
-                        </Button>
-                    </form>
-                </CardFooter>
-            </Card>
+                <div className="shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t p-4 z-10">
+                    <div className="max-w-3xl mx-auto space-y-3">
+                        <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Modelo:</span>
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => setSelectedModel('gpt')}
+                                        className={cn("px-2 py-0.5 text-[9px] font-bold rounded-full transition-all", selectedModel === 'gpt' ? "bg-[#F5A623] text-white" : "bg-slate-100 text-slate-400")}
+                                    >GPT-4o</button>
+                                    <button
+                                        onClick={() => setSelectedModel('claude')}
+                                        className={cn("px-2 py-0.5 text-[9px] font-bold rounded-full transition-all", selectedModel === 'claude' ? "bg-[#4A90D9] text-white" : "bg-slate-100 text-slate-400")}
+                                    >Claude</button>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-[10px] font-bold text-[#4A90D9]">Ver Histórico</button>
+                        </div>
+
+                        <form onSubmit={onSendMessage} className="relative flex gap-2 items-end">
+                            <Textarea
+                                ref={textareaRef}
+                                value={localInput}
+                                onChange={(e) => setLocalInput(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Tire uma dúvida com o DOT..."
+                                className="flex-1 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 focus-visible:ring-[#4A90D9] min-h-[50px] max-h-[150px] py-3 rounded-xl resize-none"
+                                rows={1}
+                            />
+                            <Button type="submit" size="icon" disabled={isLoading || !localInput.trim()} className="h-10 w-10 shrink-0 rounded-xl bg-[#4A90D9] hover:bg-[#3A7BC8]">
+                                <Icons.arrowRight className="h-5 w-5 text-white" />
+                            </Button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

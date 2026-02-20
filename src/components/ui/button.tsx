@@ -9,18 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[#4A90D9] text-white shadow-md hover:bg-[#3A7BC8] hover:shadow-lg focus-visible:ring-[#4A90D9]",
-        destructive:
-          "bg-red-500 text-white shadow-md hover:bg-red-600 focus-visible:ring-red-500",
-        outline:
-          "border-2 border-[#4A90D9] text-[#4A90D9] bg-white hover:bg-[#4A90D9]/5 hover:border-[#3A7BC8]",
-        secondary:
-          "bg-[#F5A623]/10 text-[#E09000] border border-[#F5A623]/20 hover:bg-[#F5A623]/20 hover:border-[#F5A623]/40",
-        ghost:
-          "text-[#6B7C93] hover:bg-[#4A90D9]/5 hover:text-[#4A90D9]",
-        link: "text-[#4A90D9] underline-offset-4 hover:underline hover:text-[#3A7BC8]",
-        brand: "bg-gradient-to-r from-[#4A90D9] to-[#F5A623] text-white shadow-lg hover:from-[#3A7BC8] hover:to-[#E09000] hover:shadow-xl",
-        orange: "bg-[#F5A623] text-white shadow-md hover:bg-[#E09000] hover:shadow-lg focus-visible:ring-[#F5A623]",
+        default: "bg-city-blue text-white shadow-md hover:bg-city-blue-dark hover:shadow-lg focus-visible:ring-city-blue",
+        destructive: "bg-red-500 text-white shadow-md hover:bg-red-600 focus-visible:ring-red-500",
+        outline: "border-2 border-city-blue text-city-blue bg-white hover:bg-city-blue/5 hover:border-city-blue-dark",
+        secondary: "bg-coop-orange/10 text-coop-orange-dark border border-coop-orange/20 hover:bg-coop-orange/20 hover:border-coop-orange/40",
+        ghost: "text-tech-gray hover:bg-city-blue/5 hover:text-city-blue",
+        link: "text-city-blue underline-offset-4 hover:underline hover:text-city-blue-dark",
+        brand: "bg-gradient-to-r from-city-blue to-coop-orange text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]",
+        orange: "bg-coop-orange text-white shadow-md hover:bg-coop-orange-dark hover:shadow-lg focus-visible:ring-coop-orange",
       },
       size: {
         default: "h-10 px-5 py-2 has-[>svg]:px-4",

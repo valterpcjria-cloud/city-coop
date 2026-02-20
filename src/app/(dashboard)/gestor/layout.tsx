@@ -65,12 +65,18 @@ export default async function GestorDashboardLayout({
     const isSuperadmin = manager.is_superadmin || user.user_metadata?.role === 'superadmin'
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100/50">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
             {/* Premium Glassmorphism Sidebar */}
-            <GestorSidebar className="hidden md:flex" isSuperadmin={isSuperadmin} />
+            <GestorSidebar className="hidden md:flex shadow-2xl shadow-blue-500/5" isSuperadmin={isSuperadmin} />
+
+            {/* Decorative background blobs */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[20%] right-[10%] w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute bottom-[20%] left-[20%] w-[300px] h-[300px] bg-amber-500/5 rounded-full blur-[80px] animate-pulse delay-700" />
+            </div>
 
             {/* Main Content Area */}
-            <div className="md:ml-72 min-h-screen flex flex-col">
+            <div className="md:ml-72 min-h-screen flex flex-col relative z-10 transition-all duration-500">
                 {/* Floating Header */}
                 <GestorHeader
                     user={{ name: manager.name, email: manager.email }}
@@ -78,7 +84,7 @@ export default async function GestorDashboardLayout({
                 />
 
                 {/* Content */}
-                <main className="flex-1 px-4 pb-6">
+                <main className="flex-1 px-6 pb-12 pt-4">
                     {children}
                 </main>
             </div>

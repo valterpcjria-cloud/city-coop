@@ -1,7 +1,8 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { School, Users, GraduationCap, Calendar, TrendingUp, TrendingDown, LucideIcon } from 'lucide-react'
+import { School, Users, GraduationCap, Calendar, LucideIcon } from 'lucide-react'
 
 type StatCardVariant = 'blue' | 'orange' | 'green' | 'purple'
 type IconName = 'school' | 'users' | 'graduationCap' | 'calendar'
@@ -19,39 +20,29 @@ interface StatCardProps {
     iconName: IconName
     variant?: StatCardVariant
     subtitle?: string
-    trend?: {
-        value: number
-        label: string
-        positive: boolean
-    }
-    className?: string
     animationDelay?: number
 }
 
-const variantStyles: Record<StatCardVariant, { card: string; icon: string; iconBg: string; textColor: string }> = {
+const variantStyles: Record<StatCardVariant, { card: string; icon: string; iconBg: string }> = {
     blue: {
-        card: 'stat-card-blue',
-        icon: 'text-city-blue',
-        iconBg: 'icon-container-blue',
-        textColor: 'text-city-blue'
+        card: 'border-blue-500/10 bg-blue-500/5',
+        icon: 'text-blue-600 dark:text-blue-400',
+        iconBg: 'bg-blue-500/10',
     },
     orange: {
-        card: 'stat-card-orange',
-        icon: 'text-coop-orange',
-        iconBg: 'icon-container-orange',
-        textColor: 'text-coop-orange'
+        card: 'border-amber-500/10 bg-amber-500/5',
+        icon: 'text-amber-600 dark:text-amber-400',
+        iconBg: 'bg-amber-500/10',
     },
     green: {
-        card: 'stat-card-green',
-        icon: 'text-emerald-600',
-        iconBg: 'icon-container-green',
-        textColor: 'text-emerald-600'
+        card: 'border-emerald-500/10 bg-emerald-500/5',
+        icon: 'text-emerald-600 dark:text-emerald-400',
+        iconBg: 'bg-emerald-500/10',
     },
     purple: {
-        card: 'stat-card-purple',
-        icon: 'text-violet-600',
-        iconBg: 'icon-container-purple',
-        textColor: 'text-violet-600'
+        card: 'border-violet-500/10 bg-violet-500/5',
+        icon: 'text-violet-600 dark:text-violet-400',
+        iconBg: 'bg-violet-500/10',
     }
 }
 
@@ -61,69 +52,49 @@ export function StatCard({
     iconName,
     variant = 'blue',
     subtitle,
-    trend,
-    className,
     animationDelay = 0
 }: StatCardProps) {
     const styles = variantStyles[variant]
     const Icon = iconMap[iconName]
 
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: animationDelay * 0.001 }}
+            whileHover={{ y: -5, scale: 1.02 }}
             className={cn(
-                'stat-card cursor-pointer',
-                styles.card,
-                'animate-fade-in-up opacity-0',
-                className
+                'relative overflow-hidden rounded-2xl border p-6 backdrop-blur-xl transition-all duration-300',
+                'bg-white/60 dark:bg-slate-900/40',
+                styles.card
             )}
-            style={{ animationDelay: `${animationDelay}ms` }}
         >
             <div className="flex items-start justify-between mb-4">
-                <div className={cn('icon-container', styles.iconBg)}>
-                    <Icon className={cn('h-5 w-5', styles.icon)} />
+                <div className={cn('p-3 rounded-xl transition-transform duration-500 group-hover:scale-110', styles.iconBg)}>
+                    <Icon className={cn('h-6 w-6', styles.icon)} />
                 </div>
-                {trend && (
-                    <div className={cn(
-                        'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full',
-                        trend.positive
-                            ? 'text-emerald-700 bg-emerald-50'
-                            : 'text-red-700 bg-red-50'
-                    )}>
-                        <span>{trend.positive ? '↑' : '↓'}</span>
-                        <span>{trend.value}%</span>
-                    </div>
-                )}
             </div>
 
-            <div className="space-y-1">
-                <p className="text-sm font-medium text-tech-gray">
+            <div className="space-y-1 relative z-10">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                     {title}
                 </p>
-                <p className={cn(
-                    'text-3xl font-bold tracking-tight',
-                    'animate-count-up opacity-0'
-                )}
-                    style={{ animationDelay: `${animationDelay + 150}ms` }}
-                >
-                    {value}
-                </p>
+                <div className="flex items-baseline gap-2">
+                    <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        {value}
+                    </p>
+                </div>
                 {subtitle && (
-                    <p className="text-xs text-tech-gray/80 mt-1">
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                         {subtitle}
                     </p>
                 )}
             </div>
 
-            {/* Decorative Corner */}
-            <div className="absolute top-0 right-0 w-20 h-20 opacity-50">
-                <div className={cn(
-                    'absolute top-4 right-4 w-12 h-12 rounded-full blur-xl',
-                    variant === 'blue' && 'bg-city-blue/20',
-                    variant === 'orange' && 'bg-coop-orange/20',
-                    variant === 'green' && 'bg-emerald-500/20',
-                    variant === 'purple' && 'bg-violet-500/20'
-                )} />
+            {/* Background pattern */}
+            <div className="absolute -right-8 -bottom-8 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+                <Icon size={120} />
             </div>
-        </div>
+        </motion.div>
     )
 }

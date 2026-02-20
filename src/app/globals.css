@@ -44,98 +44,106 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  /* City Coop Brand Colors */
-  --color-city-blue: #4A90D9;
-  --color-city-blue-light: #6BA5E4;
-  --color-city-blue-dark: #3A7BC8;
-  --color-coop-orange: #F5A623;
-  --color-coop-orange-light: #FFB84D;
-  --color-coop-orange-dark: #E09000;
-  --color-tech-gray: #6B7C93;
-  --color-tech-gray-light: #8A9BB0;
-  --color-tech-gray-dark: #4A5B6E;
+  /* City Coop Brand Colors Redefined */
+  --color-city-blue: #3b82f6;
+  --color-city-blue-light: #60a5fa;
+  --color-city-blue-dark: #1d4ed8;
+  --color-coop-orange: #f59e0b;
+  --color-coop-orange-light: #fbbf24;
+  --color-coop-orange-dark: #b45309;
+  --color-tech-gray: #475569;
+  --color-tech-gray-light: #94a3b8;
+  --color-tech-gray-dark: #1e293b;
+  
+  /* HSL-based balanced palette for Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: rgba(0, 0, 0, 0.05);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: #ffffff;
-  --foreground: #1a2332;
+  --radius: 1rem;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #1a2332;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #1a2332;
+  --popover-foreground: #0f172a;
 
-  /* Primary = City Blue */
-  --primary: #4A90D9;
+  /* Primary = Modern Blue */
+  --primary: #3b82f6;
   --primary-foreground: #ffffff;
 
-  /* Secondary = Tech Gray */
-  --secondary: #f0f4f8;
-  --secondary-foreground: #4A5B6E;
+  /* Secondary = Slate */
+  --secondary: #f1f5f9;
+  --secondary-foreground: #475569;
 
-  /* Muted = Light Gray */
-  --muted: #f5f7fa;
-  --muted-foreground: #6B7C93;
+  /* Muted */
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
 
-  /* Accent = Coop Orange */
-  --accent: #F5A623;
+  /* Accent = Amber */
+  --accent: #f59e0b;
   --accent-foreground: #ffffff;
 
   --destructive: #ef4444;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #4A90D9;
+  --ring: #3b82f6;
 
   /* Charts with brand colors */
-  --chart-1: #4A90D9;
-  --chart-2: #F5A623;
-  --chart-3: #6B7C93;
-  --chart-4: #6BA5E4;
-  --chart-5: #FFB84D;
+  --chart-1: #3b82f6;
+  --chart-2: #f59e0b;
+  --chart-3: #64748b;
+  --chart-4: #60a5fa;
+  --chart-5: #fbbf24;
 
   /* Sidebar */
-  --sidebar: #f8fafc;
-  --sidebar-foreground: #1a2332;
-  --sidebar-primary: #4A90D9;
+  --sidebar: rgba(255, 255, 255, 0.8);
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #3b82f6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #FEF3E0;
-  --sidebar-accent-foreground: #E09000;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #4A90D9;
+  --sidebar-accent: #fef3c7;
+  --sidebar-accent-foreground: #b45309;
+  --sidebar-border: rgba(0, 0, 0, 0.05);
+  --sidebar-ring: #3b82f6;
 }
 
 .dark {
-  --background: #0f172a;
+  --background: #020617;
   --foreground: #f8fafc;
-  --card: #1e293b;
+  --card: #0f172a;
   --card-foreground: #f8fafc;
-  --popover: #1e293b;
+  --popover: #0f172a;
   --popover-foreground: #f8fafc;
-  --primary: #6BA5E4;
-  --primary-foreground: #0f172a;
-  --secondary: #334155;
+  --primary: #60a5fa;
+  --primary-foreground: #020617;
+  --secondary: #1e293b;
   --secondary-foreground: #f8fafc;
-  --muted: #334155;
+  --muted: #1e293b;
   --muted-foreground: #94a3b8;
-  --accent: #FFB84D;
-  --accent-foreground: #0f172a;
+  --accent: #fbbf24;
+  --accent-foreground: #020617;
   --destructive: #f87171;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.15);
-  --ring: #6BA5E4;
-  --chart-1: #6BA5E4;
-  --chart-2: #FFB84D;
-  --chart-3: #8A9BB0;
-  --chart-4: #4A90D9;
-  --chart-5: #F5A623;
-  --sidebar: #1e293b;
+  --ring: #60a5fa;
+  --chart-1: #60a5fa;
+  --chart-2: #fbbf24;
+  --chart-3: #94a3b8;
+  --chart-4: #3b82f6;
+  --chart-5: #f59e0b;
+  --sidebar: rgba(15, 23, 42, 0.8);
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #6BA5E4;
-  --sidebar-primary-foreground: #0f172a;
-  --sidebar-accent: #3d2e1a;
-  --sidebar-accent-foreground: #FFB84D;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #fbbf24;
   --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #6BA5E4;
+  --sidebar-ring: #60a5fa;
+  
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 @layer base {

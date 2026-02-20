@@ -19,6 +19,10 @@ export async function performWebSearch(query: string, limit: number = 3): Promis
     }
 
     try {
+        // [WEB ON] PROTOCOLO DE FONTES RESTRITAS
+        // Priorizando OCB, Sescoop e Legislação Governamental
+        const domainQuery = `(site:ocb.org.br OR site:brasilcooperativo.coop.br OR site:planalto.gov.br) cooperativismo ${query}`;
+
         const response = await fetch('https://api.tavily.com/search', {
             method: 'POST',
             headers: {
@@ -26,7 +30,7 @@ export async function performWebSearch(query: string, limit: number = 3): Promis
             },
             body: JSON.stringify({
                 api_key: apiKey,
-                query: query,
+                query: domainQuery,
                 search_depth: 'advanced',
                 include_answer: false,
                 include_images: false,
