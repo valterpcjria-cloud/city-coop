@@ -6,6 +6,8 @@ import { getAIKeys } from '@/lib/ai/config'
 import { TEACHER_SYSTEM_PROMPT, STUDENT_SYSTEM_PROMPT } from '@/lib/ai/claude'
 import { performWebSearch, formatSearchResults } from '@/lib/ai/search'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { aiChatSchema, getZodErrorResponse } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 
 export const maxDuration = 30
 
@@ -75,16 +77,30 @@ async function retrieveKnowledge(query: string, limit: number = 5): Promise<stri
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json()
-        let { messages, conversationId, model: requestedModel, text, webSearch } = body
+        const json = await req.json()
 
-        // ... existing robustness logic ...
-        if (!messages && text) {
-            messages = [{ role: 'user', content: text }]
-        } else if (!messages && body.message) {
-            messages = [{ role: 'user', content: body.message }]
-        } else if (!messages) {
-            messages = []
+        // 1. Validate request body
+        // We use a slightly different approach here because 'messages' is handled by the AI SDK
+        // but we want to validate the other parameters.
+        const bodyValidation = aiChatSchema.safeParse({
+            message: json.text || json.message || (json.messages?.[json.messages.length - 1]?.content),
+            conversationId: json.conversationId,
+            model: json.model,
+            webSearch: json.webSearch
+        })
+
+        if (!bodyValidation.success) {
+            return new Response(JSON.stringify(getZodErrorResponse(bodyValidation.error)), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            })
+        }
+
+        const { message, conversationId, model: requestedModel, webSearch } = bodyValidation.data
+        let { messages } = json
+
+        if (!messages) {
+            messages = [{ role: 'user', content: message }]
         }
 
         const supabase = await createClient()
@@ -163,7 +179,7 @@ export async function POST(req: Request) {
                     let targetId = conversationId && conversationId !== 'new' ? conversationId : null
 
                     if (!targetId && conversationId !== 'new') {
-                        const { data: latest, error: fetchError } = await (supabase as any)
+                        const { data: latest, error: fetchError } = await supabase
                             .from('ai_conversations')
                             .select('id')
                             .eq('user_id', user.id)
@@ -177,19 +193,19 @@ export async function POST(req: Request) {
                     }
 
                     if (targetId) {
-                        const { error: updateError } = await (supabase as any)
+                        const { error: updateError } = await supabase
                             .from('ai_conversations')
                             .update({
                                 messages: allMessages,
                                 updated_at: new Date().toISOString()
-                            } as any)
+                            })
                             .eq('id', targetId)
 
                         if (updateError) console.error('Error updating chat history:', updateError)
                         else console.log(`Chat history updated for ${targetId}`)
                     } else {
                         // Create new conversation
-                        const { error: insertError } = await (supabase as any)
+                        const { error: insertError } = await supabase
                             .from('ai_conversations')
                             .insert({
                                 user_id: user.id,
@@ -210,12 +226,7 @@ export async function POST(req: Request) {
         return result.toUIMessageStreamResponse()
 
     } catch (error: any) {
-        console.error('--- CHAT API ERROR ---')
-        console.error('Type:', error?.constructor?.name || typeof error)
-        console.error('Message:', error.message)
-        if (error.status) console.error('Status:', error.status)
-        if (error.data) console.error('Data:', JSON.stringify(error.data))
-        console.error('--- END ERROR ---')
+        logger.error('CHAT API ERROR', error)
         return new Response(JSON.stringify({
             error: error.message || 'Internal Server Error',
             details: error.data || null

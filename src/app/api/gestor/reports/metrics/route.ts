@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { validateGestorAccess } from '@/lib/auth-guard'
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '@/lib/rate-limiter'
+import { reportFilterSchema, getZodErrorResponse } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
     try {
@@ -21,76 +23,59 @@ export async function GET(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         )
 
-        // Fetch counts in parallel
+        const { searchParams } = new URL(request.url)
+        const filters = {
+            startDate: searchParams.get('startDate'),
+            endDate: searchParams.get('endDate'),
+            schoolId: searchParams.get('schoolId'),
+            classId: searchParams.get('classId'),
+            groupBy: searchParams.get('groupBy') || 'day'
+        }
+
+        const filterValidation = reportFilterSchema.safeParse(filters)
+        if (!filterValidation.success) {
+            return NextResponse.json(getZodErrorResponse(filterValidation.error), { status: 400 })
+        }
+
+        // Fetch metrics via RPC for maximum scalability
         const [
-            schoolsRes,
-            teachersRes,
-            studentsRes,
-            classesRes,
-            eventsRes,
+            platformRes,
+            studentsByGradeRes,
+            classesByModalityRes,
+            eventsByStatusRes,
         ] = await Promise.all([
-            supabase.from('schools').select('id', { count: 'exact', head: true }),
-            supabase.from('teachers').select('id', { count: 'exact', head: true }),
-            supabase.from('students').select('id, grade_level'),
-            supabase.from('classes').select('id, status, modality'),
-            supabase.from('event_plans').select('id, status'),
+            supabase.rpc('get_platform_metrics'),
+            supabase.rpc('get_students_by_grade'),
+            supabase.rpc('get_classes_by_modality'),
+            supabase.rpc('get_events_by_status_formatted'),
         ])
 
-        // Calculate class stats
-        const classes = classesRes.data || []
-        const activeClasses = classes.filter(c => c.status === 'active').length
-        const completedClasses = classes.filter(c => c.status === 'completed').length
+        if (platformRes.error) throw platformRes.error
+        if (studentsByGradeRes.error) throw studentsByGradeRes.error
+        if (classesByModalityRes.error) throw classesByModalityRes.error
+        if (eventsByStatusRes.error) throw eventsByStatusRes.error
 
-        // Calculate event stats
-        const events = eventsRes.data || []
-        const approvedEvents = events.filter(e => e.status === 'approved').length
-        const pendingEvents = events.filter(e => e.status === 'submitted' || e.status === 'draft').length
-        const rejectedEvents = events.filter(e => e.status === 'rejected').length
-
-        // Students by grade
-        const students = studentsRes.data || []
-        const gradeMap: Record<string, number> = {}
-        students.forEach(s => {
-            gradeMap[s.grade_level] = (gradeMap[s.grade_level] || 0) + 1
-        })
-        const studentsByGrade = Object.entries(gradeMap).map(([name, value]) => ({ name, value }))
-
-        // Events by status
-        const statusMap: Record<string, number> = {}
-        events.forEach(e => {
-            const label = e.status === 'approved' ? 'Aprovados' :
-                e.status === 'rejected' ? 'Rejeitados' :
-                    e.status === 'executed' ? 'Executados' : 'Pendentes'
-            statusMap[label] = (statusMap[label] || 0) + 1
-        })
-        const eventsByStatus = Object.entries(statusMap).map(([name, value]) => ({ name, value }))
-
-        // Classes by modality
-        const modalityMap: Record<string, number> = {}
-        classes.forEach(c => {
-            modalityMap[c.modality] = (modalityMap[c.modality] || 0) + 1
-        })
-        const classesByModality = Object.entries(modalityMap).map(([name, value]) => ({ name, value }))
+        const p = platformRes.data
 
         return NextResponse.json({
             success: true,
             metrics: {
-                totalSchools: schoolsRes.count || 0,
-                totalTeachers: teachersRes.count || 0,
-                totalStudents: students.length,
-                totalClasses: classes.length,
-                activeClasses,
-                completedClasses,
-                approvedEvents,
-                pendingEvents,
-                rejectedEvents,
-                studentsByGrade,
-                eventsByStatus,
-                classesByModality,
+                totalSchools: p.total_schools,
+                totalTeachers: p.total_teachers,
+                totalStudents: p.total_students,
+                totalClasses: p.total_classes,
+                activeClasses: p.active_classes,
+                completedClasses: p.completed_classes,
+                approvedEvents: p.approved_events,
+                pendingEvents: p.pending_events,
+                rejectedEvents: p.rejected_events,
+                studentsByGrade: studentsByGradeRes.data,
+                eventsByStatus: eventsByStatusRes.data,
+                classesByModality: classesByModalityRes.data,
             }
         })
     } catch (error: any) {
-        console.error('[API_REPORTS_METRICS] Error:', error.message)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        logger.error('[API_REPORTS_METRICS] Fatal error', error)
+        return NextResponse.json({ error: 'Erro ao gerar métricas do dashboard' }, { status: 500 })
     }
 }

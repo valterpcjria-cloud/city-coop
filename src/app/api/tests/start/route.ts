@@ -1,12 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { startTestSchema, getZodErrorResponse } from '@/lib/validators'
 
 export async function POST(request: Request) {
     try {
-        const supabase = await createClient()
-        const { testId, studentId } = await request.json()
+        const body = await request.json()
 
-        // Check if there is already a result for this test
+        // 1. Validate request body
+        const validation = startTestSchema.safeParse(body)
+        if (!validation.success) {
+            return NextResponse.json(getZodErrorResponse(validation.error), { status: 400 })
+        }
+
+        const { testId, studentId } = validation.data
+        const supabase = await createClient()
+
+        // 2. Check if there is already a result for this test
         const { data: existing } = await supabase
             .from('student_test_results')
             .select('status')
@@ -22,7 +31,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, message: 'Retornando ao teste em andamento.' })
         }
 
-        // Create or Upsert initial result record (Consent/Start)
+        // 3. Create or Upsert initial result record (Consent/Start)
         const { data, error } = await (supabase as any)
             .from('student_test_results')
             .upsert({
@@ -37,6 +46,6 @@ export async function POST(request: Request) {
         if (error) throw error
         return NextResponse.json(data)
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: error.message || 'Erro interno ao iniciar teste' }, { status: 500 })
     }
 }

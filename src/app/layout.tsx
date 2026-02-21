@@ -1,14 +1,24 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Outfit } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+})
 
-export const metadata: Metadata = {
-  title: 'City Coop Platform',
-  description: 'Plataforma de Cooperativismo Escolar e Empreendedorismo',
-}
+const geistSans = GeistSans
+const geistMono = GeistMono
+
+import { constructMetadata } from '@/lib/metadata'
+
+export const metadata = constructMetadata({
+  title: 'Início',
+  description: 'Acesse a Plataforma City Coop para gerir sua cooperativa escolar.'
+})
 
 export default function RootLayout({
   children,
@@ -16,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR">
-      <body className={inter.className}>
+    <html lang="pt-BR" className={`${outfit.variable} ${geistSans.variable} ${geistMono.variable}`}>
+      <body className="font-sans antialiased">
         {children}
         <Toaster position="top-right" />
       </body>

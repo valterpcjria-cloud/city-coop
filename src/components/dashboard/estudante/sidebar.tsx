@@ -109,8 +109,8 @@ export function StudentSidebar({ className }: SidebarProps) {
                     <div className="px-3 py-2">
                         <div className="bg-gradient-to-br from-[#4A90D9]/10 to-[#F5A623]/10 p-4 rounded-xl border border-coop-orange/20 mx-2 shadow-sm">
                             <h3 className="font-bold text-city-blue text-sm mb-1 flex items-center gap-2">
-                                <div className="h-8 w-8 flex-shrink-0 flex items-center justify-center p-0.5">
-                                    <img src="/dot-bot.png" alt="DOT" className="h-full w-full object-contain" />
+                                <div className="h-8 w-8 flex-shrink-0 flex items-center justify-center p-0.5 overflow-hidden">
+                                    <Image src="/dot-bot.png" alt="DOT" width={32} height={32} className="h-full w-full object-contain" />
                                 </div>
                                 DOT Assistente
                             </h3>

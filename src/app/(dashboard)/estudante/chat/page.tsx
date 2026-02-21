@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ChatHistorySidebar } from '@/components/dashboard/shared/chat-history-sidebar';
 import { Textarea } from '@/components/ui/textarea';
+import Image from 'next/image';
 
 export default function ChatPage() {
     const [localInput, setLocalInput] = useState('');
@@ -199,7 +200,9 @@ export default function ChatPage() {
                                         m.role === 'assistant' ? "bg-white p-1 border-[#4A90D9]/20" : "bg-gradient-to-br from-[#4A90D9] to-[#3A7BC8]"
                                     )}>
                                         {m.role === 'assistant' ? (
-                                            <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
+                                            <div className="w-full h-full p-0.5 overflow-hidden">
+                                                <Image src="/dot-bot.png" alt="DOT" width={36} height={36} className="w-full h-full object-contain" />
+                                            </div>
                                         ) : (
                                             <AvatarFallback className="text-white font-bold text-xs uppercase">EU</AvatarFallback>
                                         )}
@@ -224,8 +227,8 @@ export default function ChatPage() {
 
                             {isLoading && (
                                 <div className="flex gap-4 animate-pulse">
-                                    <Avatar className="h-9 w-9 bg-white border border-slate-100 p-1">
-                                        <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
+                                    <Avatar className="h-9 w-9 bg-white border border-slate-100 p-1 overflow-hidden">
+                                        <Image src="/dot-bot.png" alt="DOT" width={36} height={36} className="w-full h-full object-contain" />
                                     </Avatar>
                                     <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 px-4 py-3 rounded-2xl rounded-tl-none">
                                         <Icons.spinner className="h-4 w-4 animate-spin text-[#4A90D9]" />

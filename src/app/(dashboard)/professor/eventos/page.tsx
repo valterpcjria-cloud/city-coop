@@ -7,6 +7,12 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { constructMetadata } from '@/lib/metadata'
+
+export const metadata = constructMetadata({
+    title: 'Meus Eventos',
+    description: 'Acompanhe seus planos de evento e atividades da cooperativa.'
+})
 
 export default async function ProfessorEventsPage() {
     const supabase = await createClient()

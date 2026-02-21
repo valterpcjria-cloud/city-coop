@@ -26,7 +26,9 @@ export default async function GestorOverviewPage() {
     ])
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-10 relative">
+
+
             {/* Page Header */}
             <AnimatedContainer direction="right" className="flex flex-col gap-1">
                 <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
@@ -37,7 +39,7 @@ export default async function GestorOverviewPage() {
                 </p>
             </AnimatedContainer>
 
-            {/* Bento Grid Stats */}
+            {/* Balanced Stat Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Escolas Parceiras"
@@ -46,6 +48,7 @@ export default async function GestorOverviewPage() {
                     variant="blue"
                     subtitle="Instituições ativas"
                     animationDelay={100}
+                    liquid
                 />
                 <StatCard
                     title="Docentes"
@@ -56,7 +59,7 @@ export default async function GestorOverviewPage() {
                     animationDelay={200}
                 />
                 <StatCard
-                    title="Comunidade Estudantil"
+                    title="Estudantes"
                     value={studentsCount || 0}
                     iconName="graduationCap"
                     variant="green"

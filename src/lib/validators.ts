@@ -108,6 +108,21 @@ export const teacherSchema = z.object({
 })
 
 // ========================================
+// Auth & Profile Validators
+// ========================================
+
+export const createProfileSchema = z.object({
+    userId: uuidSchema,
+})
+
+export const userProfileSchema = z.object({
+    name: z.string().min(2).max(200).optional().nullable(),
+    role: z.string().min(2).max(50).optional().nullable(),
+    schoolCode: z.string().max(20).optional().nullable(),
+    gradeLevel: z.string().max(10).optional().nullable(),
+})
+
+// ========================================
 // Student Validators
 // ========================================
 
@@ -131,6 +146,51 @@ export const classSchema = z.object({
     end_date: z.string(),
     school_id: uuidSchema,
     teacher_id: uuidSchema,
+})
+
+// ========================================
+// Test & Assessment Validators
+// ========================================
+
+export const testAnswersSchema = z.record(z.string(), z.any())
+
+export const submitTestSchema = z.object({
+    testId: uuidSchema,
+    studentId: uuidSchema,
+    answers: testAnswersSchema
+})
+
+export const startTestSchema = z.object({
+    testId: uuidSchema,
+    studentId: uuidSchema,
+})
+
+// ========================================
+// AI & Chat Validators
+// ========================================
+
+export const aiChatSchema = z.object({
+    message: z.string().min(1, 'Mensagem não pode estar vazia').max(5000),
+    conversationId: uuidSchema.optional().nullable(),
+    model: z.enum(['gpt', 'claude']).optional().default('gpt'),
+    webSearch: z.boolean().optional().default(false),
+})
+
+export const aiHistoryParamsSchema = z.object({
+    conversationId: uuidSchema.optional(),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+})
+
+// ========================================
+// Report & Analytics Validators
+// ========================================
+
+export const reportFilterSchema = z.object({
+    startDate: z.string().datetime().optional().nullable(),
+    endDate: z.string().datetime().optional().nullable(),
+    schoolId: uuidSchema.optional().nullable(),
+    classId: uuidSchema.optional().nullable(),
+    groupBy: z.enum(['day', 'week', 'month', 'year']).optional().default('day'),
 })
 
 // ========================================
@@ -223,4 +283,17 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
     return Object.fromEntries(
         Object.entries(obj).filter(([key]) => !dangerous.includes(key))
     ) as T
+}
+
+/**
+ * Standard API error response generator for Zod validation errors
+ */
+export function getZodErrorResponse(error: z.ZodError) {
+    return {
+        error: 'Validação falhou',
+        details: error.issues.map(i => ({
+            path: i.path.join('.'),
+            message: i.message
+        }))
+    }
 }

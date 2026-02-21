@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
+import { StatCard } from '@/components/dashboard/gestor/stat-card'
 import { Badge } from '@/components/ui/badge'
 import { SchoolModal } from '@/components/dashboard/gestor/school-modal'
 import { ConfirmModal } from '@/components/shared/confirm-modal'
 import { useActionToast } from '@/hooks/use-action-toast'
 import { AnimatePresence, motion } from 'framer-motion'
-import { School, MapPin, Users, GraduationCap, BookOpen, Loader2 } from 'lucide-react'
+import { MapPin, Loader2, School } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -157,6 +158,9 @@ export default function GestorSchoolsPage() {
         fetchSchools(currentPage, false, true)
     }
 
+    const statesCount = new Set(schools.filter(s => s.state).map(s => s.state)).size
+    const citiesCount = new Set(schools.filter(s => s.city).map(s => s.city)).size
+
     if (isInitialLoading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -189,77 +193,42 @@ export default function GestorSchoolsPage() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-4">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-                    <Card className="border-l-4 border-l-city-blue shadow-sm">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground font-medium">Total de Escolas</p>
-                                    <p className="text-2xl font-bold text-city-blue">{totalItems}</p>
-                                </div>
-                                <div className="h-10 w-10 bg-city-blue/10 rounded-full flex items-center justify-center">
-                                    <School className="h-5 w-5 text-city-blue" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                    <Card className="border-l-4 border-l-emerald-500 shadow-sm">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground font-medium">Estados</p>
-                                    <p className="text-2xl font-bold text-emerald-600">
-                                        {new Set(schools.filter(s => s.state).map(s => s.state)).size}
-                                    </p>
-                                </div>
-                                <div className="h-10 w-10 bg-emerald-50 rounded-full flex items-center justify-center">
-                                    <MapPin className="h-5 w-5 text-emerald-500" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                    <Card className="border-l-4 border-l-violet-500 shadow-sm">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground font-medium">Cidades</p>
-                                    <p className="text-2xl font-bold text-violet-600">
-                                        {new Set(schools.filter(s => s.city).map(s => s.city)).size}
-                                    </p>
-                                </div>
-                                <div className="h-10 w-10 bg-violet-50 rounded-full flex items-center justify-center">
-                                    <GraduationCap className="h-5 w-5 text-violet-500" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <Card className="border-l-4 border-l-orange-500 shadow-sm">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground font-medium">Novas este Mês</p>
-                                    <p className="text-2xl font-bold text-orange-600">
-                                        {newThisMonth}
-                                    </p>
-                                </div>
-                                <div className="h-10 w-10 bg-orange-50 rounded-full flex items-center justify-center">
-                                    <BookOpen className="h-5 w-5 text-orange-500" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+            {/* Refined Stat Grid */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                    title="Total de Escolas"
+                    value={totalItems}
+                    iconName="school"
+                    variant="blue"
+                    subtitle="Instituições cadastradas"
+                    animationDelay={100}
+                />
+                <StatCard
+                    title="Estados"
+                    value={statesCount}
+                    iconName="globe"
+                    variant="green"
+                    subtitle="Abrangência estadual"
+                    animationDelay={200}
+                />
+                <StatCard
+                    title="Cidades"
+                    value={citiesCount}
+                    iconName="building"
+                    variant="purple"
+                    subtitle="Presença municipal"
+                    animationDelay={300}
+                />
+                <StatCard
+                    title="Novas este Mês"
+                    value={newThisMonth}
+                    iconName="plus"
+                    variant="orange"
+                    subtitle="Crescimento da rede"
+                    animationDelay={400}
+                />
             </div>
+
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}

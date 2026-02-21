@@ -1,20 +1,33 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
+import { submitTestSchema, getZodErrorResponse } from '@/lib/validators'
 
 export async function POST(request: Request) {
     try {
-        const supabase = await createClient()
-        const { testId, studentId, answers } = await request.json()
+        const body = await request.json()
 
-        // 1. Fetch correct answers
+        // 1. Validate request body
+        const validation = submitTestSchema.safeParse(body)
+        if (!validation.success) {
+            return NextResponse.json(getZodErrorResponse(validation.error), { status: 400 })
+        }
+
+        const { testId, studentId, answers } = validation.data
+        const supabase = await createClient()
+
+        // 2. Fetch correct answers
         const { data: questions, error: qError } = await (supabase as any)
             .from('test_questions')
             .select('id, resposta_correta')
             .eq('test_id', testId) as any
 
         if (qError) throw qError
+        if (!questions || questions.length === 0) {
+            return NextResponse.json({ error: 'Nenhuma questão encontrada para este teste' }, { status: 404 })
+        }
 
-        // 2. Calculate Score
+        // 3. Calculate Score
         let correctCount = 0
         questions.forEach((q: any) => {
             if (answers[q.id] === q.resposta_correta) {
@@ -24,7 +37,7 @@ export async function POST(request: Request) {
 
         const scorePercentage = (correctCount / questions.length) * 100
 
-        // 3. Save result
+        // 4. Save result
         const { error: resError } = await (supabase as any)
             .from('student_test_results')
             .update({
@@ -39,8 +52,7 @@ export async function POST(request: Request) {
 
         if (resError) throw resError
 
-        // 4. Update Conhecimento Score in student_scores
-        // We'll take the average of all completed tests for this student
+        // 5. Update Conhecimento Score in student_scores
         const { data: allResults } = await (supabase as any)
             .from('student_test_results')
             .select('score')
@@ -59,9 +71,13 @@ export async function POST(request: Request) {
                 ultima_atualizacao: new Date().toISOString()
             }, { onConflict: 'student_id' })
 
+        // 6. Proactive Revalidation
+        revalidatePath('/estudante/formacao')
+        revalidatePath('/professor/estudantes')
+
         return NextResponse.json({ success: true, score: scorePercentage })
     } catch (error: any) {
         console.error('Submit error:', error.message)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: error.message || 'Erro interno do servidor ao enviar teste' }, { status: 500 })
     }
 }

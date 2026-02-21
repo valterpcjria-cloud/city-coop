@@ -1,9 +1,15 @@
+import { constructMetadata } from '@/lib/metadata'
 import { createAdminClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
+
+export const metadata = constructMetadata({
+    title: 'Gestão de Eventos',
+    description: 'Acompanhe e gerencie os planos de evento da sua cooperativa.'
+})
 
 export default async function GestorEventsPage() {
     const adminAuth = await createAdminClient()

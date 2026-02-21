@@ -19,6 +19,7 @@ export function PremiumCard({ children, className, delay = 0 }: PremiumCardProps
         whileHover={{ y: -5, boxShadow: "0 20px 40px -12px rgba(0, 0, 0, 0.1)" }}
         className={cn(
           "relative overflow-hidden rounded-2xl border border-white/40 bg-white/70 backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-slate-900/60 shadow-sm",
+          "before:absolute before:inset-0 before:bg-noise before:opacity-[0.03] before:pointer-events-none before:z-0",
           className
         )}
       >

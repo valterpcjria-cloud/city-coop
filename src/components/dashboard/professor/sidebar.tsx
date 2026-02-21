@@ -126,8 +126,8 @@ export function Sidebar({ className }: SidebarProps) {
                                 asChild
                             >
                                 <Link href="/professor/ia">
-                                    <div className="mr-3 h-7 w-7 rounded-full shadow-sm flex-shrink-0 flex items-center justify-center p-0.5">
-                                        <img src="/dot-bot.png" alt="DOT" className="h-full w-full object-contain" />
+                                    <div className="mr-3 h-7 w-7 rounded-full shadow-sm flex-shrink-0 flex items-center justify-center p-0.5 overflow-hidden">
+                                        <Image src="/dot-bot.png" alt="DOT" width={28} height={28} className="h-full w-full object-contain" />
                                     </div>
                                     DOT Assistente
                                 </Link>

@@ -1,9 +1,21 @@
-import { createClient } from '@supabase/supabase-js' // Use direct client, not SSR
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
+import { createProfileSchema, userProfileSchema, getZodErrorResponse } from '@/lib/validators'
 
 export async function POST(request: Request) {
     try {
-        // Initialize pure Admin client (bypasses RLS)
+        const body = await request.json()
+
+        // 1. Validate request body
+        const bodyValidation = createProfileSchema.safeParse(body)
+        if (!bodyValidation.success) {
+            return NextResponse.json(getZodErrorResponse(bodyValidation.error), { status: 400 })
+        }
+
+        const { userId } = bodyValidation.data
+
+        // Initialize Admin client (bypasses RLS)
         const supabaseAdmin = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -15,24 +27,24 @@ export async function POST(request: Request) {
             }
         )
 
-        const body = await request.json()
-        const { userId } = body
-
-        if (!userId) {
-            return NextResponse.json({ error: 'Missing userId' }, { status: 400 })
-        }
-
-        // 1. Fetch the user from Auth to get trusted metadata
+        // 2. Fetch the user from Auth to get trusted metadata
         const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
 
         if (userError || !user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 })
+            return NextResponse.json({ error: 'Usuário não encontrado ou erro de autenticação' }, { status: 404 })
         }
 
-        // 2. Extract trusted data from metadata
+        // 3. Validate metadata from Auth
+        const metaValidation = userProfileSchema.safeParse(user.user_metadata)
+        if (!metaValidation.success) {
+            // We don't block auth flow for some missing metadata if the user exists, 
+            // but we log it and provide defaults.
+            console.warn('User metadata validation failed for ID:', userId, metaValidation.error.format())
+        }
+
         const { name, role, schoolCode, gradeLevel } = user.user_metadata || {}
 
-        // 3. Check if profile already exists to prevent duplicates
+        // 4. Check if profile already exists
         const isGestor = role === 'manager' || role === 'gestor' || role === 'superadmin'
 
         if (isGestor) {
@@ -46,7 +58,7 @@ export async function POST(request: Request) {
             if (existing) return NextResponse.json({ success: true, message: 'Perfil de estudante já existe' })
         }
 
-        // 4. Create Profile
+        // 5. Create Profile
         if (isGestor) {
             const { error: profileError } = await supabaseAdmin
                 .from('gestors')
@@ -74,7 +86,7 @@ export async function POST(request: Request) {
                 .from('teachers')
                 .insert({
                     user_id: userId,
-                    name: name,
+                    name: name || 'Professor',
                     email: user.email,
                     school_id: schoolId
                 })
@@ -97,7 +109,7 @@ export async function POST(request: Request) {
                 .from('students')
                 .insert({
                     user_id: userId,
-                    name: name,
+                    name: name || 'Estudante',
                     email: user.email,
                     grade_level: gradeLevel,
                     school_id: schoolId
@@ -106,10 +118,15 @@ export async function POST(request: Request) {
             if (profileError) throw profileError
         }
 
+        // 6. Proactive Revalidation
+        revalidatePath('/gestor')
+        revalidatePath('/professor')
+        revalidatePath('/estudante')
+
         return NextResponse.json({ success: true })
 
     } catch (error: any) {
         console.error('API Profile creation error:', error)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: error.message || 'Erro interno do servidor' }, { status: 500 })
     }
 }

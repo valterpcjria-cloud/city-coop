@@ -2,6 +2,7 @@
 
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Icons } from '@/components/ui/icons';
@@ -192,8 +193,8 @@ export default function ProfessorAIPage() {
                         {messages.length <= 1 && (
                             <div className="text-center space-y-2 mb-12 py-16 flex flex-col items-center">
                                 <AnimatedContainer direction="up">
-                                    <div className="inline-flex items-center justify-center p-3 mb-4 w-32 h-32 relative z-10 mt-4">
-                                        <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain drop-shadow-xl" />
+                                    <div className="inline-flex items-center justify-center p-3 mb-4 w-32 h-32 relative z-10 mt-4 overflow-hidden">
+                                        <Image src="/dot-bot.png" alt="DOT" width={128} height={128} className="w-full h-full object-contain drop-shadow-xl" priority />
                                     </div>
                                 </AnimatedContainer>
                                 <h1 className="text-3xl font-black text-[#4A90D9] tracking-tight">DOT Assistente</h1>
@@ -236,8 +237,8 @@ export default function ProfessorAIPage() {
                                         m.role === 'assistant' ? "bg-gradient-to-br from-[#4A90D9] to-[#F5A623]" : "bg-[#F5A623]"
                                     )}>
                                         {m.role === 'assistant' ? (
-                                            <div className="p-0.5 w-full h-full flex items-center justify-center">
-                                                <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
+                                            <div className="p-0.5 w-full h-full flex items-center justify-center overflow-hidden">
+                                                <Image src="/dot-bot.png" alt="DOT" width={36} height={36} className="w-full h-full object-contain" />
                                             </div>
                                         ) : (
                                             <AvatarFallback className="bg-transparent text-white font-bold text-xs">P</AvatarFallback>
@@ -269,8 +270,8 @@ export default function ProfessorAIPage() {
                             {isLoading && (
                                 <div className="flex gap-4 animate-pulse">
                                     <Avatar className="h-10 w-10 bg-transparent shadow-none p-0">
-                                        <div className="p-1 w-full h-full flex items-center justify-center">
-                                            <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
+                                        <div className="p-1 w-full h-full flex items-center justify-center overflow-hidden">
+                                            <Image src="/dot-bot.png" alt="DOT" width={40} height={40} className="w-full h-full object-contain" />
                                         </div>
                                     </Avatar>
                                     <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm">
