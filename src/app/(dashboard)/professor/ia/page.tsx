@@ -11,24 +11,6 @@ import { toast } from 'sonner';
 import { ChatHistorySidebar } from '@/components/dashboard/shared/chat-history-sidebar';
 import { AnimatedContainer } from '@/components/dashboard/shared/animated-container';
 
-const SUGGESTED_PROMPTS = [
-    {
-        title: "Dinâmica de Grupo",
-        description: "Sugerir uma atividade prática sobre os 7 princípios.",
-        prompt: "Pode me sugerir uma dinâmica de grupo criativa para ensinar os 7 princípios do cooperativismo para alunos do 9º ano?"
-    },
-    {
-        title: "Gestão Democrática",
-        description: "Como conduzir uma assembleia difícil?",
-        prompt: "Como posso mediar uma assembleia onde os alunos estão com dificuldades de chegar a um consenso democrático?"
-    },
-    {
-        title: "Indicadores de Maturidade",
-        description: "Explique como avaliar a dimensão organizacional.",
-        prompt: "Como posso avaliar de forma prática a maturidade organizacional dos núcleos da cooperativa?"
-    }
-];
-
 export default function ProfessorAIPage() {
     const [selectedModel, setSelectedModel] = useState<'claude' | 'gpt'>('gpt');
     const [localInput, setLocalInput] = useState('');
@@ -307,20 +289,6 @@ export default function ProfessorAIPage() {
 
                 <div className="shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 pb-6 px-4 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] transition-all">
                     <div className="max-w-3xl mx-auto space-y-4 pt-4">
-                        {messages.length <= 1 && !isLoading && (
-                            <div className="hidden md:grid grid-cols-3 gap-3">
-                                {SUGGESTED_PROMPTS.map((item) => (
-                                    <button
-                                        key={item.title}
-                                        onClick={() => setLocalInput(item.prompt)}
-                                        className="text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 hover:bg-white hover:shadow-md hover:border-blue-200 transition-all group"
-                                    >
-                                        <p className="text-xs font-bold text-blue-600 mb-0.5">{item.title}</p>
-                                        <p className="text-[10px] text-slate-500 line-clamp-1">{item.description}</p>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
 
                         <div className="flex items-center justify-between px-2 mb-1">
                             <div className="flex gap-1.5 items-center">
