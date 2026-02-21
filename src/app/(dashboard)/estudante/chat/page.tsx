@@ -3,7 +3,6 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Icons } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
@@ -30,9 +29,22 @@ export default function ChatPage() {
             {
                 id: 'welcome',
                 role: 'assistant',
-                content: 'Olá! Sou o DOT Assistente, seu mentor de cooperativismo. Como posso ajudar seu núcleo hoje?'
+                content: 'Olá! Sou o seu DOT Assistente. Estou aqui para oferecer suporte pedagógico, sugerir dinâmicas e ajudar na jornada da sua cooperativa escolar. Como posso auxiliar seu núcleo hoje?'
             } as any
-        ]
+        ],
+        body: {
+            model: selectedModel,
+            conversationId: currentConversationId
+        },
+        onFinish: () => {
+            if (!currentConversationId || currentConversationId === 'new') {
+                setTimeout(() => setRefreshTrigger(prev => prev + 1), 2000);
+            }
+        },
+        onError: (err: any) => {
+            console.error("Chat error:", err);
+            toast.error("Ocorreu um erro na conexão com a IA. Tente novamente.");
+        }
     } as any);
 
     const isLoading = status === 'streaming';
@@ -125,6 +137,21 @@ export default function ChatPage() {
         }
     };
 
+    const handleClearHistory = async () => {
+        try {
+            await fetch('/api/ai/history', { method: 'DELETE' });
+            handleNewChat();
+            toast.info("Histórico do servidor limpo com sucesso.");
+        } catch (err) {
+            console.error("Failed to clear history", err);
+            toast.error("Erro ao limpar o histórico.");
+        }
+    };
+
+    const clearChat = () => {
+        handleClearHistory();
+    };
+
     return (
         <div className="flex h-[calc(100vh-6rem)] bg-slate-50 relative overflow-hidden">
             <ChatHistorySidebar
@@ -156,45 +183,41 @@ export default function ChatPage() {
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1 w-full overflow-y-auto min-h-0">
-                    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 min-h-full flex flex-col">
-                        {messages.length <= 1 && (
-                            <div className="text-center py-12 flex flex-col items-center">
-                                <img src="/dot-bot.png" alt="DOT" className="w-24 h-24 mb-6 drop-shadow-lg" />
-                                <h1 className="text-2xl font-black text-[#4A90D9]">Olá,Time!</h1>
-                                <p className="text-slate-500 text-sm max-w-sm mt-2">
-                                    Sou o mentor do seu núcleo. Vamos organizar as missões da sua cooperativa?
-                                </p>
-                            </div>
-                        )}
-
+                <div className="flex-1 w-full overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
+                    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 flex flex-col">
                         <div className="space-y-6 pb-12">
                             {messages.map((m: any, i: number) => (
                                 <div
                                     key={m.id || `msg-${i}`}
                                     className={cn(
-                                        "flex gap-4",
+                                        "flex gap-4 p-1",
                                         m.role === 'user' ? "flex-row-reverse" : "flex-row"
                                     )}
                                 >
                                     <Avatar className={cn(
                                         "h-9 w-9 shrink-0 border shadow-sm",
-                                        m.role === 'assistant' ? "bg-white p-1 border-[#4A90D9]/20" : "bg-[#F5A623]"
+                                        m.role === 'assistant' ? "bg-white p-1 border-[#4A90D9]/20" : "bg-gradient-to-br from-[#4A90D9] to-[#3A7BC8]"
                                     )}>
                                         {m.role === 'assistant' ? (
                                             <img src="/dot-bot.png" alt="DOT" className="w-full h-full object-contain" />
                                         ) : (
-                                            <AvatarFallback className="text-white font-bold text-xs">EU</AvatarFallback>
+                                            <AvatarFallback className="text-white font-bold text-xs uppercase">EU</AvatarFallback>
                                         )}
                                     </Avatar>
 
                                     <div className={cn(
                                         "px-4 py-3 rounded-2xl text-[14px] leading-relaxed max-w-[85%] shadow-sm",
                                         m.role === 'user'
-                                            ? "bg-gradient-to-r from-[#4A90D9] to-[#3A7BC8] text-white rounded-tr-none"
-                                            : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-white rounded-tl-none"
+                                            ? "bg-gradient-to-r from-[#4A90D9] to-[#3A7BC8] text-white rounded-tr-none shadow-md"
+                                            : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-white rounded-tl-none shadow-sm"
                                     )}>
-                                        <span className="whitespace-pre-wrap">{m.content}</span>
+                                        {m.parts && m.parts.length > 0 ? (
+                                            m.parts.map((part: any, idx: number) => (
+                                                part.type === 'text' && <span key={idx}>{part.text}</span>
+                                            ))
+                                        ) : (
+                                            <span className="whitespace-pre-wrap">{m.content}</span>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -212,26 +235,32 @@ export default function ChatPage() {
                             <div ref={messagesEndRef} />
                         </div>
                     </div>
-                </ScrollArea>
+                </div>
 
                 <div className="shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t p-4 z-10">
                     <div className="max-w-3xl mx-auto space-y-3">
-                        <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Modelo:</span>
-                                <div className="flex gap-1">
-                                    <button
-                                        onClick={() => setSelectedModel('gpt')}
-                                        className={cn("px-2 py-0.5 text-[9px] font-bold rounded-full transition-all", selectedModel === 'gpt' ? "bg-[#F5A623] text-white" : "bg-slate-100 text-slate-400")}
-                                    >GPT-4o</button>
-                                    <button
-                                        onClick={() => setSelectedModel('claude')}
-                                        className={cn("px-2 py-0.5 text-[9px] font-bold rounded-full transition-all", selectedModel === 'claude' ? "bg-[#4A90D9] text-white" : "bg-slate-100 text-slate-400")}
-                                    >Claude</button>
-                                </div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full">
+                                <button
+                                    onClick={() => setSelectedModel('gpt')}
+                                    className={cn("px-3 py-1 text-[10px] font-bold rounded-full transition-all", selectedModel === 'gpt' ? "bg-[#F5A623] text-white shadow-sm" : "text-slate-400 hover:text-slate-600")}
+                                >GPT-4o</button>
+                                <button
+                                    onClick={() => setSelectedModel('claude')}
+                                    className={cn("px-3 py-1 text-[10px] font-bold rounded-full transition-all", selectedModel === 'claude' ? "bg-[#4A90D9] text-white shadow-sm" : "text-slate-400 hover:text-slate-600")}
+                                >Claude</button>
                             </div>
-                            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-[10px] font-bold text-[#4A90D9]">Ver Histórico</button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearChat}
+                                className="h-7 text-[10px] font-bold text-slate-400 hover:text-red-500 gap-1.5"
+                            >
+                                <Icons.trash className="h-3 w-3" />
+                                Limpar
+                            </Button>
                         </div>
+                        <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-[10px] font-bold text-[#4A90D9]">Ver Histórico</button>
 
                         <form onSubmit={onSendMessage} className="relative flex gap-2 items-end">
                             <Textarea

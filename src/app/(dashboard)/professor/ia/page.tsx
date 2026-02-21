@@ -3,7 +3,6 @@
 import { useChat } from '@ai-sdk/react';
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Icons } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
@@ -206,8 +205,8 @@ export default function ProfessorAIPage() {
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1 w-full overflow-y-auto min-h-0">
-                    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 min-h-full flex flex-col">
+                <div className="flex-1 w-full overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300 transition-all">
+                    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 flex flex-col">
                         {messages.length <= 1 && (
                             <div className="text-center space-y-2 mb-12 py-16 flex flex-col items-center">
                                 <AnimatedContainer direction="up">
@@ -304,7 +303,7 @@ export default function ProfessorAIPage() {
                             <div ref={messagesEndRef} />
                         </div>
                     </div>
-                </ScrollArea>
+                </div>
 
                 <div className="shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 pb-6 px-4 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] transition-all">
                     <div className="max-w-3xl mx-auto space-y-4 pt-4">
