@@ -4,13 +4,13 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
     BookOpen, Search, ChevronRight, ChevronDown, Users, School,
     GraduationCap, Settings, BarChart3, MessageSquare, Vote,
     FileText, Calendar, Target, Sparkles, Shield, Database,
-    Layers, CheckCircle2, Clock, Zap
+    Layers, CheckCircle2, Clock, Zap, Upload, Download, BrainCircuit,
+    Award, ScrollText, Handshake
 } from 'lucide-react'
 
 // Documentation sections data
@@ -25,21 +25,31 @@ const sections = [
             {
                 subtitle: 'Arquitetura SaaS Multi-Tenant',
                 items: [
-                    'Sistema baseado em Next.js 16 com App Router',
-                    'Banco de dados Supabase (PostgreSQL)',
-                    'Autenticação integrada com Supabase Auth',
-                    'Inteligência Artificial com Claude 3.5 e GPT-4o',
-                    'Isolamento de dados por escola (Row Level Security)',
-                    'Otimização de performance com Agregações SQL nativas'
+                    'Sistema baseado em Next.js 16 com App Router e React 19',
+                    'Banco de dados Supabase (PostgreSQL) com RLS nativo',
+                    'Autenticação integrada com Supabase Auth e JWT',
+                    'Inteligência Artificial dual: Claude 3.5 Sonnet e GPT-4o',
+                    'Isolamento total de dados por escola (Row Level Security)',
+                    'Cache de dados com TanStack Query v5',
+                    'Animações premium com Framer Motion v12'
                 ]
             },
             {
                 subtitle: 'Perfis de Usuário',
                 items: [
-                    'Superadmin: Controle total de usuários e sistema',
-                    'Gestor: Administrador de escolas e base de conhecimento',
-                    'Professor: Gerencia turmas e avaliações pedagógicas',
-                    'Estudante: Participa da cooperativa e interage com o DOT'
+                    'Superadmin: Controle total de usuários, escolas e sistema',
+                    'Gestor: Administração de escola, base de conhecimento e relatórios',
+                    'Professor: Gerencia turmas, avaliações e eleições pedagógicas',
+                    'Estudante: Participa da cooperativa, se forma e interage com o DOT'
+                ]
+            },
+            {
+                subtitle: 'Fluxo de Dados IA',
+                items: [
+                    'Gestor alimenta a base de conhecimento (PDF, DOCX, YouTube, URLs)',
+                    'DOT recupera conteúdo relevante por similaridade de palavras-chave (RAG)',
+                    'Busca na web com filtragem automática de escopo cooperativista',
+                    'Histórico de conversas persistido por usuário no Supabase'
                 ]
             }
         ]
@@ -54,10 +64,11 @@ const sections = [
             {
                 subtitle: 'Controle de Usuários',
                 items: [
-                    'Gestão unificada de Perfis (Gestor, Professor, Aluno)',
+                    'CRUD completo: criar, editar, excluir usuários por role',
                     'Validação de CPF obrigatória para segurança',
                     'Ativação e desativação instantânea de contas',
-                    'Reset de senhas administrativo via email'
+                    'Reset de senhas administrativo via email (restrito por role)',
+                    'SuperAdmins: exclusão de usuários; Admins: reset de senha apenas'
                 ]
             },
             {
@@ -73,26 +84,35 @@ const sections = [
                 subtitle: 'Base de Conhecimento IA',
                 items: [
                     'Upload de PDFs, DOCX, TXT e imagens',
-                    'Processamento de URLs (YouTube e websites)',
-                    'Extração automática de conteúdo',
-                    'Alimentação do cérebro do DOT Assistente'
+                    'Processamento de URLs de websites',
+                    'Extração automática de transcrições do YouTube',
+                    'Alimenta o cérebro do DOT Assistente via RAG'
+                ]
+            },
+            {
+                subtitle: 'Importação e Exportação de Dados',
+                items: [
+                    'Importação em massa de alunos via planilha (XLSX/CSV)',
+                    'Validação com relatório de erros por linha',
+                    'Exportação de relatórios em CSV, XLSX e PDF',
+                    'Download de listas de usuários e métricas'
                 ]
             },
             {
                 subtitle: 'Gestão de Cooperativas Parceiras',
                 items: [
-                    'Cadastro completo de cooperativas (Razão Social, CNPJ)',
-                    'Gestão de Ramos Cooperativistas e Localização',
-                    'Edição e Exclusão segura de parcerias',
-                    'Banco de oportunidades e matching territorial'
+                    'Cadastro completo de cooperativas (Razão Social, CNPJ, Ramo)',
+                    'Matching geográfico com oportunidades de estágio',
+                    'Edição e exclusão segura de parcerias',
+                    'Banco territorial de oportunidades cooperativistas'
                 ]
             },
             {
                 subtitle: 'Relatórios e KPIs',
                 items: [
                     'Dashboard com KPIs consolidados em tempo real',
-                    'Relatórios de escolas, alunos e engajamento',
-                    'Mapeamento de conexões produtivas',
+                    'Relatórios de escolas, alunos, professores e engajamento',
+                    'Mapeamento de conexões produtivas por região',
                     'Exportação em CSV, XLSX e PDF'
                 ]
             }
@@ -108,37 +128,47 @@ const sections = [
             {
                 subtitle: 'Gestão de Turmas',
                 items: [
-                    'Criação de turmas com série e modalidade',
-                    'Matrícula de alunos',
-                    'Configuração da cooperativa',
-                    'Organização dos 6 núcleos'
+                    'Criação de turmas com série, modalidade e nome da cooperativa',
+                    'Matrícula e gerenciamento de alunos',
+                    'Organização dos 6 núcleos cooperativistas',
+                    'Configuração de cargos e responsabilidades por núcleo'
+                ]
+            },
+            {
+                subtitle: 'Avaliações com IA',
+                items: [
+                    'Geração inteligente de questões por tema cooperativista',
+                    'Tipos: Objetiva, Dissertativa e Redação',
+                    'Editor manual para revisão e ajuste pré-publicação',
+                    'Correção automática assistida com feedback pedagógico',
+                    'Monitoramento de submissões em tempo real'
                 ]
             },
             {
                 subtitle: 'Sistema de Eleições',
                 items: [
-                    'Configuração de eleições democráticas',
-                    'Cadastro de candidatos por cargo',
-                    'Votação secreta pelos alunos',
-                    'Apuração e proclamação de resultados'
-                ]
-            },
-            {
-                subtitle: 'Avaliações e IA Pedagógica',
-                items: [
-                    'Geração inteligente de questões (v2.3.6)',
-                    'Editor de Questões: Revisão manual pré-publicação',
-                    'Troca de tipos: Objetiva, Dissertativa, Redação',
-                    'Correção automática assistida com feedback DOT'
+                    'Configuração de eleições democráticas por turma',
+                    'Cadastro de candidatos por cargo cooperativista',
+                    'Votação secreta e segura pelos alunos',
+                    'Apuração automática e proclamação de resultados'
                 ]
             },
             {
                 subtitle: 'Eventos e Projetos',
                 items: [
                     'Gestão de Ciclos e Cronogramas',
-                    'Avaliação de viabilidade de planos por IA',
-                    'Acompanhamento de núcleos e entregas',
-                    'Workflow de aprovação administrativa'
+                    'Avaliação de viabilidade de planos de evento por IA',
+                    'Acompanhamento de entregas por núcleo',
+                    'Workflow de aprovação e feedback administrativo'
+                ]
+            },
+            {
+                subtitle: 'Diretrizes e DOT para Professores',
+                items: [
+                    'Regras e orientações pedagógicas por módulo',
+                    'DOT Assistant com suporte metodológico especializado',
+                    'Estratégias de condução de turmas e assembleias',
+                    'Histórico de conversas persistente por professor'
                 ]
             }
         ]
@@ -151,30 +181,40 @@ const sections = [
         description: 'Experiência do aluno',
         content: [
             {
+                subtitle: 'Formação Cooperativista',
+                items: [
+                    'Trilha completa com 6 núcleos de atuação',
+                    'Conteúdos progressivos sobre cooperativismo',
+                    'Acesso a materiais da base de conhecimento do gestor',
+                    'Acompanhamento de progresso na formação'
+                ]
+            },
+            {
                 subtitle: 'Cooperativa e Núcleo',
                 items: [
-                    'Visualização do meu núcleo',
+                    'Visualização do meu núcleo e cargo',
                     'Tarefas e atribuições pendentes',
-                    'Upload de entregas',
-                    'Colaboração com colegas'
+                    'Upload de entregas por atividade',
+                    'Colaboração com colegas de núcleo'
                 ]
             },
             {
-                subtitle: 'Participação em Eleições',
+                subtitle: 'Eleições Democráticas',
                 items: [
-                    'Candidatura a cargos',
+                    'Candidatura a cargos cooperativistas',
                     'Votação secreta e segura',
-                    'Acompanhamento de resultados',
-                    'Histórico de eleições'
+                    'Acompanhamento em tempo real dos resultados',
+                    'Histórico de eleições da cooperativa'
                 ]
             },
             {
-                subtitle: 'DOT Assistente',
+                subtitle: 'DOT Assistente 2.0',
                 items: [
-                    'Chat inteligente com IA',
-                    'Orientações sobre cooperativismo',
-                    'Suporte ao planejamento do evento',
-                    'Não faz trabalho pelo aluno (pedagógico)'
+                    'Chat inteligente exclusivo sobre cooperativismo',
+                    'Orientação pelo método socrático (sem respostas prontas)',
+                    'Acesso à base de conhecimento do gestor',
+                    'Histórico de conversas persistente',
+                    'Filtragem de topics off-topic (foco pedagógico)'
                 ]
             }
         ]
@@ -182,35 +222,46 @@ const sections = [
     {
         id: 'ia',
         title: 'Inteligência Artificial',
-        icon: Sparkles,
+        icon: BrainCircuit,
         color: 'from-violet-500 to-purple-500',
-        description: 'Recursos de IA do sistema',
+        description: 'DOT Assistente 2.0 e geradores',
         content: [
             {
-                subtitle: 'DOT Assistente (Estudantes)',
+                subtitle: 'DOT Assistente 2.0 — Estudantes',
                 items: [
-                    'Orientação pedagógica sem dar respostas prontas',
-                    'Acesso à base de conhecimento do Gestor',
-                    'Histórico de conversas persistente',
-                    'Contexto adaptado por turma/núcleo'
+                    'Identidade profissional focada 100% em cooperativismo',
+                    'Blindagem pedagógica: método socrático, sem respostas prontas',
+                    'Acesso ao RAG interno da base de conhecimento do gestor',
+                    'Filtragem automática de escopo (off-topic retorna resposta padrão)',
+                    'Histórico persistente de conversas por usuário',
+                    'Dual model: Claude 3.5 Sonnet ou GPT-4o (selecionável)'
                 ]
             },
             {
-                subtitle: 'Coop Assistant (Professores)',
+                subtitle: 'Coop Assistant — Professores',
                 items: [
-                    'Suporte metodológico especializado',
-                    'Estratégias de condução de turmas',
-                    'Orientações sobre assembleias',
-                    'Dicas de avaliação formativa'
+                    'Suporte metodológico especializado em cooperativismo',
+                    'Estratégias de condução de turmas e assembleias',
+                    'Orientações sobre avaliação formativa',
+                    'Histórico de conversas persistente por professor'
                 ]
             },
             {
                 subtitle: 'Geradores Automáticos',
                 items: [
-                    'Gerador de Avaliações (objetiva/dissertativa)',
-                    'Avaliador de Planos de Evento com feedback técnico',
-                    'Avaliação automática de respostas de alunos',
-                    'Monitoramento de submissões em tempo real'
+                    'Gerador de Avaliações (objetiva, dissertativa, redação)',
+                    'Avaliador de Planos de Evento com feedback técnico detalhado',
+                    'Correção automática de respostas dissertativas',
+                    'Monitoramento de submissões em tempo real por turma'
+                ]
+            },
+            {
+                subtitle: 'Busca na Web (RAG Híbrido)',
+                items: [
+                    'Pesquisa web contextual ativada por flag',
+                    'Filtragem automática de temas fora do escopo',
+                    'Resultados formatados e injetados no contexto do modelo',
+                    'Prioridade sempre para a base de conhecimento interna'
                 ]
             }
         ]
@@ -223,21 +274,30 @@ const sections = [
         description: 'Proteção e privacidade',
         content: [
             {
-                subtitle: 'Autenticação',
+                subtitle: 'Autenticação e Sessões',
                 items: [
-                    'Login seguro via Supabase Auth',
-                    'Senhas criptografadas',
-                    'Sessões com token JWT',
-                    'Logout automático por inatividade'
+                    'Login seguro via Supabase Auth com refresh automático',
+                    'Tokens JWT criptografados e validados no servidor',
+                    'Logout automático por inatividade configurável',
+                    'Middleware de proteção de rotas por role'
                 ]
             },
             {
-                subtitle: 'Isolamento e Performance',
+                subtitle: 'Isolamento Multi-Tenant',
                 items: [
-                    'Row Level Security (RLS) nativo do Supabase',
-                    'Controle de Taxa (Rate Limiting) escalável',
-                    'Middleware de autenticação de baixa latência',
-                    'Queries otimizadas via PostgreSQL RPC'
+                    'Row Level Security (RLS) para cada escola',
+                    'Service Role Key exclusiva para operações de servidor',
+                    'Nenhum dado cruza entre escolas diferentes',
+                    'Auditoria de acesso via logs do Supabase'
+                ]
+            },
+            {
+                subtitle: 'Validação e Performance',
+                items: [
+                    'Validação dupla: Zod no frontend + backend',
+                    'Rate Limiting nos endpoints de IA',
+                    'Queries otimizadas via PostgreSQL RPC',
+                    'Middleware de baixa latência com Next.js Edge Runtime'
                 ]
             }
         ]
@@ -246,9 +306,9 @@ const sections = [
 
 const quickStats = [
     { label: 'Módulos', value: '3', icon: Layers, color: 'text-blue-500' },
-    { label: 'Páginas', value: '45+', icon: FileText, color: 'text-green-500' },
-    { label: 'APIs', value: '35+', icon: Zap, color: 'text-purple-500' },
-    { label: 'Tabelas', value: '22', icon: Database, color: 'text-orange-500' }
+    { label: 'Páginas', value: '55+', icon: FileText, color: 'text-green-500' },
+    { label: 'APIs', value: '45+', icon: Zap, color: 'text-purple-500' },
+    { label: 'Tabelas', value: '24', icon: Database, color: 'text-orange-500' }
 ]
 
 export default function DocumentacaoPage() {
@@ -284,7 +344,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold">Documentação do Sistema</h1>
-                            <p className="text-white/80">City Coop Platform v2.3.6</p>
+                            <p className="text-white/80">City Coop Platform v2.16.0</p>
                         </div>
                     </motion.div>
 
@@ -437,7 +497,7 @@ export default function DocumentacaoPage() {
                         {filteredSections.length === 0 && (
                             <div className="text-center py-12">
                                 <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                                <p className="text-gray-500">Nenhum resultado encontrado para "{searchQuery}"</p>
+                                <p className="text-gray-500">Nenhum resultado encontrado para &quot;{searchQuery}&quot;</p>
                             </div>
                         )}
                     </div>
@@ -450,11 +510,11 @@ export default function DocumentacaoPage() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="h-4 w-4" />
-                            <span className="text-sm">Última atualização: Fevereiro 2026</span>
+                            <span className="text-sm">Última atualização: Fevereiro 2026 · DOT Assistente 2.0</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="bg-city-blue/10 text-city-blue">
-                                v2.3.6
+                                v2.16.0
                             </Badge>
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                                 Produção

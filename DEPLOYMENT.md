@@ -1,41 +1,102 @@
-# Guia de Implantação no Vercel - City Coop Platform
+# Guia de Deploy na Vercel — City Coop Platform
 
-Este guia descreve como colocar seu sistema online usando o Vercel.
+Guia completo para colocar a City Coop Platform em produção usando Vercel + Supabase.
 
-## Pré-requisitos
-1. Uma conta no [GitHub](https://github.com).
-2. Uma conta no [Vercel](https://vercel.com) (conectada ao seu GitHub).
+---
 
-## Passos para Implantação
+## 📋 Checklist Pré-Deploy
+
+Antes de fazer o deploy, confirme:
+
+- [ ] Projeto Supabase criado em [supabase.com](https://supabase.com)
+- [ ] Chaves da API Anthropic obtidas em [console.anthropic.com](https://console.anthropic.com)
+- [ ] Chaves da API OpenAI obtidas em [platform.openai.com](https://platform.openai.com)
+- [ ] Código enviado para um repositório GitHub/GitLab
+- [ ] Conta Vercel conectada ao repositório
+
+---
+
+## 🚀 Passos para Implantação
 
 ### 1. Enviar o Código para o GitHub
-Se você ainda não enviou seu código para o GitHub, siga estes comandos no seu terminal:
+
 ```bash
 git add .
-git commit -m "Preparando para deploy no Vercel"
+git commit -m "chore: prepare for Vercel deploy"
 git push origin main
 ```
 
 ### 2. Conectar ao Vercel
-1. Acesse o [Dashboard do Vercel](https://vercel.com/dashboard).
-2. Clique em **"Add New..."** e depois em **"Project"**.
-3. Importe o repositório `city-coop-platform` do seu GitHub.
+
+1. Acesse o [Dashboard do Vercel](https://vercel.com/dashboard)
+2. Clique em **"Add New..."** → **"Project"**
+3. Importe o repositório `city-coop-platform`
+4. Framework: **Next.js** (detectado automaticamente)
 
 ### 3. Configurar Variáveis de Ambiente
-No Vercel, antes de clicar em "Deploy", abra a seção **Environment Variables** e adicione as seguintes chaves (copie os valores do seu arquivo `.env` local):
 
-| Chave | Valor (Exemplo) |
-| :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Sua URL do Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Sua Anon Key do Supabase |
-| `OPENAI_API_KEY` | Sua chave da OpenAI |
-| `AUTH_SECRET` | Seu segredo de autenticação |
-| `SUPABASE_SERVICE_ROLE_KEY` | Sua Service Role Key |
-| `NEXT_PUBLIC_APP_URL` | A URL que o Vercel gerar (ex: `https://seu-projeto.vercel.app`) |
+Na seção **Environment Variables**, adicione **todas** as seguintes chaves:
+
+| Variável | Descrição | Onde Obter |
+|----------|-----------|------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL pública do projeto Supabase | Supabase → Project Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave anônima do Supabase | Supabase → Project Settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço (secreta!) | Supabase → Project Settings → API |
+| `ANTHROPIC_API_KEY` | API key da Anthropic (Claude) | console.anthropic.com |
+| `OPENAI_API_KEY` | API key da OpenAI (GPT-4o) | platform.openai.com/api-keys |
+| `AUTH_SECRET` | Segredo JWT (string aleatória longa) | `openssl rand -base64 32` |
+| `NEXT_PUBLIC_APP_URL` | URL final do deploy Vercel | Ex: `https://city-coop.vercel.app` |
+
+> ⚠️ **NUNCA** exponha `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY` ou `OPENAI_API_KEY` no frontend. Essas variáveis só devem ser usadas em Server Components e API Routes.
 
 ### 4. Deploy!
-Clique em **Deploy**. O Vercel levará cerca de 2 minutos para construir e publicar seu site.
 
-## Dicas Importantes
-- **Supabase Auth**: No painel do Supabase, você precisará adicionar a nova URL do Vercel em `Authentication > URL Configuration > Site URL` e nos `Redirect URLs`.
-- **Atualizações**: Sempre que você fizer um `git push`, o Vercel atualizará o site automaticamente.
+Clique em **Deploy**. O build leva cerca de 2–3 minutos.
+
+---
+
+## ⚙️ Configuração Pós-Deploy no Supabase
+
+Após o primeiro deploy, configure os seguintes itens no painel do Supabase:
+
+### Auth → URL Configuration
+1. Acesse **Authentication → URL Configuration**
+2. Em **Site URL**, coloque a URL do Vercel: `https://seu-projeto.vercel.app`
+3. Em **Redirect URLs**, adicione:
+   - `https://seu-projeto.vercel.app/auth/callback`
+   - `https://seu-projeto.vercel.app/**`
+
+### Verificar Migrations
+Certifique-se de que todas as migrations do banco estão aplicadas:
+```bash
+# Em ambiente local com Supabase CLI
+supabase db push
+```
+
+---
+
+## 🔄 Atualizações Contínuas
+
+Todo `git push` para `main` dispara um novo deploy automaticamente.
+
+Para deploys de preview (ambientes de teste), use branches separadas — o Vercel cria URLs únicas para cada branch automaticamente.
+
+---
+
+## 🐛 Troubleshooting Comum
+
+| Problema | Causa Provável | Solução |
+|----------|---------------|---------|
+| Build falha com erro de types | Types do Supabase desatualizados | Rodar `npm run supabase:gen-types` e commitar |
+| Erro 401 nas rotas de IA | `ANTHROPIC_API_KEY` ou `OPENAI_API_KEY` não configuradas | Verificar Environment Variables na Vercel |
+| Redirect loop no login | `NEXT_PUBLIC_APP_URL` errada | Atualizar para URL exata do Vercel (sem `/` no final) |
+| Dados não carregam | RLS bloqueando queries | Verificar políticas RLS no Supabase Studio |
+| Chat IA sem resposta | Limite de tokens ou chave inválida | Verificar logs da Vercel em Functions |
+
+---
+
+## 📊 Monitoramento
+
+- **Vercel Dashboard**: Logs de build, runtime e Edge Functions
+- **Supabase Studio**: Queries, RLS, Auth logs e database usage
+- **Vercel Analytics**: Core Web Vitals (ativar em Settings → Analytics)
