@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m, LazyMotion, domAnimation } from "framer-motion";
 
 interface AnimatedContainerProps {
     children: React.ReactNode;
@@ -23,13 +23,16 @@ export function AnimatedContainer({
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, ...directions[direction] }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.5, delay: delay * 0.1 }}
-            className={className}
-        >
-            {children}
-        </motion.div>
+        <LazyMotion features={domAnimation}>
+            <m.div
+                initial={{ opacity: 0, ...directions[direction] }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.5, delay: delay * 0.1 }}
+                className={className}
+            >
+                {children}
+            </m.div>
+        </LazyMotion>
     );
 }
+

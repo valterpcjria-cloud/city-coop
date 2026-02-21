@@ -9,8 +9,11 @@ export default async function GestorDashboardLayout({
 }: {
     children: React.ReactNode
 }) {
-    const supabase = await createClient()
-    const adminAuth = await createAdminClient()
+    // Parallelize client creation for faster layout rendering
+    const [supabase, adminAuth] = await Promise.all([
+        createClient(),
+        createAdminClient()
+    ])
 
     const {
         data: { user },
