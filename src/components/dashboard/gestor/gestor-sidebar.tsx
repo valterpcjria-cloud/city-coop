@@ -115,18 +115,19 @@ export function GestorSidebar({ className, isSuperadmin }: GestorSidebarProps) {
             )}
         >
             {/* Logo Section */}
-            <div className="flex items-center justify-center px-6 py-8">
-                <div className="relative group cursor-pointer">
-                    <div className="absolute inset-0 bg-gradient-to-r from-city-blue/20 to-coop-orange/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="flex items-center justify-center px-6 py-8 overflow-visible">
+                <Link href="/gestor" className="relative group/logo cursor-pointer block overflow-visible">
+                    <div className="absolute inset-0 bg-city-blue/5 rounded-full blur-xl transition-all duration-700 group-hover/logo:bg-city-blue/20" />
+                    <div className="absolute -inset-4 bg-gradient-to-r from-city-blue/40 via-coop-orange/20 to-city-blue/40 rounded-full blur-2xl opacity-0 transition-opacity duration-300 group-hover/logo:opacity-100" />
                     <Image
                         src="/logo.png"
                         alt="City Coop"
                         width={160}
                         height={48}
-                        className="object-contain relative z-10 transition-transform duration-300 group-hover:scale-105"
+                        className="object-contain relative z-10 transition-transform duration-300 group-hover/logo:scale-105"
                         priority
                     />
-                </div>
+                </Link>
             </div>
 
             {/* Navigation */}

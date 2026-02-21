@@ -72,15 +72,19 @@ export function Sidebar({ className }: SidebarProps) {
             <ScrollArea className="flex-1">
                 <div className="space-y-4 py-4">
                     <div className="px-3 py-2">
-                        <div className="flex items-center px-4 mb-8">
-                            <Image
-                                src="/logo.png"
-                                alt="City Coop"
-                                width={150}
-                                height={45}
-                                className="object-contain"
-                                priority
-                            />
+                        <div className="flex items-center px-4 mb-8 overflow-visible">
+                            <Link href="/professor" className="relative group/logo block overflow-visible">
+                                <div className="absolute inset-0 bg-city-blue/5 rounded-full blur-xl transition-all duration-700 group-hover/logo:bg-city-blue/20" />
+                                <div className="absolute -inset-4 bg-gradient-to-r from-city-blue/40 via-coop-orange/20 to-city-blue/40 rounded-full blur-2xl opacity-0 transition-opacity duration-300 group-hover/logo:opacity-100" />
+                                <Image
+                                    src="/logo.png"
+                                    alt="City Coop"
+                                    width={150}
+                                    height={45}
+                                    className="relative object-contain transition-transform duration-300 group-hover/logo:scale-105"
+                                    priority
+                                />
+                            </Link>
                         </div>
                         <div className="space-y-1">
                             {routes.map((route) => (
