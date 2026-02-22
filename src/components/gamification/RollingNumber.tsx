@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface RollingNumberProps {
     value: number;
@@ -18,6 +18,7 @@ export function RollingNumber({
     suffix = "",
     duration = 2000
 }: RollingNumberProps) {
+    const [isMounted, setIsMounted] = useState(false);
     const motionValue = useMotionValue(0);
     const springValue = useSpring(motionValue, {
         damping: 30,
@@ -25,12 +26,15 @@ export function RollingNumber({
     });
 
     useEffect(() => {
+        setIsMounted(true);
         motionValue.set(value);
     }, [value, motionValue]);
 
     const displayValue = useTransform(springValue, (latest) =>
         Math.floor(latest).toLocaleString('pt-BR')
     );
+
+    if (!isMounted) return <span className={className}>{prefix}{value}{suffix}</span>;
 
     return (
         <span className={className}>
