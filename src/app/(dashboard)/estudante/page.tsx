@@ -1,3 +1,8 @@
+import React from 'react'
+import { createClient } from '@/lib/supabase/server'
+import { DashboardClient } from '@/components/dashboard/estudante/dashboard-client'
+import { DashboardMobileHome } from '@/components/dashboard/estudante/mobile/DashboardMobileHome'
+import { redirect } from 'next/navigation'
 import { DashboardContainer } from '@/components/dashboard/estudante/DashboardContainer'
 
 export default async function StudentDashboard() {
