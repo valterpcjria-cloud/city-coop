@@ -70,9 +70,11 @@ export default async function ProfessorDashboardLayout({
                 </main>
             </div>
             {/* Mobile Navigation — only visible on screens < md */}
-            <MobileNavManager
-                user={{ name: teacher.name, email: teacher.email }}
-            />
+            <div className="md:hidden">
+                <MobileNavManager
+                    user={{ name: teacher.name, email: teacher.email }}
+                />
+            </div>
         </div>
     )
 }
