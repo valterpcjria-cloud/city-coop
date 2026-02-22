@@ -78,6 +78,7 @@ async function retrieveKnowledge(query: string, limit: number = 5): Promise<stri
 export async function POST(req: Request) {
     try {
         const json = await req.json()
+        console.log("FULL API CHAT PAYLOAD:", JSON.stringify(json, null, 2));
 
         // Pre-sanitize known frontend bugs from cached clients
         let rawConversationId = json.conversationId;
@@ -85,11 +86,14 @@ export async function POST(req: Request) {
             rawConversationId = null;
         }
 
+        // Handle generic fallback payload property (e.g. from core AI SDK streams)
+        const contentFallback = json.text || json.message || json.prompt || (json.messages?.[json.messages.length - 1]?.content);
+
         // 1. Validate request body
         // We use a slightly different approach here because 'messages' is handled by the AI SDK
         // but we want to validate the other parameters.
         const bodyValidation = aiChatSchema.safeParse({
-            message: json.text || json.message || (json.messages?.[json.messages.length - 1]?.content),
+            message: contentFallback,
             conversationId: rawConversationId,
             model: json.model,
             webSearch: json.webSearch
@@ -102,11 +106,13 @@ export async function POST(req: Request) {
             })
         }
 
-        const { message, conversationId, model: requestedModel, webSearch } = bodyValidation.data
+        const { conversationId, model: requestedModel, webSearch } = bodyValidation.data
         let { messages } = json
 
+        const validatedMessage = bodyValidation.data.message || contentFallback;
+
         if (!messages) {
-            messages = [{ role: 'user', content: message }]
+            messages = [{ role: 'user', content: validatedMessage }]
         }
 
         const supabase = await createClient()

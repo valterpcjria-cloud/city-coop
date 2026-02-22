@@ -170,7 +170,7 @@ export const startTestSchema = z.object({
 // ========================================
 
 export const aiChatSchema = z.object({
-    message: z.string().min(1, 'Mensagem não pode estar vazia').max(5000),
+    message: z.string().min(1, 'Mensagem não pode estar vazia').max(5000).optional(),
     conversationId: uuidSchema.optional().nullable(),
     model: z.enum(['gpt', 'claude']).optional().default('gpt'),
     webSearch: z.boolean().optional().default(false),
