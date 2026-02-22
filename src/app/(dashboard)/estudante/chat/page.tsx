@@ -35,12 +35,7 @@ export default function ChatPage() {
         staleTime: 1000 * 60 * 10, // 10 minutes
     });
 
-    const {
-        messages = [],
-        status,
-        setMessages,
-        sendMessage
-    } = useChat({
+    const chatState = useChat({
         api: '/api/chat',
         initialMessages: [
             {
@@ -54,6 +49,11 @@ export default function ChatPage() {
             toast.error(`Erro: ${error.message || 'Falha na conexão com a IA'}`);
         }
     } as any);
+
+    const messages = chatState.messages || [];
+    const status = chatState.status;
+    const setMessages = chatState.setMessages;
+    const append = (chatState as any).append;
 
     const isLoadingChat = status === 'streaming';
 
@@ -85,13 +85,13 @@ export default function ChatPage() {
         if (!content.trim() || isLoadingChat) return;
 
         // Custom payload attached strictly to the send
-        if (sendMessage) {
-            await sendMessage({ text: content } as any, {
-                body: {
+        if (append) {
+            await append({ role: 'user', content: content }, {
+                data: {
                     conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: 'gpt',
                     webSearch: false
-                }
+                } as any
             });
         }
     };

@@ -20,12 +20,7 @@ export default function ProfessorAIPage() {
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    const {
-        messages = [],
-        status,
-        setMessages,
-        sendMessage
-    } = useChat({
+    const chatState = useChat({
         api: '/api/chat',
         initialMessages: [
             {
@@ -41,6 +36,11 @@ export default function ProfessorAIPage() {
         }
     } as any);
 
+    const messages = chatState.messages || [];
+    const status = chatState.status;
+    const setMessages = chatState.setMessages;
+    const append = (chatState as any).append;
+
     const isLoading = status === 'streaming';
 
     const handleLocalInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -55,13 +55,13 @@ export default function ProfessorAIPage() {
         const message = currentInput;
         setLocalInput('');
 
-        if (sendMessage) {
-            await sendMessage({ text: message } as any, {
-                body: {
+        if (append) {
+            await append({ role: 'user', content: message }, {
+                data: {
                     conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: selectedModel,
                     webSearch: searchInternet
-                }
+                } as any
             });
 
             // Refresh conversation ID if it's new
