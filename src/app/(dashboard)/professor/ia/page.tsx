@@ -94,10 +94,12 @@ export default function ProfessorAIPage() {
     };
 
     useEffect(() => {
+        let isMounted = true;
         const loadInitialHistory = async () => {
             try {
                 const res = await fetch('/api/ai/history');
                 const data = await res.json();
+                if (!isMounted) return;
                 if (data && data.id) {
                     setCurrentConversationId(data.id);
                     setMessages(data.messages || []);
@@ -107,6 +109,7 @@ export default function ProfessorAIPage() {
             }
         };
         loadInitialHistory();
+        return () => { isMounted = false; };
     }, [setMessages]);
 
     const handleNewChat = () => {

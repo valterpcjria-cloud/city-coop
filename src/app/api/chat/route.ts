@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { streamText, convertToModelMessages } from 'ai'
+import { streamText, convertToModelMessages, generateText } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { getAIKeys } from '@/lib/ai/config'
@@ -216,6 +216,20 @@ export async function POST(req: Request) {
                         if (updateError) console.error('Error updating chat history:', updateError)
                         else console.log(`Chat history updated for ${targetId}`)
                     } else {
+                        // Generate a title based on the first message
+                        let generatedTitle = 'Nova Conversa';
+                        try {
+                            const { text: title } = await generateText({
+                                model: aiModel as any,
+                                system: 'Você é um assistente que cria títulos curtos (máximo 4 palavras) para conversas. Responda APENAS com o título, sem aspas.',
+                                prompt: `Crie um título para esta conversa baseada nesta primeira mensagem: "${messages[0]?.content || validatedMessage}"`
+                            });
+                            generatedTitle = title.trim();
+                        } catch (titleErr) {
+                            console.error('Error generating title:', titleErr);
+                            generatedTitle = (messages[0]?.content || validatedMessage).substring(0, 50);
+                        }
+
                         // Create new conversation
                         const { error: insertError } = await supabase
                             .from('ai_conversations')
@@ -223,11 +237,15 @@ export async function POST(req: Request) {
                                 user_id: user.id,
                                 user_type: userType,
                                 messages: allMessages,
-                                title: messages.find((m: any) => m.role === 'user')?.content?.substring(0, 50) || 'Nova Conversa'
+                                title: generatedTitle
                             } as any)
 
                         if (insertError) console.error('Error creating chat history:', insertError)
-                        else console.log(`New chat conversation created`)
+                        else {
+                            console.log(`New chat conversation created: ${generatedTitle}`)
+                            // Note: We can't easily push to dataStream from here as result is already streaming
+                            // But the next history list fetch will have it.
+                        }
                     }
                 } catch (err) {
                     console.error('Critical failure in chat onFinish:', err)

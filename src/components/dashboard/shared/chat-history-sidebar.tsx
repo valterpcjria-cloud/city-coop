@@ -33,6 +33,11 @@ export function ChatHistorySidebar({
 }: ChatHistorySidebarProps) {
     const [history, setHistory] = useState<Conversation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const fetchHistory = async () => {
         try {
@@ -50,10 +55,10 @@ export function ChatHistorySidebar({
     };
 
     useEffect(() => {
-        if (isOpen || refreshTrigger > 0) {
+        if (isMounted && (isOpen || refreshTrigger > 0)) {
             fetchHistory();
         }
-    }, [isOpen, refreshTrigger]);
+    }, [isOpen, refreshTrigger, isMounted]);
 
     // Group history by date
     const groupHistory = () => {
@@ -83,20 +88,36 @@ export function ChatHistorySidebar({
 
     const groupedHistory = groupHistory();
 
+    if (!isMounted) return null;
+
     return (
-        <div className={cn(
-            "fixed inset-y-0 left-0 z-40 w-72 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-0",
-            !isOpen && "-translate-x-full"
-        )}>
+        <div
+            className={cn(
+                "fixed inset-y-0 left-0 z-40 w-72 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-0",
+                !isOpen && "-translate-x-full"
+            )}
+            suppressHydrationWarning
+        >
             <div className="flex flex-col h-full p-4">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <Icons.messageSquare className="h-4 w-4" />
                         Histórico
                     </h3>
-                    <Button variant="ghost" size="icon" className="lg:hidden" onClick={onToggle}>
-                        <Icons.x className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-blue-600 transition-colors"
+                            onClick={fetchHistory}
+                            title="Atualizar Histórico"
+                        >
+                            <Icons.refresh className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8" onClick={onToggle}>
+                            <Icons.x className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
 
                 <Button

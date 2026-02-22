@@ -10,7 +10,8 @@ import {
     Sparkles,
     Target,
     Zap,
-    Heart
+    Heart,
+    Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ interface StudentMobileChatProps {
         level: number;
     };
     nextMission?: string;
+    onClearHistory?: () => Promise<void>;
 }
 
 const QUICK_CHIPS = [
@@ -68,7 +70,8 @@ export function StudentMobileChat({
     isLoading,
     onSendMessage,
     studentScores,
-    nextMission
+    nextMission,
+    onClearHistory
 }: StudentMobileChatProps) {
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -140,6 +143,17 @@ export function StudentMobileChat({
                     </div>
                     <span className="text-[10px] font-black text-slate-500">{studentScores?.xp || 0} XP</span>
                 </div>
+
+                {/* Clear History Button */}
+                {onClearHistory && (
+                    <button
+                        onClick={onClearHistory}
+                        className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 active:scale-90 transition-transform ml-2 group"
+                        title="Limpar Histórico"
+                    >
+                        <Trash2 size={18} className="group-hover:animate-shake" />
+                    </button>
+                )}
             </header>
 
             {/* Chat Content */}
