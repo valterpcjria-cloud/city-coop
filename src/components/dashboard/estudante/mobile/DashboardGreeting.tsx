@@ -9,9 +9,23 @@ interface DashboardGreetingProps {
 }
 
 export function DashboardGreeting({ user }: DashboardGreetingProps) {
+    const [isMounted, setIsMounted] = React.useState(false);
+    const [greeting, setGreeting] = React.useState('');
     const firstName = user?.name?.split(' ')[0] || 'Estudante';
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+
+    React.useEffect(() => {
+        setIsMounted(true);
+        const hour = new Date().getHours();
+        setGreeting(hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite');
+    }, []);
+
+    if (!isMounted) {
+        return (
+            <div className="flex items-center justify-between px-2 pt-2 mb-6 opacity-0">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100" />
+            </div>
+        );
+    }
 
     return (
         <div className="flex items-center justify-between px-2 pt-2 mb-6">
