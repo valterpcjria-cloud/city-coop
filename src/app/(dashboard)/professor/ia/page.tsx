@@ -34,9 +34,10 @@ export default function ProfessorAIPage() {
                 content: 'Olá, Professor. Sou o seu DOT Assistente. Estou aqui para oferecer suporte pedagógico, sugerir dinâmicas e ajudar na gestão da sua cooperativa escolar. Como posso auxiliar sua jornada hoje?'
             } as any
         ],
-        onError: (err: any) => {
-            console.error("Chat error:", err);
-            toast.error("Ocorreu um erro na conexão com a IA. Tente novamente.");
+        onError: (error: Error) => {
+            console.error("useChat onError API event:", error);
+            // Mostrar a mensagem de erro exata que a API retornou
+            toast.error(`Erro: ${error.message || 'Falha na conexão com a IA'}`);
         }
     } as any);
 
@@ -57,7 +58,7 @@ export default function ProfessorAIPage() {
         if (sendMessage) {
             await sendMessage({ text: message } as any, {
                 body: {
-                    conversationId: currentConversationId,
+                    conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: selectedModel,
                     webSearch: searchInternet
                 }

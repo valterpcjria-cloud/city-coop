@@ -49,9 +49,9 @@ export default function ChatPage() {
                 content: 'Olá! Sou o seu DOT Assistente cooperativista. Estou aqui para te ajudar em suas missões e atividades. Como posso ajudar?'
             } as any
         ],
-        onError: (err: any) => {
-            console.error("Chat error:", err);
-            toast.error("Ocorreu um erro na conexão com a IA. Tente novamente.");
+        onError: (error: Error) => {
+            console.error("useChat onError API event:", error);
+            toast.error(`Erro: ${error.message || 'Falha na conexão com a IA'}`);
         }
     } as any);
 
@@ -88,7 +88,7 @@ export default function ChatPage() {
         if (sendMessage) {
             await sendMessage({ text: content } as any, {
                 body: {
-                    conversationId: currentConversationId,
+                    conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: 'gpt',
                     webSearch: false
                 }

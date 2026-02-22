@@ -79,12 +79,18 @@ export async function POST(req: Request) {
     try {
         const json = await req.json()
 
+        // Pre-sanitize known frontend bugs from cached clients
+        let rawConversationId = json.conversationId;
+        if (rawConversationId === 'new') {
+            rawConversationId = null;
+        }
+
         // 1. Validate request body
         // We use a slightly different approach here because 'messages' is handled by the AI SDK
         // but we want to validate the other parameters.
         const bodyValidation = aiChatSchema.safeParse({
             message: json.text || json.message || (json.messages?.[json.messages.length - 1]?.content),
-            conversationId: json.conversationId,
+            conversationId: rawConversationId,
             model: json.model,
             webSearch: json.webSearch
         })
