@@ -14,6 +14,7 @@ const geistSans = GeistSans
 const geistMono = GeistMono
 
 import { constructMetadata } from '@/lib/metadata'
+import { Providers } from './providers'
 
 export const metadata = constructMetadata({
   title: 'Início',
@@ -28,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${outfit.variable} ${geistSans.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased">
-        {children}
-        <Toaster position="top-right" />
+        <Providers>
+          {children}
+          <Toaster position="top-right" />
+        </Providers>
       </body>
     </html>
   )
