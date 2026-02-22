@@ -57,11 +57,13 @@ export default function ProfessorAIPage() {
 
         if (append) {
             await append({ role: 'user', content: message }, {
-                data: {
-                    conversationId: currentConversationId === 'new' ? null : currentConversationId,
-                    model: selectedModel,
-                    webSearch: searchInternet
-                } as any
+                options: {
+                    body: {
+                        conversationId: currentConversationId === 'new' ? null : currentConversationId,
+                        model: selectedModel,
+                        webSearch: searchInternet
+                    }
+                }
             });
 
             // Refresh conversation ID if it's new
