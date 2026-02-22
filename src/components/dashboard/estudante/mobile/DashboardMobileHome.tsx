@@ -21,26 +21,33 @@ export function DashboardMobileHome() {
     const { data, isLoading } = useQuery({
         queryKey: ['student-mobile-dashboard'],
         queryFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('Not authenticated');
 
-            const { data: dashboardData, error } = await (supabase as any).rpc('get_mobile_student_dashboard');
+                const { data: dashboardData, error } = await (supabase as any).rpc('get_mobile_student_dashboard');
 
-            if (error) {
-                console.warn('RPC failed, using enhanced fallback:', error);
+                if (error || !dashboardData) {
+                    console.warn('[STUDENT_DASHBOARD] RPC failed or returned empty, using fallback:', error);
+                    return {
+                        user: { id: user.id, name: user.user_metadata?.full_name || 'Estudante', email: user.email },
+                        scores: { conhecimento: 0, engajamento: 0, colaboracao: 0 },
+                        next_mission: null,
+                        pulse: []
+                    };
+                }
+
+                // Ensure data structure is robust
                 return {
-                    user: { id: user.id, name: user.user_metadata?.full_name, email: user.email },
-                    scores: { conhecimento: 75, engajamento: 92, colaboracao: 64 },
-                    next_mission: { id: '1', title: 'Avaliação: Princípios do Cooperativismo', type: 'quiz' },
-                    pulse: [
-                        { id: '1', type: 'achievement', title: 'Você atingiu 80 pts em Conhecimento!', timestamp: '2h' },
-                        { id: '2', type: 'event', title: 'Assembleia do Núcleo marcada p/ amanhã', timestamp: '5h' },
-                        { id: '3', type: 'nucleus', title: '3 novos membros entraram no seu núcleo', timestamp: '1d' },
-                    ]
+                    user: dashboardData.user || { id: user.id, name: user.user_metadata?.full_name, email: user.email },
+                    scores: dashboardData.scores || { conhecimento: 0, engajamento: 0, colaboracao: 0 },
+                    next_mission: dashboardData.next_mission || null,
+                    pulse: dashboardData.pulse || []
                 };
+            } catch (err) {
+                console.error('[STUDENT_DASHBOARD] Query function error:', err);
+                return null;
             }
-
-            return dashboardData;
         },
         staleTime: 1000 * 60 * 5,
     });
