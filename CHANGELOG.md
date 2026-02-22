@@ -5,6 +5,17 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
 
+## [2.19.0] - 2026-02-22
+### Added
+- **Student Mobile Experience**: Complete redesign of the student dashboard with "Luxury Refined" aesthetic.
+- **Contextual DOT Coach**: AI assistant integrated with student scores and missions for personalized guidance.
+- **Dopamine Gamification System**: Interactive rewards including `RollingNumbers`, `CelebrationOverlay` (confetti/vibration), and premium `BadgeModal`.
+- **Realtime Triggers**: Database-level listeners for instantaneous visual feedback on achievements.
+- **Skeleton Screens**: Shimmer-effect loading states for better perceived performance.
+- **Mobile Navigation**: Glassmorphic bottom navigation and drawer system.
+
+---
+
 ## [2.16.0] — 2026-02-20 — *The DOT 2.0 Update*
 
 ### Adicionado
