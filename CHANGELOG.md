@@ -5,6 +5,19 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
 
+## [2.20.9] - 2026-02-22
+### Added
+- **AI-Generated Chat Titles**: Conversations now automatically receive descriptive titles summarized by AI after the first interaction.
+- **Manual History Refresh**: Added a refresh button to the sidebar to ensure instant synchronization of conversation lists.
+- **Robustness Guards**: Implemented `isMounted` and SSR safety checks to prevent hydration errors and message duplication.
+
+### Fixed
+- **Hydration Mismatch**: Resolved a critical rendering error in the chat sidebar related to system time and server-side rendering.
+- **Feature Parity**: Synchronized all student chat improvements to the Professor AI panel for consistent experience.
+- **New Conversation Flow**: Fixed a logic bug where new conversations weren't being correctly initialized in certain edge cases.
+
+---
+
 ## [2.19.0] - 2026-02-22
 ### Added
 - **Student Mobile Experience**: Complete redesign of the student dashboard with "Luxury Refined" aesthetic.

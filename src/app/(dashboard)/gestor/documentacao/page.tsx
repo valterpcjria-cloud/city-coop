@@ -234,7 +234,9 @@ const sections = [
                     'Acesso ao RAG interno da base de conhecimento do gestor',
                     'Filtragem automática de escopo (off-topic retorna resposta padrão)',
                     'Histórico persistente de conversas por usuário',
-                    'Dual model: Claude 3.5 Sonnet ou GPT-4o (selecionável)'
+                    'Dual model: Claude 3.5 Sonnet ou GPT-4o (selecionável)',
+                    'Geração automática de títulos descritivos via IA',
+                    'Sincronização instantânea com botão de refresh manual'
                 ]
             },
             {
@@ -344,7 +346,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold">Documentação do Sistema</h1>
-                            <p className="text-white/80">City Coop Platform v2.16.0</p>
+                            <p className="text-white/80">City Coop Platform v2.20.9</p>
                         </div>
                     </motion.div>
 
@@ -514,7 +516,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="bg-city-blue/10 text-city-blue">
-                                v2.16.0
+                                v2.20.9
                             </Badge>
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                                 Produção
