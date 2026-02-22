@@ -155,11 +155,11 @@ export function DashboardMobileHome() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
             >
-                <DashboardGreeting user={data?.user} />
+                {data?.user && <DashboardGreeting user={data.user} />}
 
                 <div className="px-5 mt-6 mb-2">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Evolução Cooperativa</span>
-                    <ScoresWidget scores={data?.scores} />
+                    {data?.scores && <ScoresWidget scores={data.scores} key={JSON.stringify(data.scores)} />}
                 </div>
 
                 <div className="mt-8">
@@ -169,7 +169,7 @@ export function DashboardMobileHome() {
                             <span className="text-[8px] font-bold text-emerald-600 uppercase">Live</span>
                         </div>
                     </div>
-                    <MissionCard mission={data?.next_mission} />
+                    {data?.next_mission && <MissionCard mission={data.next_mission} key={data.next_mission.id} />}
                 </div>
 
                 <div className="mt-8 px-5 pb-32">
@@ -182,7 +182,7 @@ export function DashboardMobileHome() {
                             Ver Tudo
                         </motion.button>
                     </div>
-                    <SocialPulse items={data?.pulse} />
+                    {data?.pulse && <SocialPulse items={data.pulse} />}
                 </div>
             </motion.div>
         </div>

@@ -2,6 +2,7 @@ import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardClient } from '@/components/dashboard/estudante/dashboard-client'
 import { DashboardMobileHome } from '@/components/dashboard/estudante/mobile/DashboardMobileHome'
+import { redirect } from 'next/navigation'
 
 export default async function StudentDashboard() {
     try {
@@ -33,10 +34,11 @@ export default async function StudentDashboard() {
         // If no student profile exists, we can't show the dashboard
         if (!student) {
             console.error('[STUDENT_DASHBOARD] Profile not found for user:', user.id);
-            // This will be caught by DashboardContainer or trigger a client-side layout shift
-            // but we return early to avoid errors.
+            // Re-direct to error page if profile missing
+            redirect('/onboarding-error');
         }
 
+        const studentName = student?.name || user.user_metadata?.full_name || 'Estudante';
         const currentClass = student?.classes?.[0]?.class
         const currentNucleus = nucleusMember?.nucleus
 
