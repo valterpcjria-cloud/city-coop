@@ -58,7 +58,20 @@ interface ScoresWidgetProps {
 }
 
 export function ScoresWidget({ scores }: ScoresWidgetProps) {
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => setIsMounted(true), []);
+
     const data = scores || { conhecimento: 0, engajamento: 0, colaboracao: 0 };
+
+    if (!isMounted) {
+        return (
+            <div className="grid grid-cols-3 gap-3 mb-6">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="h-24 bg-slate-50 rounded-[2rem] border border-slate-100 animate-pulse" />
+                ))}
+            </div>
+        );
+    }
 
     return (
         <div className="grid grid-cols-3 gap-3 mb-6">

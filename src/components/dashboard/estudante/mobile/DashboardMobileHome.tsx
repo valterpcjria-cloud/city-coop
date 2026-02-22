@@ -103,17 +103,18 @@ export function DashboardMobileHome() {
         };
     }, [data?.user?.id, supabase]);
 
-    if (isLoading) {
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => setIsMounted(true), []);
+
+    if (isLoading || !isMounted) {
         return (
             <div className="px-6 py-8 space-y-8 pb-32">
                 {/* Header Skeleton */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-slate-100 animate-pulse" />
-                        <div className="space-y-2">
-                            <div className="w-24 h-3 bg-slate-100 rounded-full animate-pulse" />
-                            <div className="w-32 h-5 bg-slate-100 rounded-full animate-pulse" />
-                        </div>
+                <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 animate-pulse" />
+                    <div className="space-y-2">
+                        <div className="w-24 h-3 bg-slate-100 rounded-full animate-pulse" />
+                        <div className="w-32 h-5 bg-slate-100 rounded-full animate-pulse" />
                     </div>
                 </div>
 

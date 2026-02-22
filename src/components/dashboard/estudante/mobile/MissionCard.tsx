@@ -16,12 +16,20 @@ interface MissionCardProps {
 }
 
 export function MissionCard({ mission }: MissionCardProps) {
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => setIsMounted(true), []);
+
     if (!mission) return null;
 
+    if (!isMounted) {
+        return (
+            <div className="mb-8 p-6 rounded-[2.5rem] bg-slate-100 animate-pulse h-48" />
+        );
+    }
     return (
         <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="mb-8 relative overflow-hidden"
         >

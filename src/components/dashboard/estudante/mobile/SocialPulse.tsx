@@ -27,12 +27,28 @@ const colors = {
 };
 
 export function SocialPulse({ items }: { items?: PulseItem[] }) {
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => setIsMounted(true), []);
+
     // Mock data if none provided
     const pulseItems = items || [
         { id: '1', type: 'achievement', title: 'Você atingiu 80 pts em Conhecimento!', timestamp: '2h' },
         { id: '2', type: 'event', title: 'Assembleia do Núcleo marcada p/ amanhã', timestamp: '5h' },
         { id: '3', type: 'nucleus', title: '3 novos membros entraram no seu núcleo', timestamp: '1d' },
     ] as PulseItem[];
+
+    if (!isMounted) {
+        return (
+            <div className="space-y-4">
+                <div className="h-6 w-32 bg-slate-100 rounded-lg animate-pulse ml-2" />
+                <div className="space-y-3">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="h-20 bg-slate-50 rounded-3xl border border-slate-100 animate-pulse" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">
