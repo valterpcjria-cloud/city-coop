@@ -53,7 +53,7 @@ export default function ChatPage() {
     const messages = chatState.messages || [];
     const status = chatState.status;
     const setMessages = chatState.setMessages;
-    const append = (chatState as any).append;
+    const sendMessage = chatState.sendMessage;
 
     const isLoadingChat = status === 'streaming';
 
@@ -85,8 +85,8 @@ export default function ChatPage() {
         if (!content.trim() || isLoadingChat) return;
 
         // Custom payload attached strictly to the send
-        if (append) {
-            await append({ role: 'user', content: content }, {
+        if (sendMessage) {
+            await sendMessage({ text: content }, {
                 body: {
                     conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: 'gpt',

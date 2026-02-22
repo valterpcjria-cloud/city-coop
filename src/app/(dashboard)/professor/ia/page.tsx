@@ -27,7 +27,7 @@ export default function ProfessorAIPage() {
                 id: 'welcome',
                 role: 'assistant',
                 content: 'Olá, Professor. Sou o seu DOT Assistente. Estou aqui para oferecer suporte pedagógico, sugerir dinâmicas e ajudar na gestão da sua cooperativa escolar. Como posso auxiliar sua jornada hoje?'
-            } as any
+            }
         ],
         onError: (error: Error) => {
             console.error("useChat onError API event:", error);
@@ -39,7 +39,10 @@ export default function ProfessorAIPage() {
     const messages = chatState.messages || [];
     const status = chatState.status;
     const setMessages = chatState.setMessages;
-    const append = (chatState as any).append;
+
+    // Fallback to append, or handleSubmit, or whatever is there
+    console.log("CHATOVERRIDE keys:", Object.keys(chatState || {}));
+    const sendMessage = chatState.sendMessage;
 
     const isLoading = status === 'streaming';
 
@@ -55,8 +58,8 @@ export default function ProfessorAIPage() {
         const message = currentInput;
         setLocalInput('');
 
-        if (append) {
-            await append({ role: 'user', content: message }, {
+        if (sendMessage) {
+            await sendMessage({ text: message }, {
                 body: {
                     conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: selectedModel,
