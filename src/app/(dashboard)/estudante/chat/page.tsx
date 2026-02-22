@@ -87,11 +87,11 @@ export default function ChatPage() {
         // Custom payload attached strictly to the send
         if (append) {
             await append({ role: 'user', content: content }, {
-                data: {
+                body: {
                     conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: 'gpt',
                     webSearch: false
-                } as any
+                }
             });
         }
     };
