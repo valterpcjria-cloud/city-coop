@@ -57,26 +57,27 @@ export async function updateSession(request: NextRequest) {
 
     // If logged in user tries to access auth pages, redirect to appropriate dashboard
     if (user && isAuthRoute) {
-        // Get user role from profile using a single optimized query
-        const { data: profile, error: roleError } = await (supabase as any).rpc('get_user_role', {
+        // Use the optimized RPC from migration 20260221_optimize_user_role.sql
+        const { data: profile, error: roleError } = await (supabase as any).rpc('get_user_profile_with_role', {
             p_user_id: user.id
         })
 
-        if (roleError || !profile) {
-            console.error('[MIDDLEWARE] Role detection error or profile not found:', { roleError, profile, userId: user.id })
-            // If we can't determine role, we might be stuck. 
-            // Better to let them through to /login but with a sign out or clear session?
-            // For now, redirect to a safe default or show error
+        if (roleError || !profile || profile.length === 0) {
+            console.error('[MIDDLEWARE] Profile discovery failed:', { roleError, userId: user.id })
+
+            // Critical: If we have a user but no profile, redirect to a specific error page
+            // to avoid infinite login redirect loops.
             const url = request.nextUrl.clone()
-            url.pathname = '/login'
-            url.searchParams.set('error', 'profile_not_found')
+            url.pathname = '/onboarding-error'
             return NextResponse.redirect(url)
         }
 
+        const userProfile = Array.isArray(profile) ? profile[0] : profile;
         const url = request.nextUrl.clone()
-        if (profile.role === 'gestor' || profile.role === 'manager') {
+
+        if (userProfile.role === 'gestor' || userProfile.role === 'manager' || userProfile.role === 'superadmin') {
             url.pathname = '/gestor'
-        } else if (profile.role === 'teacher' || profile.role === 'professor') {
+        } else if (userProfile.role === 'professor' || userProfile.role === 'teacher') {
             url.pathname = '/professor'
         } else {
             url.pathname = '/estudante'

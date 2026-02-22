@@ -1,3 +1,4 @@
+import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardClient } from '@/components/dashboard/estudante/dashboard-client'
 import { DashboardMobileHome } from '@/components/dashboard/estudante/mobile/DashboardMobileHome'
@@ -52,21 +53,32 @@ export default async function StudentDashboard() {
         <div className="w-full h-full">
             {/* Desktop View */}
             <div className="hidden md:block">
-                <DashboardClient
-                    student={student}
-                    nucleusMember={nucleusMember}
-                    currentClass={currentClass}
-                    currentNucleus={currentNucleus}
-                    pendingAssessmentsCount={pendingAssessmentsRes.count || 0}
-                    nextEvent={nextEventRes.data}
-                />
+                <DashboardContainer>
+                    <DashboardClient
+                        student={student}
+                        nucleusMember={nucleusMember}
+                        currentClass={currentClass}
+                        currentNucleus={currentNucleus}
+                        pendingAssessmentsCount={pendingAssessmentsRes.count || 0}
+                        nextEvent={nextEventRes.data}
+                    />
+                </DashboardContainer>
             </div>
 
             {/* Mobile View */}
             <div className="md:hidden">
-                <DashboardMobileHome />
+                <DashboardContainer>
+                    <DashboardMobileHome />
+                </DashboardContainer>
             </div>
         </div>
     )
+}
+
+function DashboardContainer({ children }: { children: React.ReactNode }) {
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => setIsMounted(true), []);
+    if (!isMounted) return null;
+    return <>{children}</>;
 }
 

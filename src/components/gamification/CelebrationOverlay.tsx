@@ -9,7 +9,11 @@ interface CelebrationOverlayProps {
 }
 
 export function CelebrationOverlay({ trigger, onComplete }: CelebrationOverlayProps) {
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => setIsMounted(true), []);
+
     const fireCelebration = useCallback(() => {
+        if (!isMounted) return;
         // Haptic feedback (short vibration)
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
             navigator.vibrate([50, 30, 50]);
