@@ -10,6 +10,7 @@ import {
     Calendar,
     Vote,
     Bot,
+    Sparkles,
     Settings,
     LogOut,
     ChevronRight,
@@ -29,10 +30,10 @@ function DrawerLink({ href, icon: Icon, label, active, highlighted = false }: Dr
         <Link
             href={href}
             className={`flex items-center justify-between px-3 py-3 rounded-xl mb-1 transition-colors active:scale-[0.98] ${active
-                    ? 'bg-city-blue/10 text-city-blue font-bold'
-                    : highlighted
-                        ? 'text-slate-700 hover:bg-slate-50'
-                        : 'text-slate-600 hover:bg-slate-50'
+                ? 'bg-city-blue/10 text-city-blue font-bold'
+                : highlighted
+                    ? 'text-slate-700 hover:bg-slate-50'
+                    : 'text-slate-600 hover:bg-slate-50'
                 }`}
         >
             <div className="flex items-center space-x-3">
@@ -162,7 +163,14 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                             href="/professor/ia"
                             icon={Bot}
                             label="DOT Assistente"
-                            active={pathname.startsWith('/professor/ia')}
+                            active={pathname === '/professor/ia'}
+                            highlighted
+                        />
+                        <DrawerLink
+                            href="/professor/ia/avaliacoes"
+                            icon={Sparkles}
+                            label="Criar Avaliação IA"
+                            active={pathname === '/professor/ia/avaliacoes'}
                             highlighted
                         />
                     </div>
