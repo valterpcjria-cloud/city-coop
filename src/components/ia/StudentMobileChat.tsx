@@ -10,25 +10,23 @@ import {
     Sparkles,
     Target,
     Zap,
-    Heart,
-    ChevronRight,
-    MessageSquare
+    Heart
 } from 'lucide-react';
 import Link from 'next/link';
-import { getSupabaseClient } from '@/lib/supabase/client';
-import { sendDotMessage } from '@/app/actions/chat';
 import { cn } from '@/lib/utils';
 
 interface DotMessage {
-    id: string;
-    role: 'user' | 'assistant' | 'system';
-    content: string;
-    created_at?: string;
+    id?: string;
+    role: 'user' | 'assistant' | 'system' | 'data';
+    content?: string;
+    text?: string;
+    parts?: any[];
 }
 
 interface StudentMobileChatProps {
-    sessionId: string;
-    initialMessages?: DotMessage[];
+    messages: DotMessage[];
+    isLoading: boolean;
+    onSendMessage: (content: string) => Promise<void>;
     studentScores?: {
         conhecimento: number;
         engajamento: number;
@@ -66,15 +64,13 @@ function Typewriter({ text, speed = 20, onComplete }: { text: string, speed?: nu
 }
 
 export function StudentMobileChat({
-    sessionId,
-    initialMessages = [],
+    messages = [],
+    isLoading,
+    onSendMessage,
     studentScores,
     nextMission
 }: StudentMobileChatProps) {
-    const [messages, setMessages] = useState<DotMessage[]>(initialMessages);
     const [input, setInput] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
-    const supabase = getSupabaseClient();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll to bottom
@@ -84,52 +80,12 @@ export function StudentMobileChat({
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isTyping]);
-
-    // Supabase Realtime subscription
-    useEffect(() => {
-        const channel = supabase
-            .channel(`chat_${sessionId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'dot_messages',
-                    filter: `session_id=eq.${sessionId}`,
-                },
-                (payload) => {
-                    const newMessage = payload.new as DotMessage;
-                    if (newMessage.role === 'assistant') {
-                        setMessages((prev) => [...prev, newMessage]);
-                        setIsTyping(false);
-                    }
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [sessionId, supabase]);
+    }, [messages, isLoading]);
 
     const handleSend = async (content: string) => {
-        if (!content.trim()) return;
-
-        // Optimistic UI update
-        setMessages((prev) => [
-            ...prev,
-            { id: Date.now().toString(), role: 'user' as const, content },
-        ]);
-        setIsTyping(true);
+        if (!content.trim() || isLoading) return;
         setInput('');
-
-        try {
-            await sendDotMessage(sessionId, content, 'user');
-        } catch (error) {
-            console.error('Erro ao enviar:', error);
-            setIsTyping(false);
-        }
+        await onSendMessage(content);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -137,6 +93,14 @@ export function StudentMobileChat({
             e.preventDefault();
             handleSend(input);
         }
+    };
+
+    // Helper to get text content from potentially mixed message types
+    const getMessageText = (msg: DotMessage) => {
+        if (msg.parts && msg.parts.length > 0) {
+            return msg.parts.filter(p => p.type === 'text').map(p => p.text).join(' ');
+        }
+        return msg.content || msg.text || '';
     };
 
     return (
@@ -221,16 +185,16 @@ export function StudentMobileChat({
                                         : "bg-white border border-slate-100 text-slate-700 rounded-bl-none"
                                 )}>
                                     {msg.role === 'assistant' && idx === messages.length - 1 ? (
-                                        <Typewriter text={msg.content} onComplete={scrollToBottom} />
+                                        <Typewriter text={getMessageText(msg)} onComplete={scrollToBottom} />
                                     ) : (
-                                        msg.content
+                                        getMessageText(msg)
                                     )}
                                 </div>
                             </div>
                         </motion.div>
                     ))}
 
-                    {isTyping && (
+                    {isLoading && (
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -286,7 +250,7 @@ export function StudentMobileChat({
                         <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={() => handleSend(input)}
-                            disabled={!input.trim() || isTyping}
+                            disabled={!input.trim() || isLoading}
                             className="w-12 h-12 rounded-[1.25rem] bg-city-blue text-white flex items-center justify-center shrink-0 disabled:opacity-50 disabled:bg-slate-200 shadow-lg shadow-city-blue/20 transition-all active:rotate-12"
                         >
                             <Send size={20} className="-mr-0.5 mt-0.5" />

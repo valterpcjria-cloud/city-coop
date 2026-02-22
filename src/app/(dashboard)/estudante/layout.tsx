@@ -68,12 +68,14 @@ export default async function StudentDashboardLayout({
             </div>
 
             {/* Mobile Navigation Orquestration */}
-            <StudentMobileNavManager user={{
-                name: student.name,
-                email: student.email,
-                image: student.avatar_url,
-                nucleus: nucleusName
-            }} />
+            <div className="md:hidden">
+                <StudentMobileNavManager user={{
+                    name: student.name,
+                    email: student.email,
+                    image: student.avatar_url,
+                    nucleus: nucleusName
+                }} />
+            </div>
         </div>
     )
 }

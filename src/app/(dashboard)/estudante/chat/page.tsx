@@ -6,10 +6,11 @@ import { createClient } from '@/lib/supabase/client';
 import { StudentMobileChat } from '@/components/ia/StudentMobileChat';
 import { Icons } from '@/components/ui/icons';
 import { toast } from 'sonner';
+import { useChat } from '@ai-sdk/react';
 
 export default function ChatPage() {
     const supabase = createClient();
-    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
     // Fetch dashboard data for context
     const { data: dashboard, isLoading: isLoadingContext } = useQuery({
@@ -34,54 +35,68 @@ export default function ChatPage() {
         staleTime: 1000 * 60 * 10, // 10 minutes
     });
 
-    // Initialize or get recent session
+    const {
+        messages = [],
+        status,
+        setMessages,
+        sendMessage
+    } = useChat({
+        api: '/api/chat',
+        initialMessages: [
+            {
+                id: 'welcome',
+                role: 'assistant',
+                content: 'Olá! Sou o seu DOT Assistente cooperativista. Estou aqui para te ajudar em suas missões e atividades. Como posso ajudar?'
+            } as any
+        ],
+        onError: (err: any) => {
+            console.error("Chat error:", err);
+            toast.error("Ocorreu um erro na conexão com a IA. Tente novamente.");
+        }
+    } as any);
+
+    const isLoadingChat = status === 'streaming';
+
+    // Initialize or get recent session from the unified endpoint
     useEffect(() => {
-        const initChat = async () => {
+        const loadInitialHistory = async () => {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-
-                // Simple check for existing session for simpler mobile UX
-                const { data: existingSession } = await (supabase as any)
-                    .from('dot_chat_sessions')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .order('updated_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-
-                if (existingSession) {
-                    setSessionId(existingSession.id);
+                const res = await fetch('/api/ai/history');
+                if (!res.ok) throw new Error('Failed to fetch history');
+                const data = await res.json();
+                if (data && data.id) {
+                    setCurrentConversationId(data.id);
+                    if (data.messages && data.messages.length > 0) {
+                        setMessages(data.messages);
+                    }
                 } else {
-                    // Create new session
-                    const { data: newSession, error } = await (supabase as any)
-                        .from('dot_chat_sessions')
-                        .insert({
-                            user_id: user.id,
-                            title: 'Nova Conversa Coach',
-                            metadata: {
-                                scores_at_start: dashboard?.scores,
-                                context_target: 'student'
-                            }
-                        })
-                        .select()
-                        .single();
-
-                    if (error) throw error;
-                    setSessionId(newSession.id);
+                    setCurrentConversationId('new');
                 }
             } catch (err) {
-                console.error("Failed to init chat session", err);
-                toast.error("Erro ao carregar seu assistente DOT.");
+                console.error("Failed to load chat history", err);
+                setCurrentConversationId('new');
             }
         };
 
-        if (dashboard) {
-            initChat();
-        }
-    }, [dashboard, supabase]);
+        loadInitialHistory();
+    }, [setMessages]);
 
-    if (isLoadingContext || !sessionId) {
+    const handleSendMessage = async (content: string) => {
+        if (!content.trim() || isLoadingChat) return;
+
+        // Custom payload attached strictly to the send
+        if (sendMessage) {
+            await sendMessage({ text: content } as any, {
+                body: {
+                    conversationId: currentConversationId,
+                    model: 'gpt',
+                    webSearch: false
+                }
+            });
+        }
+    };
+
+    if (isLoadingContext || !currentConversationId) {
         return (
             <div className="flex flex-col items-center justify-center h-[100dvh] bg-slate-50 gap-4">
                 <div className="relative">
@@ -97,7 +112,9 @@ export default function ChatPage() {
 
     return (
         <StudentMobileChat
-            sessionId={sessionId}
+            messages={messages}
+            isLoading={isLoadingChat}
+            onSendMessage={handleSendMessage}
             studentScores={dashboard?.scores ? {
                 ...dashboard.scores,
                 xp: dashboard.xp || 0,
