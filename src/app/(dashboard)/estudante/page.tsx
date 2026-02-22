@@ -1,8 +1,4 @@
-import React from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { DashboardClient } from '@/components/dashboard/estudante/dashboard-client'
-import { DashboardMobileHome } from '@/components/dashboard/estudante/mobile/DashboardMobileHome'
-import { redirect } from 'next/navigation'
+import { DashboardContainer } from '@/components/dashboard/estudante/DashboardContainer'
 
 export default async function StudentDashboard() {
     try {
@@ -96,12 +92,5 @@ export default async function StudentDashboard() {
             </div>
         );
     }
-}
-
-function DashboardContainer({ children }: { children: React.ReactNode }) {
-    const [isMounted, setIsMounted] = React.useState(false);
-    React.useEffect(() => setIsMounted(true), []);
-    if (!isMounted) return null;
-    return <>{children}</>;
 }
 
