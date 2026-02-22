@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { DashboardClient } from '@/components/dashboard/estudante/dashboard-client'
+import { DashboardMobileHome } from '@/components/dashboard/estudante/mobile/DashboardMobileHome'
 
 export default async function StudentDashboard() {
     const supabase = await createClient()
@@ -34,7 +35,6 @@ export default async function StudentDashboard() {
                 .from('assessments')
                 .select('id', { count: 'exact', head: true })
                 .eq('class_id', currentClass.id)
-            // In a real scenario, we'd also filter by assessments the student hasn't completed yet
             : Promise.resolve({ count: 0 }),
         currentNucleus?.id
             ? supabase
@@ -49,13 +49,24 @@ export default async function StudentDashboard() {
     ])
 
     return (
-        <DashboardClient
-            student={student}
-            nucleusMember={nucleusMember}
-            currentClass={currentClass}
-            currentNucleus={currentNucleus}
-            pendingAssessmentsCount={pendingAssessmentsRes.count || 0}
-            nextEvent={nextEventRes.data}
-        />
+        <div className="w-full h-full">
+            {/* Desktop View */}
+            <div className="hidden md:block">
+                <DashboardClient
+                    student={student}
+                    nucleusMember={nucleusMember}
+                    currentClass={currentClass}
+                    currentNucleus={currentNucleus}
+                    pendingAssessmentsCount={pendingAssessmentsRes.count || 0}
+                    nextEvent={nextEventRes.data}
+                />
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden">
+                <DashboardMobileHome />
+            </div>
+        </div>
     )
 }
+

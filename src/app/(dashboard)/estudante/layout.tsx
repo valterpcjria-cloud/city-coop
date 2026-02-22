@@ -2,6 +2,7 @@ import React from 'react'
 import { StudentSidebar } from '@/components/dashboard/estudante/sidebar'
 import { StudentHeader } from '@/components/dashboard/estudante/header'
 import { PageTransition } from '@/components/dashboard/page-transition'
+import { StudentMobileNavManager } from '@/components/navigation/StudentMobileNavManager'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -46,20 +47,34 @@ export default async function StudentDashboardLayout({
     const nucleusName = nucleusMemberRes.data?.nucleus?.name || null
 
     return (
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen bg-slate-50">
+            {/* Desktop Sidebar - Hidden on mobile */}
             <StudentSidebar className="w-64 hidden md:block" />
+
             <div className="flex-1 flex flex-col min-h-screen">
                 <StudentHeader user={{
                     name: student.name,
                     email: student.email,
-                    nucleus: nucleusName
+                    nucleus: nucleusName,
+                    image: student.avatar_url // Use avatar_url if available
                 }} />
-                <main className="flex-1 p-6 bg-slate-50/50">
+
+                {/* Responsive main content: adds bottom padding to accommodate BottomNav */}
+                <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6">
                     <PageTransition>
                         {children}
                     </PageTransition>
                 </main>
             </div>
+
+            {/* Mobile Navigation Orquestration */}
+            <StudentMobileNavManager user={{
+                name: student.name,
+                email: student.email,
+                image: student.avatar_url,
+                nucleus: nucleusName
+            }} />
         </div>
     )
 }
+
