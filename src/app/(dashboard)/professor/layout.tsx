@@ -2,6 +2,7 @@ import React from 'react'
 import { Sidebar } from '@/components/dashboard/professor/sidebar'
 import { DashboardHeader } from '@/components/dashboard/professor/header'
 import { PageTransition } from '@/components/dashboard/page-transition'
+import { MobileNavManager } from '@/components/navigation/MobileNavManager'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -62,12 +63,17 @@ export default async function ProfessorDashboardLayout({
                     user={{ name: teacher.name, email: teacher.email }}
                     title="Painel do Professor"
                 />
-                <main className="flex-1 p-6 bg-slate-50/50">
+                <main className="flex-1 p-6 pb-20 md:pb-6 bg-slate-50/50">
                     <PageTransition>
                         {children}
                     </PageTransition>
                 </main>
             </div>
+            {/* Mobile Navigation — only visible on screens < md */}
+            <MobileNavManager
+                user={{ name: teacher.name, email: teacher.email }}
+            />
         </div>
     )
 }
+

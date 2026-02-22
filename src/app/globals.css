@@ -909,3 +909,29 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ========================================
+   MOBILE SAFE AREA & UTILITIES
+   ======================================== */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Hide scrollbar for mobile-specific scroll areas */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
