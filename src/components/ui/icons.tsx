@@ -50,6 +50,8 @@ import {
     Building2,
     Info,
     CheckSquare,
+    History,
+    Send,
     type Icon as LucideIcon,
 } from 'lucide-react'
 
@@ -110,6 +112,8 @@ export const Icons = {
     info: Info,
     checkSquare: CheckSquare,
     alertTriangle: AlertTriangle,
+    history: History,
+    send: Send,
 }
 
 

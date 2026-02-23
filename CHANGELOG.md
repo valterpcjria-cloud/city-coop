@@ -5,6 +5,18 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
 
+## [2.21.0] - 2026-02-22
+### Added
+- **Specialized DOT AI Context**: Specialization of DOT AI's responses for the Reports page, focusing on strategic management and network metrics.
+- **Real-Time Metrics Injection**: The AI assistant now ingests real-time dashboard data (schools, students, class status, events) for concrete data-driven analysis.
+
+### Fixed
+- **Reports Dashboard Data**: Resolved issues with missing Supabase RPCs and hydration mismatches on the Reports page.
+- **AI Chat Rendering**: Improved chat bubble styling and implemented support for AI SDK message parts structure.
+- **Component Icons**: Restored missing export for Send icon in the UI core.
+
+---
+
 ## [2.20.9] - 2026-02-22
 ### Added
 - **AI-Generated Chat Titles**: Conversations now automatically receive descriptive titles summarized by AI after the first interaction.

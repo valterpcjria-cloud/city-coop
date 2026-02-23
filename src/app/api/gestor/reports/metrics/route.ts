@@ -55,23 +55,23 @@ export async function GET(request: NextRequest) {
         if (classesByModalityRes.error) throw classesByModalityRes.error
         if (eventsByStatusRes.error) throw eventsByStatusRes.error
 
-        const p = platformRes.data
+        const p = platformRes.data || {}
 
         return NextResponse.json({
             success: true,
             metrics: {
-                totalSchools: p.total_schools,
-                totalTeachers: p.total_teachers,
-                totalStudents: p.total_students,
-                totalClasses: p.total_classes,
-                activeClasses: p.active_classes,
-                completedClasses: p.completed_classes,
-                approvedEvents: p.approved_events,
-                pendingEvents: p.pending_events,
-                rejectedEvents: p.rejected_events,
-                studentsByGrade: studentsByGradeRes.data,
-                eventsByStatus: eventsByStatusRes.data,
-                classesByModality: classesByModalityRes.data,
+                totalSchools: p.total_schools || 0,
+                totalTeachers: p.total_teachers || 0,
+                totalStudents: p.total_students || 0,
+                totalClasses: p.total_classes || 0,
+                activeClasses: p.active_classes || 0,
+                completedClasses: p.completed_classes || 0,
+                approvedEvents: p.approved_events || 0,
+                pendingEvents: p.pending_events || 0,
+                rejectedEvents: p.rejected_events || 0,
+                studentsByGrade: studentsByGradeRes.data || [],
+                eventsByStatus: eventsByStatusRes.data || [],
+                classesByModality: classesByModalityRes.data || [],
             }
         })
     } catch (error: any) {

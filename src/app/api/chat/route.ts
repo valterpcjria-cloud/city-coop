@@ -3,7 +3,7 @@ import { streamText, convertToModelMessages, generateText } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { getAIKeys } from '@/lib/ai/config'
-import { TEACHER_SYSTEM_PROMPT, STUDENT_SYSTEM_PROMPT } from '@/lib/ai/claude'
+import { TEACHER_SYSTEM_PROMPT, STUDENT_SYSTEM_PROMPT, REPORTS_SYSTEM_PROMPT } from '@/lib/ai/claude'
 import { performWebSearch, formatSearchResults } from '@/lib/ai/search'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { aiChatSchema, getZodErrorResponse } from '@/lib/validators'
@@ -142,6 +142,16 @@ export async function POST(req: Request) {
 
         // Build enhanced system prompt with knowledge context
         let basePrompt = teacher ? TEACHER_SYSTEM_PROMPT : STUDENT_SYSTEM_PROMPT
+        const contextType = json.context || 'general'
+
+        if (contextType === 'reports_dashboard') {
+            basePrompt = REPORTS_SYSTEM_PROMPT
+            // Inject real-time metrics if available in the payload
+            if (json.body?.metrics || json.metrics) {
+                const metrics = json.body?.metrics || json.metrics
+                basePrompt += `\n\n## DADOS REAIS DO DASHBOARD (CONTEXTO ATUAL):\n${JSON.stringify(metrics, null, 2)}`
+            }
+        }
 
         // [WEB ON] VALIDAÇÃO DE ESCOPO
         if (webSearch) {

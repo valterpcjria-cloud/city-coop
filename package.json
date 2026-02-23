@@ -1,6 +1,6 @@
 {
   "name": "city-coop-platform",
-  "version": "2.18.4",
+  "version": "2.21.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
