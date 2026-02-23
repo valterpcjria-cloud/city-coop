@@ -9,11 +9,14 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 ### Added
 - **Specialized DOT AI Context**: Specialization of DOT AI's responses for the Reports page, focusing on strategic management and network metrics.
 - **Real-Time Metrics Injection**: The AI assistant now ingests real-time dashboard data (schools, students, class status, events) for concrete data-driven analysis.
+- **Streamlined Reports UI**: Optimized the reports dashboard for full-width data visualization by removing legacy chat history features for gestors.
 
 ### Fixed
-- **Reports Dashboard Data**: Resolved issues with missing Supabase RPCs and hydration mismatches on the Reports page.
+- **Reports Dashboard Stability**: Resolved a critical `ReferenceError: reportLinks is not defined` and restored JSX structural integrity.
+- **Missing Supabase RPCs**: Fixed server-side data fetching for the reports engine.
 - **AI Chat Rendering**: Improved chat bubble styling and implemented support for AI SDK message parts structure.
 - **Component Icons**: Restored missing export for Send icon in the UI core.
+
 
 ---
 

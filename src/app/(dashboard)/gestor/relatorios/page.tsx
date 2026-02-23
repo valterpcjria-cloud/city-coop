@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/ui/icons'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { ChatHistorySidebar } from '@/components/dashboard/shared/chat-history-sidebar'
 import { AnimatedContainer } from '@/components/dashboard/shared/animated-container'
 import dynamic from 'next/dynamic'
 
@@ -95,13 +94,18 @@ const MetricCard = ({
     </motion.div>
 )
 
+const reportLinks = [
+    { title: 'Escolas', href: '/gestor/relatorios/escolas', icon: Icons.school, color: '#0088FE' },
+    { title: 'Turmas', href: '/gestor/relatorios/turmas', icon: Icons.users, color: '#00C49F' },
+    { title: 'Alunos', href: '/gestor/relatorios/alunos', icon: Icons.graduationCap, color: '#FFBB28' },
+    { title: 'Eventos', href: '/gestor/relatorios/eventos', icon: Icons.calendar, color: '#FF8042' },
+    { title: 'Eleições', href: '/gestor/relatorios/eleicoes', icon: Icons.vote, color: '#8884d8' },
+]
+
 export default function ReportsPage() {
     const [metrics, setMetrics] = useState<Metrics | null>(null)
     const [loading, setLoading] = useState(true)
     const [isMounted, setIsMounted] = useState(false)
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const [refreshTrigger, setRefreshTrigger] = useState(0)
-    const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
     const [selectedModel, setSelectedModel] = useState<'claude' | 'gpt'>('gpt')
     const [searchInternet, setSearchInternet] = useState(false)
 
@@ -135,6 +139,7 @@ export default function ReportsPage() {
 
     const [localInput, setLocalInput] = useState('')
 
+
     const chatState = useChat({
         api: '/api/chat',
         initialMessages: [
@@ -164,15 +169,10 @@ export default function ReportsPage() {
         if (sendMessage) {
             await sendMessage({ text: message }, {
                 body: {
-                    conversationId: currentConversationId === 'new' ? null : currentConversationId,
                     model: selectedModel,
                     context: 'reports_dashboard'
                 }
             })
-
-            if (!currentConversationId || currentConversationId === 'new') {
-                setTimeout(() => setRefreshTrigger(prev => prev + 1), 2000)
-            }
         }
     }
 
@@ -184,45 +184,13 @@ export default function ReportsPage() {
                 content: 'Olá, Gestor. Como posso ajudar com os relatórios agora?'
             } as any
         ])
-        setCurrentConversationId('new')
         setLocalInput('')
-    }
-
-    const loadConversation = async (id: string) => {
-        try {
-            setCurrentConversationId(id)
-            const res = await fetch(`/api/ai/history/${id}`)
-            const data = await res.json()
-            if (data && data.messages) {
-                chatState.setMessages(data.messages)
-            }
-        } catch (err) {
-            console.error("Failed to load conversation", err)
-            toast.error("Não foi possível carregar a conversa.")
-        }
     }
 
     if (!isMounted) return null
 
-    const reportLinks = [
-        { title: 'Escolas', href: '/gestor/relatorios/escolas', icon: Icons.school, color: '#0088FE' },
-        { title: 'Turmas', href: '/gestor/relatorios/turmas', icon: Icons.users, color: '#00C49F' },
-        { title: 'Alunos', href: '/gestor/relatorios/alunos', icon: Icons.graduationCap, color: '#FFBB28' },
-        { title: 'Eventos', href: '/gestor/relatorios/eventos', icon: Icons.calendar, color: '#FF8042' },
-        { title: 'Eleições', href: '/gestor/relatorios/eleicoes', icon: Icons.vote, color: '#8884d8' },
-    ]
-
     return (
         <div className="flex h-[calc(100vh-6rem)] bg-slate-50 dark:bg-slate-950 relative overflow-hidden -m-6">
-            <ChatHistorySidebar
-                isOpen={isSidebarOpen}
-                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-                onSelectConversation={loadConversation}
-                onNewChat={handleNewChat}
-                currentConversationId={currentConversationId}
-                refreshTrigger={refreshTrigger}
-            />
-
             <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-950 relative z-10 overflow-y-auto">
                 <AnimatedContainer className="p-6 md:p-8 space-y-8">
                     {/* Header */}
@@ -505,16 +473,7 @@ export default function ReportsPage() {
                         onSubmit={onSendMessage}
                         className="max-w-4xl mx-auto flex items-center gap-2"
                     >
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full h-10 w-10 shrink-0"
-                            onClick={() => setIsSidebarOpen(true)}
-                        >
-                            <Icons.history className="h-5 w-5" />
-                        </Button>
-                        <div className="relative flex-1 group">
+                        <div className="relative flex-1 group pl-4">
                             <input
                                 value={localInput}
                                 onChange={(e) => setLocalInput(e.target.value)}
@@ -537,3 +496,4 @@ export default function ReportsPage() {
         </div>
     )
 }
+

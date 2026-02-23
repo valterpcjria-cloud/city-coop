@@ -49,7 +49,8 @@ const sections = [
                     'Gestor alimenta a base de conhecimento (PDF, DOCX, YouTube, URLs)',
                     'DOT recupera conteúdo relevante por similaridade de palavras-chave (RAG)',
                     'Busca na web com filtragem automática de escopo cooperativista',
-                    'Histórico de conversas persistido por usuário no Supabase'
+                    'Análise de relatórios focada em tempo real (sem histórico para maior privacidade e foco)',
+                    'Histórico de conversas persistido por usuário (exceto em dashboards estratégicos)'
                 ]
             }
         ]
@@ -110,9 +111,9 @@ const sections = [
             {
                 subtitle: 'Relatórios e KPIs',
                 items: [
-                    'Dashboard com KPIs consolidados em tempo real',
+                    'Dashboard Intelligence com KPIs consolidados em tempo real',
+                    'Análise assistida pelo DOT AI com injeção de contexto centralizado',
                     'Relatórios de escolas, alunos, professores e engajamento',
-                    'Mapeamento de conexões produtivas por região',
                     'Exportação em CSV, XLSX e PDF'
                 ]
             }
@@ -235,6 +236,7 @@ const sections = [
                     'Filtragem automática de escopo (off-topic retorna resposta padrão)',
                     'Histórico persistente de conversas por usuário',
                     'Dual model: Claude 3.5 Sonnet ou GPT-4o (selecionável)',
+                    'DOT Strategic Insight Engine para análise de métricas operacionais',
                     'Geração automática de títulos descritivos via IA',
                     'Sincronização instantânea com botão de refresh manual'
                 ]
@@ -346,7 +348,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold">Documentação do Sistema</h1>
-                            <p className="text-white/80">City Coop Platform v2.20.9</p>
+                            <p className="text-white/80">City Coop Platform v2.21.0</p>
                         </div>
                     </motion.div>
 
@@ -516,7 +518,7 @@ export default function DocumentacaoPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="bg-city-blue/10 text-city-blue">
-                                v2.20.9
+                                v2.21.0
                             </Badge>
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                                 Produção
