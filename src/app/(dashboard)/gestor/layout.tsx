@@ -3,6 +3,7 @@ import { GestorSidebar } from '@/components/dashboard/gestor/gestor-sidebar'
 import { GestorHeader } from '@/components/dashboard/gestor/gestor-header'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { GestorMobileNavManager } from '@/components/navigation/GestorMobileNavManager'
 
 export default async function GestorDashboardLayout({
     children,
@@ -79,7 +80,7 @@ export default async function GestorDashboardLayout({
             </div>
 
             {/* Main Content Area */}
-            <div className="md:ml-72 min-h-screen flex flex-col relative z-10 transition-all duration-500">
+            <div className="md:ml-72 min-h-screen flex flex-col relative z-10 transition-all duration-500 pb-20 md:pb-0">
                 {/* Floating Header */}
                 <GestorHeader
                     user={{ name: manager.name, email: manager.email }}
@@ -90,6 +91,13 @@ export default async function GestorDashboardLayout({
                 <main className="flex-1 px-6 pb-12 pt-4">
                     {children}
                 </main>
+            </div>
+
+            {/* Mobile Navigation — only visible on screens < md */}
+            <div className="md:hidden">
+                <GestorMobileNavManager
+                    user={{ name: manager.name, email: manager.email }}
+                />
             </div>
         </div>
     )

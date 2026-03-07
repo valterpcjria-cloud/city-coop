@@ -1,37 +1,30 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, CheckSquare, MessageSquare } from 'lucide-react';
+import { Icons } from '@/components/ui/icons';
 
-interface NavItem {
-    label: string;
-    href: string;
-    icon: React.ElementType;
-}
-
-const navItems: NavItem[] = [
-    { label: 'Home', href: '/estudante', icon: Home },
-    { label: 'Núcleo', href: '/estudante/nucleo', icon: Users },
-    { label: 'Ativ.', href: '/estudante/atividades', icon: CheckSquare },
-    { label: 'Chat', href: '/estudante/chat', icon: MessageSquare },
-];
-
-interface StudentMobileBottomNavProps {
+interface GestorMobileBottomNavProps {
     onOpenMenu: () => void;
 }
 
-export function StudentMobileBottomNav({ onOpenMenu }: StudentMobileBottomNavProps) {
+export function GestorMobileBottomNav({ onOpenMenu }: GestorMobileBottomNavProps) {
     const pathname = usePathname();
+
+    const navItems = [
+        { label: 'Início', href: '/gestor', icon: Icons.menu },
+        { label: 'Escolas', href: '/gestor/escolas', icon: Icons.bookOpen },
+        { label: 'Profs', href: '/gestor/professores', icon: Icons.user },
+        { label: 'Relat.', href: '/gestor/relatorios', icon: Icons.chart },
+    ];
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-slate-200/60 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
             <div className="flex items-center justify-between h-16 px-4">
                 <div className="flex items-center justify-start flex-1 -ml-2">
                     {navItems.map((item) => {
-                        const isActive = item.href === '/estudante'
-                            ? pathname === '/estudante'
+                        const isActive = item.href === '/gestor'
+                            ? pathname === '/gestor'
                             : pathname.startsWith(item.href);
                         const Icon = item.icon;
 
@@ -43,7 +36,7 @@ export function StudentMobileBottomNav({ onOpenMenu }: StudentMobileBottomNavPro
                                     }`}
                                 style={{ minWidth: '44px', minHeight: '44px' }}
                             >
-                                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                                <Icon className={`h-5 w-5 ${isActive ? 'text-city-blue' : ''}`} />
                                 <span className={`text-[9px] font-bold mt-1 uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-60'}`}>
                                     {item.label}
                                 </span>

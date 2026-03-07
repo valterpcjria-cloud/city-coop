@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
     Trophy,
@@ -16,7 +15,6 @@ import {
     UserCircle
 } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { cn } from '@/lib/utils';
 
 interface StudentMobileDrawerProps {
     isOpen: boolean;
@@ -52,129 +50,121 @@ export function StudentMobileDrawer({ isOpen, onClose, user }: StudentMobileDraw
     };
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <div className="fixed inset-0 z-[200] md:hidden">
-                    {/* Backdrop Fade */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                    />
+        <>
+            {/* Backdrop — Premium Blur */}
+            <div
+                className={`fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-md transition-opacity duration-500 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                    }`}
+                onClick={onClose}
+                aria-hidden="true"
+            />
 
-                    {/* Drawer Panel Slide-in */}
-                    <motion.aside
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="absolute top-0 right-0 h-[100dvh] w-[80%] max-w-sm bg-white shadow-2xl flex flex-col pt-safe"
-                    >
-                        {/* Header / Profile Info */}
-                        <div className="p-6 bg-slate-50 border-b border-slate-100 relative">
-                            <button
-                                onClick={onClose}
-                                className="absolute top-4 right-4 p-2 text-slate-400 active:bg-slate-200 rounded-full transition-colors"
-                                aria-label="Fechar menu"
-                            >
-                                <X size={20} />
-                            </button>
-
-                            <div className="flex items-center gap-4 mt-2">
-                                <div className="w-14 h-14 rounded-2xl bg-city-blue/10 flex items-center justify-center text-city-blue overflow-hidden border border-city-blue/20 shadow-sm">
-                                    {user?.image ? (
-                                        <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <UserCircle size={32} />
-                                    )}
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-base font-bold text-slate-900 leading-tight line-clamp-1">
-                                        {user?.name || 'Estudante'}
-                                    </span>
-                                    <span className="text-xs text-slate-500 line-clamp-1 mb-1">{user?.email}</span>
-                                    {user?.nucleus && (
-                                        <span className="inline-flex py-0.5 px-2 bg-city-blue/10 text-city-blue text-[10px] font-bold rounded-full border border-city-blue/20 w-fit">
-                                            {user.nucleus}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+            {/* Side Drawer — Unique Entry */}
+            <aside
+                className={`fixed top-0 right-0 z-[70] h-[100dvh] w-[85%] max-w-[320px] bg-white transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col md:hidden border-l border-slate-100 ${isOpen ? 'translate-x-0 shadow-[-20px_0_40px_rgba(0,0,0,0.05)]' : 'translate-x-[110%]'
+                    }`}
+            >
+                {/* Header — Light & Clean */}
+                <header className="flex flex-col p-6 pt-12 bg-white shrink-0">
+                    <div className="flex justify-between items-start mb-6">
+                        <div className="w-14 h-14 rounded-md bg-slate-100 text-slate-800 flex items-center justify-center font-bold shrink-0 overflow-hidden border border-slate-200">
+                            {user?.image ? (
+                                <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <UserCircle size={28} strokeWidth={1.5} />
+                            )}
                         </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors"
+                            aria-label="Close menu"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
 
-                        {/* Menu Links */}
-                        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-hide">
-                            {/* Seção: Progresso */}
-                            <div>
-                                <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-3">Progresso</h3>
-                                <div className="space-y-1">
-                                    <DrawerLink
-                                        icon={Trophy}
-                                        label="Formação & Scores"
-                                        href="/estudante/formacao"
-                                        active={pathname.startsWith('/estudante/formacao')}
-                                    />
-                                </div>
-                            </div>
+                    <div className="flex flex-col">
+                        <h2 className="text-[clamp(1.1rem,4vw,1.3rem)] font-bold text-slate-900 leading-tight">
+                            {user?.name || 'Estudante'}
+                        </h2>
+                        <span className="text-sm text-slate-500 font-medium mb-2">{user?.email}</span>
+                        {user?.nucleus && (
+                            <span className="inline-flex py-0.5 px-2 bg-city-blue/5 text-city-blue text-[10px] font-bold rounded-[4px] border border-city-blue/10 w-fit uppercase tracking-wider">
+                                {user.nucleus}
+                            </span>
+                        )}
+                    </div>
+                </header>
 
-                            {/* Seção: Engajamento */}
-                            <div>
-                                <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-3">Engajamento</h3>
-                                <div className="space-y-1">
-                                    <DrawerLink
-                                        icon={Vote}
-                                        label="Eleições"
-                                        href="/estudante/eleicoes"
-                                        active={pathname.startsWith('/estudante/eleicoes')}
-                                    />
-                                    <DrawerLink
-                                        icon={Calendar}
-                                        label="Próximos Eventos"
-                                        href="/estudante/evento"
-                                        active={pathname.startsWith('/estudante/evento')}
-                                    />
-                                </div>
-                            </div>
+                <div className="h-px bg-slate-100 mx-6" />
 
-                            {/* Seção: Conta */}
-                            <div>
-                                <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-3">Conta</h3>
-                                <div className="space-y-1">
-                                    <DrawerLink
-                                        icon={User}
-                                        label="Meu Perfil"
-                                        href="/estudante/perfil"
-                                        active={pathname === '/estudante/perfil'}
-                                    />
-                                    <DrawerLink
-                                        icon={Settings}
-                                        label="Configurações"
-                                        href="/estudante/configuracoes"
-                                        active={pathname === '/estudante/configuracoes'}
-                                    />
-                                </div>
-                            </div>
+                {/* Menu Links */}
+                <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
+                    {/* Seção: Progresso */}
+                    <div className="mb-6">
+                        <h3 className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">Progresso</h3>
+                        <div className="space-y-0.5">
+                            <DrawerLink
+                                icon={Trophy}
+                                label="Formação & Scores"
+                                href="/estudante/formacao"
+                                active={pathname.startsWith('/estudante/formacao')}
+                            />
                         </div>
+                    </div>
 
-                        {/* Logout Footer */}
-                        <div className="p-4 pb-safe border-t border-slate-100">
-                            <button
-                                onClick={handleSignOut}
-                                className="w-full flex items-center justify-between px-4 py-4 text-red-600 font-bold bg-red-50/50 rounded-2xl active:bg-red-100 active:scale-[0.98] transition-all"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <LogOut size={18} />
-                                    <span>Sair da Conta</span>
-                                </div>
-                                <ChevronRight size={16} opacity={0.5} />
-                            </button>
+                    {/* Seção: Engajamento */}
+                    <div className="mb-6">
+                        <h3 className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">Engajamento</h3>
+                        <div className="space-y-0.5">
+                            <DrawerLink
+                                icon={Vote}
+                                label="Eleições"
+                                href="/estudante/eleicoes"
+                                active={pathname.startsWith('/estudante/eleicoes')}
+                            />
+                            <DrawerLink
+                                icon={Calendar}
+                                label="Próximos Eventos"
+                                href="/estudante/evento"
+                                active={pathname.startsWith('/estudante/evento')}
+                            />
                         </div>
-                    </motion.aside>
+                    </div>
+
+                    {/* Seção: Conta */}
+                    <div className="mb-6">
+                        <h3 className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">Conta</h3>
+                        <div className="space-y-0.5">
+                            <DrawerLink
+                                icon={User}
+                                label="Meu Perfil"
+                                href="/estudante/perfil"
+                                active={pathname === '/estudante/perfil'}
+                            />
+                            <DrawerLink
+                                icon={Settings}
+                                label="Configurações"
+                                href="/estudante/configuracoes"
+                                active={pathname === '/estudante/configuracoes'}
+                            />
+                        </div>
+                    </div>
                 </div>
-            )}
-        </AnimatePresence>
+
+                {/* Logout Footer */}
+                <footer className="p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-t border-slate-100 shrink-0">
+                    <button
+                        onClick={handleSignOut}
+                        className="flex items-center w-full px-4 py-3.5 space-x-3 text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-100 hover:bg-red-50 transition-all font-semibold text-sm"
+                        style={{ minHeight: '48px', borderRadius: '6px' }}
+                    >
+                        <LogOut size={18} />
+                        <span>Sair da Conta</span>
+                    </button>
+                </footer>
+            </aside>
+        </>
     );
 }
 
@@ -182,25 +172,22 @@ function DrawerLink({ icon: Icon, label, href, active }: { icon: any, label: str
     return (
         <Link
             href={href}
-            className={cn(
-                "flex items-center justify-between px-3 py-3.5 rounded-2xl transition-all duration-200 active:scale-[0.98]",
-                active
-                    ? "bg-city-blue/5 text-city-blue shadow-[0_4px_12px_-2px_rgba(74,144,217,0.12)]"
-                    : "text-slate-600 hover:bg-slate-50"
-            )}
+            className={`flex items-center justify-between px-6 py-3.5 border-b border-slate-50/50 transition-all active:bg-slate-50 ${active
+                ? 'bg-city-blue/5 text-city-blue font-bold border-l-4 border-l-city-blue'
+                : 'text-slate-600 hover:bg-slate-50'
+                }`}
+            style={{ minHeight: '48px' }}
         >
-            <div className="flex items-center gap-3">
-                <div className={cn(
-                    "w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
-                    active ? "bg-city-blue text-white" : "bg-slate-100 text-slate-400 group-hover:bg-slate-200"
-                )}>
-                    <Icon size={18} />
-                </div>
-                <span className={cn("text-sm font-semibold", active ? "text-city-blue" : "text-slate-700")}>
-                    {label}
-                </span>
+            <div className="flex items-center space-x-3">
+                <Icon
+                    className={`h-5 w-5 ${active ? 'text-city-blue' : 'text-slate-400'}`}
+                />
+                <span className="text-[clamp(0.875rem,2vw,1rem)] font-medium">{label}</span>
             </div>
-            <ChevronRight size={14} className={cn("transition-opacity", active ? "opacity-100" : "opacity-30")} />
+            <ChevronRight
+                size={16}
+                className={`opacity-30 ${active ? 'text-city-blue' : ''}`}
+            />
         </Link>
     );
 }
