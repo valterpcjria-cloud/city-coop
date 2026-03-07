@@ -15,6 +15,7 @@ const geistMono = GeistMono
 
 import { constructMetadata } from '@/lib/metadata'
 import { Providers } from './providers'
+import { PWARegistration } from '@/components/pwa/PWARegistration'
 
 export const metadata = constructMetadata({
   title: 'Início',
@@ -38,6 +39,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${outfit.variable} ${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <Providers>
+          <PWARegistration />
           {children}
           <Toaster position="top-right" />
         </Providers>

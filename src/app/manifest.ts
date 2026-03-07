@@ -6,6 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
         short_name: 'City Coop',
         description: 'Plataforma de Cooperativismo Escolar e Empreendedorismo.',
         start_url: '/',
+        id: 'city-coop-platform',
+        scope: '/',
         display: 'standalone',
         background_color: '#ffffff',
         theme_color: '#3b82f6',
