@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 export function constructMetadata({
     title = 'City Coop Platform',
     description = 'Plataforma de Cooperativismo Escolar e Empreendedorismo - Desenvolvendo futuros líderes.',
-    image = '/og-image.png', // Placeholder for OG image
+    image = '/og-image.png',
     noIndex = false
 }: {
     title?: string
@@ -17,6 +17,16 @@ export function constructMetadata({
     return {
         title: title === 'City Coop Platform' ? title : `${title} | City Coop`,
         description,
+        manifest: '/manifest.json',
+        appleWebApp: {
+            capable: true,
+            statusBarStyle: 'default',
+            title: 'City Coop',
+            // startUpImage: [],
+        },
+        formatDetection: {
+            telephone: false,
+        },
         openGraph: {
             title,
             description,
@@ -34,9 +44,12 @@ export function constructMetadata({
             creator: '@citycoop'
         },
         icons: {
-            icon: '/favicon.ico'
+            icon: '/favicon.ico',
+            apple: [
+                { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+            ],
         },
-        metadataBase: new URL('https://platform.citycoop.com.br'), // Replace with actual production URL
+        metadataBase: new URL('https://platform.citycoop.com.br'),
         ...(noIndex && {
             robots: {
                 index: false,
