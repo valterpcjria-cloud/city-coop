@@ -19,32 +19,50 @@ export function MobileBottomNav({ onOpenMenu }: MobileBottomNavProps) {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/90 backdrop-blur-md border-t border-slate-200 pb-safe">
-            <div className="flex items-center justify-around h-16 px-2">
-                {navItems.map((item) => {
-                    const isActive = item.href === '/professor'
-                        ? pathname === '/professor'
-                        : pathname.startsWith(item.href);
-                    const Icon = item.icon;
+        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-slate-200/60 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center justify-between h-16 px-4">
+                <div className="flex items-center justify-start flex-1 -ml-2">
+                    {navItems.map((item) => {
+                        const isActive = item.href === '/professor'
+                            ? pathname === '/professor'
+                            : pathname.startsWith(item.href);
+                        const Icon = item.icon;
 
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors touch-manipulation ${isActive ? 'text-city-blue' : 'text-slate-500 hover:text-slate-700'
-                                }`}
-                        >
-                            <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                            <span className="text-[10px] font-medium">{item.label}</span>
-                        </Link>
-                    );
-                })}
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`relative flex flex-col items-center justify-center min-w-[64px] h-full transition-all active:scale-95 touch-manipulation ${isActive ? 'text-city-blue' : 'text-slate-400 hover:text-slate-600'
+                                    }`}
+                                style={{ minWidth: '44px', minHeight: '44px' }}
+                            >
+                                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                                <span className={`text-[9px] font-bold mt-1 uppercase tracking-wider ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                                    {item.label}
+                                </span>
+                                {isActive && (
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-city-blue rounded-b-[2px]" />
+                                )}
+                            </Link>
+                        );
+                    })}
+                </div>
+
+                {/* Unique Sandwich Menu Button — Elite Touch */}
                 <button
                     onClick={onOpenMenu}
-                    className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-500 hover:text-slate-700 transition-colors touch-manipulation"
+                    className="flex flex-col items-center justify-center w-14 h-14 bg-slate-900 group active:scale-90 transition-all shadow-lg overflow-hidden shrink-0"
+                    style={{ borderRadius: '6px', minWidth: '44px', minHeight: '44px' }}
+                    aria-label="Toggle menu"
                 >
-                    <Menu size={20} strokeWidth={2} />
-                    <span className="text-[10px] font-medium">Menu</span>
+                    <div className="relative w-5 h-4 flex flex-col justify-between">
+                        <span className="w-full h-[2.5px] bg-white transition-all group-hover:w-3/4" />
+                        <span className="w-full h-[2.5px] bg-white transition-all" />
+                        <span className="w-3/4 h-[2.5px] bg-white transition-all group-hover:w-full" />
+                    </div>
+                    <span className="text-[8px] text-white/70 font-black mt-1.5 uppercase tracking-widest">
+                        MENU
+                    </span>
                 </button>
             </div>
         </nav>

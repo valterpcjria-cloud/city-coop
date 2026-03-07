@@ -29,25 +29,27 @@ function DrawerLink({ href, icon: Icon, label, active, highlighted = false }: Dr
     return (
         <Link
             href={href}
-            className={`flex items-center justify-between px-3 py-3 rounded-xl mb-1 transition-colors active:scale-[0.98] ${active
-                ? 'bg-city-blue/10 text-city-blue font-bold'
+            className={`flex items-center justify-between px-4 py-3.5 border-b border-slate-50 transition-all active:bg-slate-50 ${active
+                ? 'bg-city-blue/5 text-city-blue font-bold border-l-4 border-l-city-blue'
                 : highlighted
                     ? 'text-slate-700 hover:bg-slate-50'
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}
+            style={{ minHeight: '48px' }}
         >
             <div className="flex items-center space-x-3">
                 <Icon
                     size={20}
+                    strokeWidth={active ? 2.5 : 2}
                     className={
                         active ? 'text-city-blue' : highlighted ? 'text-coop-orange' : 'text-slate-400'
                     }
                 />
-                <span className="text-sm font-medium">{label}</span>
+                <span className="text-[clamp(0.875rem,2vw,1rem)] font-medium">{label}</span>
             </div>
             <ChevronRight
                 size={16}
-                className={`opacity-40 ${active ? 'text-city-blue' : ''}`}
+                className={`opacity-30 ${active ? 'text-city-blue' : ''}`}
             />
         </Link>
     );
@@ -64,19 +66,21 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
     const router = useRouter();
     const supabase = getSupabaseClient();
 
-    // Lock body scroll when drawer is open
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            // Safe area protection for mobile
+            document.documentElement.style.setProperty('--safe-area-inset-top', 'env(safe-area-inset-top)');
+        } else {
+            document.body.style.overflow = 'unset';
+        }
         return () => {
             document.body.style.overflow = 'unset';
         };
     }, [isOpen]);
 
-    // Close drawer on route change
     useEffect(() => {
         onClose();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname]);
 
     const handleLogout = async () => {
@@ -87,23 +91,23 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
 
     return (
         <>
-            {/* Backdrop */}
+            {/* Backdrop — Premium Blur */}
             <div
-                className={`fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                className={`fixed inset-0 z-[60] bg-slate-900/20 backdrop-blur-md transition-opacity duration-500 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                     }`}
                 onClick={onClose}
                 aria-hidden="true"
             />
 
-            {/* Drawer Panel */}
+            {/* Side Drawer — Unique Entry */}
             <aside
-                className={`fixed top-0 right-0 z-[70] h-[100dvh] w-4/5 max-w-sm bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col md:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed top-0 right-0 z-[70] h-[100dvh] w-[85%] max-w-[320px] bg-white transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col md:hidden border-l border-slate-100 ${isOpen ? 'translate-x-0 shadow-[-20px_0_40px_rgba(0,0,0,0.05)]' : 'translate-x-[110%]'
                     }`}
             >
-                {/* Header */}
-                <header className="flex items-start justify-between p-5 pt-safe bg-slate-50 border-b border-slate-100 shrink-0">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-full bg-city-blue text-white flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden">
+                {/* Header — Light & Clean */}
+                <header className="flex flex-col p-6 pt-12 bg-white shrink-0">
+                    <div className="flex justify-between items-start mb-6">
+                        <div className="w-14 h-14 rounded-md bg-slate-100 text-slate-800 flex items-center justify-center font-bold text-xl shrink-0 overflow-hidden border border-slate-200">
                             {user?.avatarUrl ? (
                                 <img
                                     src={user.avatarUrl}
@@ -111,28 +115,32 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <User size={24} />
+                                <User size={28} strokeWidth={1.5} />
                             )}
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-base font-bold text-slate-800 line-clamp-1">
-                                {user?.name || 'Professor(a)'}
-                            </span>
-                            <span className="text-xs text-slate-500 line-clamp-1">{user?.email}</span>
-                        </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors"
+                            aria-label="Close menu"
+                        >
+                            <X size={24} />
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 -mr-2 text-slate-400 hover:text-slate-700 rounded-full active:bg-slate-200 transition-colors"
-                    >
-                        <X size={24} />
-                    </button>
+
+                    <div className="flex flex-col">
+                        <h2 className="text-[clamp(1.1rem,4vw,1.3rem)] font-bold text-slate-900 leading-tight">
+                            {user?.name || 'Professor(a)'}
+                        </h2>
+                        <span className="text-sm text-slate-500 font-medium">{user?.email}</span>
+                    </div>
                 </header>
 
-                {/* Navigation Links */}
-                <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
-                    <div className="px-3 py-2">
-                        <p className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                <div className="h-px bg-slate-100 mx-6" />
+
+                {/* Navigation Links — Fluid & Spaced */}
+                <nav className="flex-1 overflow-y-auto py-4 scrollbar-hide">
+                    <div className="mb-6">
+                        <p className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-2">
                             Programa
                         </p>
                         <DrawerLink
@@ -154,9 +162,9 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                             active={pathname.startsWith('/professor/eleicoes')}
                         />
                     </div>
-                    <div className="h-px bg-slate-100 my-2 mx-5" />
-                    <div className="px-3 py-2">
-                        <p className="px-3 text-[11px] font-bold text-coop-orange uppercase tracking-wider mb-1">
+
+                    <div className="mb-6">
+                        <p className="px-6 text-[10px] font-bold text-coop-orange uppercase tracking-[0.1em] mb-2">
                             Inteligência Artificial
                         </p>
                         <DrawerLink
@@ -174,9 +182,9 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                             highlighted
                         />
                     </div>
-                    <div className="h-px bg-slate-100 my-2 mx-5" />
-                    <div className="px-3 py-2">
-                        <p className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+
+                    <div className="mb-6">
+                        <p className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-2">
                             Conta
                         </p>
                         <DrawerLink
@@ -192,16 +200,17 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                             active={pathname === '/professor/configuracoes'}
                         />
                     </div>
-                </div>
+                </nav>
 
-                {/* Footer */}
-                <footer className="p-4 pb-safe border-t border-slate-100 shrink-0">
+                {/* Footer — Plain & Professional */}
+                <footer className="p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-t border-slate-100 shrink-0">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-3 space-x-3 text-red-600 rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors"
+                        className="flex items-center w-full px-4 py-3.5 space-x-3 text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-100 hover:bg-red-50 transition-all font-semibold text-sm rounded-md"
+                        style={{ minHeight: '48px', borderRadius: '6px' }}
                     >
-                        <LogOut size={20} />
-                        <span className="font-semibold text-sm">Sair da Conta</span>
+                        <LogOut size={18} />
+                        <span>Sair da Conta</span>
                     </button>
                 </footer>
             </aside>
