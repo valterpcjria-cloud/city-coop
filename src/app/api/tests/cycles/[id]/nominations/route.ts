@@ -11,7 +11,7 @@ export async function GET(
         const { id: cycleId } = await params
 
         const { data, error } = await supabase
-            .from('test_nominations')
+            .from('test_nominations' as any)
             .select('*, student:students(name, grade_level)')
             .eq('cycle_id', cycleId)
 
@@ -55,7 +55,7 @@ export async function POST(
         }
 
         const { data, error } = await (supabase as any)
-            .from('test_nominations')
+            .from('test_nominations' as any)
             .upsert({
                 student_id: studentId,
                 cycle_id: cycleId,

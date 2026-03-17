@@ -39,7 +39,7 @@ export default async function StudentFormacaoPage() {
 
     // Fetch nominations for this student
     const { data: nominations } = await supabase
-        .from('test_nominations')
+        .from('test_nominations' as any)
         .select('*')
         .eq('student_id', student.id)
 

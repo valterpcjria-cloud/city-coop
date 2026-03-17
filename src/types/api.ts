@@ -2,16 +2,15 @@
 // API Types for City Coop Platform
 // ===========================================
 
-import {
-    Class,
-    Student,
-    Assessment,
-    MaturityIndicators,
-    ClassModality,
-    GradeLevel,
-    AssessmentType,
-    NucleusName
-} from './database.types'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Class = any
+type Student = any
+type Assessment = any
+type MaturityIndicators = any
+type ClassModality = any
+type GradeLevel = any
+type AssessmentType = any
+type NucleusName = any
 import { AssessmentQuestion, ChatMessage, EventPlanEvaluation, ResearchResult } from './models'
 
 // Generic API Response

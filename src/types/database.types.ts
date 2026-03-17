@@ -14,12 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      test_nominations: {
-        Row: any
-        Insert: any
-        Update: any
-        Relationships: any[]
-      }
       ai_conversations: {
         Row: {
           class_id: string | null
@@ -393,6 +387,62 @@ export type Database = {
           },
         ]
       }
+      ciclos: {
+        Row: {
+          ativo: boolean | null
+          descricao: string | null
+          id: string
+          numero: number
+          titulo: string
+          valor_moeda: number
+        }
+        Insert: {
+          ativo?: boolean | null
+          descricao?: string | null
+          id?: string
+          numero: number
+          titulo: string
+          valor_moeda: number
+        }
+        Update: {
+          ativo?: boolean | null
+          descricao?: string | null
+          id?: string
+          numero?: number
+          titulo?: string
+          valor_moeda?: number
+        }
+        Relationships: []
+      }
+      ciclos_concluidos: {
+        Row: {
+          aluno_id: string | null
+          ciclo_id: string | null
+          concluido_em: string | null
+          id: string
+        }
+        Insert: {
+          aluno_id?: string | null
+          ciclo_id?: string | null
+          concluido_em?: string | null
+          id?: string
+        }
+        Update: {
+          aluno_id?: string | null
+          ciclo_id?: string | null
+          concluido_em?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ciclos_concluidos_ciclo_id_fkey"
+            columns: ["ciclo_id"]
+            isOneToOne: false
+            referencedRelation: "ciclos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_students: {
         Row: {
           class_id: string | null
@@ -628,6 +678,42 @@ export type Database = {
           },
         ]
       }
+      coopcoin_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          school_id: string | null
+          student_id: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description: string
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          school_id?: string | null
+          student_id: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          school_id?: string | null
+          student_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
       cooperative_opportunities: {
         Row: {
           carga_horaria: string | null
@@ -827,6 +913,68 @@ export type Database = {
             columns: ["cycle_id"]
             isOneToOne: false
             referencedRelation: "test_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dot_chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          professor_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          professor_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          professor_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dot_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dot_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "dot_chat_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -1196,6 +1344,125 @@ export type Database = {
           },
         ]
       }
+      missoes: {
+        Row: {
+          ativo: boolean | null
+          criado_em: string | null
+          descricao: string | null
+          id: string
+          tipo: string
+          titulo: string
+          valor_moeda: number
+        }
+        Insert: {
+          ativo?: boolean | null
+          criado_em?: string | null
+          descricao?: string | null
+          id?: string
+          tipo: string
+          titulo: string
+          valor_moeda: number
+        }
+        Update: {
+          ativo?: boolean | null
+          criado_em?: string | null
+          descricao?: string | null
+          id?: string
+          tipo?: string
+          titulo?: string
+          valor_moeda?: number
+        }
+        Relationships: []
+      }
+      missoes_concluidas: {
+        Row: {
+          aluno_id: string | null
+          concluida_em: string | null
+          id: string
+          missao_id: string | null
+        }
+        Insert: {
+          aluno_id?: string | null
+          concluida_em?: string | null
+          id?: string
+          missao_id?: string | null
+        }
+        Update: {
+          aluno_id?: string | null
+          concluida_em?: string | null
+          id?: string
+          missao_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "missoes_concluidas_missao_id_fkey"
+            columns: ["missao_id"]
+            isOneToOne: false
+            referencedRelation: "missoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobile_social_pulse: {
+        Row: {
+          content: Json | null
+          created_at: string | null
+          event_type: string | null
+          id: string
+          student_id: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string | null
+          event_type?: string | null
+          id?: string
+          student_id?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string | null
+          event_type?: string | null
+          id?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobile_social_pulse_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobile_social_pulse_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "vw_candidatos_nucleo_escolar"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobile_social_pulse_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "vw_candidatos_nucleo_intercoop"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobile_social_pulse_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "vw_matching_opportunities"
+            referencedColumns: ["student_id"]
+          },
+          {
+            foreignKeyName: "mobile_social_pulse_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "vw_students_complete"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nuclei: {
         Row: {
           class_id: string | null
@@ -1554,6 +1821,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      school_wallets: {
+        Row: {
+          balance: number | null
+          id: string
+          school_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          balance?: number | null
+          id?: string
+          school_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          balance?: number | null
+          id?: string
+          school_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       schools: {
         Row: {
@@ -2093,6 +2381,27 @@ export type Database = {
           },
         ]
       }
+      student_missions_completed: {
+        Row: {
+          completed_at: string | null
+          id: string
+          mission_id: string
+          student_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          mission_id: string
+          student_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          mission_id?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
       student_scores: {
         Row: {
           colaboracao_score: number | null
@@ -2234,6 +2543,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      student_wallets: {
+        Row: {
+          balance: number | null
+          id: string
+          last_updated: string | null
+          student_id: string
+        }
+        Insert: {
+          balance?: number | null
+          id?: string
+          last_updated?: string | null
+          student_id: string
+        }
+        Update: {
+          balance?: number | null
+          id?: string
+          last_updated?: string | null
+          student_id?: string
+        }
+        Relationships: []
       }
       students: {
         Row: {
@@ -2499,6 +2829,39 @@ export type Database = {
           },
         ]
       }
+      transacoes_coopcoins: {
+        Row: {
+          criado_em: string | null
+          id: string
+          motivo: string
+          origem: string
+          referencia_id: string | null
+          student_id: string | null
+          tipo: string
+          valor: number
+        }
+        Insert: {
+          criado_em?: string | null
+          id?: string
+          motivo: string
+          origem: string
+          referencia_id?: string | null
+          student_id?: string | null
+          tipo: string
+          valor: number
+        }
+        Update: {
+          criado_em?: string | null
+          id?: string
+          motivo?: string
+          origem?: string
+          referencia_id?: string | null
+          student_id?: string | null
+          tipo?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       vote_controls: {
         Row: {
           election_id: string | null
@@ -2600,6 +2963,13 @@ export type Database = {
       }
     }
     Views: {
+      saldo_coopcoins: {
+        Row: {
+          aluno_id: string | null
+          saldo: number | null
+        }
+        Relationships: []
+      }
       vw_candidatos_nucleo_escolar: {
         Row: {
           colaboracao_score: number | null
@@ -2688,6 +3058,42 @@ export type Database = {
       }
     }
     Functions: {
+      get_classes_by_modality: {
+        Args: never
+        Returns: {
+          name: string
+          value: number
+        }[]
+      }
+      get_events_by_status_formatted: {
+        Args: never
+        Returns: {
+          name: string
+          value: number
+        }[]
+      }
+      get_mobile_student_dashboard: {
+        Args: { p_student_id: string }
+        Returns: Json
+      }
+      get_platform_metrics: { Args: never; Returns: Json }
+      get_saldo_aluno: { Args: { p_aluno_id: string }; Returns: number }
+      get_students_by_grade: {
+        Args: never
+        Returns: {
+          name: string
+          value: number
+        }[]
+      }
+      get_user_profile_with_role: {
+        Args: { p_user_id: string }
+        Returns: {
+          profile_email: string
+          profile_id: string
+          profile_name: string
+          role: string
+        }[]
+      }
       is_gestor: { Args: never; Returns: boolean }
       is_gestor_stable: { Args: never; Returns: boolean }
       is_teacher: { Args: never; Returns: boolean }
@@ -2707,130 +3113,119 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   public: {
     Enums: {},
   },
 } as const
-
-export type Class = Tables<'classes'>
-export type Student = Tables<'students'>
-export type Teacher = Tables<'teachers'>
-export type Nucleus = Tables<'nuclei'>
-export type Assessment = Tables<'assessments'>
-export type MaturityIndicators = any
-export type ClassModality = any
-export type GradeLevel = any
-export type AssessmentType = any
-export type NucleusName = any

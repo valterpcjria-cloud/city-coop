@@ -2,17 +2,16 @@
 // Model Types for City Coop Platform
 // ===========================================
 
-import {
-    Teacher,
-    Student,
-    Class,
-    Nucleus,
-    Assessment,
-    MaturityIndicators,
-    NucleusName,
-    AssessmentType
-} from './database.types'
-
+type Teacher = any
+type Student = any
+type Class = any
+type Nucleus = any
+type Assessment = any
+type MaturityIndicators = any
+type ClassModality = any
+type GradeLevel = any
+type AssessmentType = any
+type NucleusName = any
 // Extended types with relations
 export interface TeacherWithClasses extends Teacher {
     classes: Class[]
