@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { getStudentId, getSchoolIdByStudent, getSchoolBalance, getSchoolTransactions } from '@/lib/coopcoins/services';
+import { DailyLoginTrigger } from '@/components/coopcoins/DailyLoginTrigger';
 
 export default async function CoopCoinsPage() {
   const supabase = await createClient();
@@ -21,6 +22,7 @@ export default async function CoopCoinsPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <DailyLoginTrigger />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
           🪙 CoopCoins
@@ -30,14 +32,12 @@ export default async function CoopCoinsPage() {
         </p>
       </div>
 
-      {/* Saldo */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-6 text-white mb-6">
         <p className="text-blue-200 text-sm font-medium uppercase tracking-wide">Saldo Atual da Escola</p>
         <p className="text-5xl font-bold mt-2">{saldo} <span className="text-2xl">CC</span></p>
         <p className="text-blue-200 text-sm mt-2">Acumulado por todos os alunos da escola</p>
       </div>
 
-      {/* Como ganhar */}
       <div className="bg-white rounded-2xl border p-6 mb-6">
         <h2 className="font-bold text-gray-800 text-lg mb-4">🎯 Como ganhar CoopCoins?</h2>
         <div className="grid grid-cols-2 gap-3">
@@ -60,7 +60,6 @@ export default async function CoopCoinsPage() {
         </div>
       </div>
 
-      {/* Histórico */}
       <div className="bg-white rounded-2xl border p-6">
         <h2 className="font-bold text-gray-800 text-lg mb-4">📋 Histórico de Transações</h2>
         {historico.length === 0 ? (
