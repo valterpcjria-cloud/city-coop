@@ -70,6 +70,25 @@ Tarefas:
 
         if (error) throw error
 
+        // Creditar COOPCOINS baseado no score
+        try {
+            const { rewardSchool, getSchoolIdByStudent } = await import('@/lib/coopcoins/services')
+            const totalQuestoes = response.assessment.questions.length
+            const ccPorQuestao = Math.floor(250 / totalQuestoes)
+            const ccGanhos = Math.round((object.suggested_score / 100) * 250)
+
+            if (ccGanhos > 0) {
+                await rewardSchool(
+                    response.student_id,
+                    ccGanhos,
+                    `Avaliacao: ${response.assessment.title} (${ccPorQuestao} CC/questao)`,
+                    'assessment'
+                )
+            }
+        } catch (e) {
+            console.error('CoopCoins reward error:', e)
+        }
+
         return NextResponse.json({ success: true, ai: object })
 
     } catch (error: any) {
