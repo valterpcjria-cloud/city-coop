@@ -17,7 +17,7 @@ export default async function CoopCoinsPage() {
         saldo = await getSchoolBalance(schoolId);
         historico = await getSchoolTransactions(schoolId, 20);
       }
-    } catch {}
+    } catch { }
   }
 
   return (
@@ -74,7 +74,14 @@ export default async function CoopCoinsPage() {
               <div key={tx.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <div>
                   <p className="text-sm font-medium text-gray-700">{tx.description}</p>
-                  <p className="text-xs text-gray-400">{new Date(tx.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
+                  <p className="text-xs text-gray-400">{new Date(tx.created_at).toLocaleString('pt-BR', {
+                    timeZone: 'America/Sao_Paulo',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</p>
                 </div>
                 <span className={`font-bold text-sm ${tx.type === 'earn' ? 'text-green-600' : 'text-red-500'}`}>
                   {tx.type === 'earn' ? '+' : '-'}{tx.amount} CC
