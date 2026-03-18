@@ -76,12 +76,15 @@ export async function checkAndRewardDailyLogin(userId: string): Promise<{ reward
     try {
         const supabase = await createClient();
         const studentId = await getStudentId(userId);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayBR = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+        todayBR.setHours(0, 0, 0, 0);
 
         const { data: existing } = await (supabase.from('coopcoin_transactions') as any)
-            .select('id').eq('student_id', studentId).eq('reference_type', 'daily_login')
-            .gte('created_at', today.toISOString()).maybeSingle();
+            .select('id')
+            .eq('student_id', studentId)
+            .eq('reference_type', 'daily_login')
+            .gte('created_at', todayBR.toISOString())
+            .maybeSingle();
 
         if (existing) return { rewarded: false };
 
