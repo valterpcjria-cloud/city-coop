@@ -124,6 +124,12 @@ export function StudentMobileDrawer({ isOpen, onClose, user }: StudentMobileDraw
                                 active={pathname.startsWith('/estudante/eleicoes')}
                             />
                             <DrawerLink
+                                icon={Trophy}
+                                label="CoopCoins"
+                                href="/estudante/coopcoins"
+                                active={pathname.startsWith('/estudante/coopcoins')}
+                            />
+                            <DrawerLink
                                 icon={Calendar}
                                 label="Próximos Eventos"
                                 href="/estudante/evento"
