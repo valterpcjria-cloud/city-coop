@@ -13,6 +13,7 @@ import {
     Sparkles,
     Settings,
     LogOut,
+    Trophy,
     ChevronRight,
 } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase/client';
@@ -160,6 +161,12 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                             icon={Vote}
                             label="Eleições"
                             active={pathname.startsWith('/professor/eleicoes')}
+                        />
+                        <DrawerLink
+                            href="/professor/coopcoins"
+                            icon={Trophy}
+                            label="CoopCoins"
+                            active={pathname.startsWith('/professor/coopcoins')}
                         />
                     </div>
 
