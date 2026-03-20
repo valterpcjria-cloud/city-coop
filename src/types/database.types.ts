@@ -1822,6 +1822,203 @@ export type Database = {
           },
         ]
       }
+      quiz_live_participants: {
+        Row: {
+          id: string
+          joined_at: string | null
+          score: number | null
+          session_id: string
+          student_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          score?: number | null
+          session_id: string
+          student_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          score?: number | null
+          session_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_live_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_live_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_live_sessions: {
+        Row: {
+          current_question: number | null
+          ended_at: string | null
+          id: string
+          is_active: boolean | null
+          live_code: string
+          quiz_id: string
+          started_at: string | null
+        }
+        Insert: {
+          current_question?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          live_code: string
+          quiz_id: string
+          started_at?: string | null
+        }
+        Update: {
+          current_question?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          live_code?: string
+          quiz_id?: string
+          started_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_live_sessions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct: string
+          created_at: string | null
+          id: string
+          options: Json | null
+          order_num: number
+          question: string
+          quiz_id: string
+          type: string
+        }
+        Insert: {
+          correct: string
+          created_at?: string | null
+          id?: string
+          options?: Json | null
+          order_num: number
+          question: string
+          quiz_id: string
+          type: string
+        }
+        Update: {
+          correct?: string
+          created_at?: string | null
+          id?: string
+          options?: Json | null
+          order_num?: number
+          question?: string
+          quiz_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_responses: {
+        Row: {
+          answers: Json
+          coopcoins_awarded: boolean | null
+          id: string
+          quiz_id: string
+          score: number | null
+          student_id: string
+          submitted_at: string | null
+          time_taken: number | null
+        }
+        Insert: {
+          answers: Json
+          coopcoins_awarded?: boolean | null
+          id?: string
+          quiz_id: string
+          score?: number | null
+          student_id: string
+          submitted_at?: string | null
+          time_taken?: number | null
+        }
+        Update: {
+          answers?: Json
+          coopcoins_awarded?: boolean | null
+          id?: string
+          quiz_id?: string
+          score?: number | null
+          student_id?: string
+          submitted_at?: string | null
+          time_taken?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_responses_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          ai_generated: boolean | null
+          class_id: string
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          live_code: string | null
+          live_started_at: string | null
+          mode: string | null
+          timer_seconds: number | null
+          title: string
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          class_id: string
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          live_code?: string | null
+          live_started_at?: string | null
+          mode?: string | null
+          timer_seconds?: number | null
+          title: string
+        }
+        Update: {
+          ai_generated?: boolean | null
+          class_id?: string
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          live_code?: string | null
+          live_started_at?: string | null
+          mode?: string | null
+          timer_seconds?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       school_wallets: {
         Row: {
           balance: number | null

@@ -55,6 +55,12 @@ export function StudentSidebar({ className }: SidebarProps) {
             active: pathname.startsWith('/estudante/eleicoes'),
         },
         {
+            label: 'Quizzes',
+            icon: Icons.check,
+            href: '/estudante/quizzes',
+            active: pathname.startsWith('/estudante/quizzes'),
+        },
+        {
             label: 'CoopCoins',
             icon: Icons.trophy,
             href: '/estudante/coopcoins',
