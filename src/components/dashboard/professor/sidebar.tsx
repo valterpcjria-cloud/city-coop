@@ -66,6 +66,12 @@ export function Sidebar({ className }: SidebarProps) {
             active: pathname.startsWith('/professor/eleicoes'),
         },
         {
+            label: 'Quizzes',
+            icon: Icons.check,
+            href: '/professor/quizzes',
+            active: pathname.startsWith('/professor/quizzes'),
+        },
+        {
             label: 'CoopCoins',
             icon: Icons.trophy,
             href: '/professor/coopcoins',
