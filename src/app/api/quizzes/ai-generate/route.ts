@@ -17,17 +17,17 @@ export async function POST(request: Request) {
     const { object } = await generateObject({
       model,
       prompt: `Crie um quiz educativo sobre cooperativismo com o tema: "${tema}".
-      Gere ${numQuestoes} questoes do tipo ${tipo === 'multiple_choice' ? 'multipla escolha' : tipo === 'true_false' ? 'verdadeiro ou falso' : 'misturado entre multipla escolha e verdadeiro/falso'}.
-      Para multipla escolha: 4 alternativas, apenas 1 correta.
-      Para verdadeiro/falso: resposta e "true" ou "false".
-      As questoes devem ser educativas, envolventes e adequadas para jovens estudantes.`,
+      Gere exatamente ${numQuestoes} questoes.
+      IMPORTANTE: Para questoes de multipla escolha, sempre inclua exatamente 4 opcoes no campo "options".
+      Para questoes de verdadeiro/falso, deixe "options" como array vazio [] e use "true" ou "false" no campo "correct".
+      As questoes devem ser educativas e adequadas para jovens estudantes.`,
       schema: z.object({
         title: z.string(),
         description: z.string(),
         questions: z.array(z.object({
           type: z.enum(['multiple_choice', 'true_false']),
           question: z.string(),
-          options: z.array(z.string()).optional(),
+          options: z.array(z.string()),
           correct: z.string(),
         }))
       })
