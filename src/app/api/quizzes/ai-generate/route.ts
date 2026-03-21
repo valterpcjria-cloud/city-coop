@@ -10,29 +10,31 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { tema, numQuestoes = 5, tipo = 'both' } = await request.json();
-
   if (!tema) return NextResponse.json({ error: 'Tema e obrigatorio' }, { status: 400 });
 
-  const model = await getAIModel();
-
-  const { object } = await generateObject({
-    model,
-    prompt: `Crie um quiz educativo sobre cooperativismo com o tema: "${tema}".
-    Gere ${numQuestoes} questoes do tipo ${tipo === 'multiple_choice' ? 'multipla escolha' : tipo === 'true_false' ? 'verdadeiro ou falso' : 'misturado entre multipla escolha e verdadeiro/falso'}.
-    Para multipla escolha: 4 alternativas, apenas 1 correta.
-    Para verdadeiro/falso: resposta e "true" ou "false".
-    As questoes devem ser educativas, envolventes e adequadas para jovens estudantes.`,
-    schema: z.object({
-      title: z.string(),
-      description: z.string(),
-      questions: z.array(z.object({
-        type: z.enum(['multiple_choice', 'true_false']),
-        question: z.string(),
-        options: z.array(z.string()).optional(),
-        correct: z.string(),
-      }))
-    })
-  });
-
-  return NextResponse.json({ success: true, quiz: object });
+  try {
+    const model = await getAIModel();
+    const { object } = await generateObject({
+      model,
+      prompt: `Crie um quiz educativo sobre cooperativismo com o tema: "${tema}".
+      Gere ${numQuestoes} questoes do tipo ${tipo === 'multiple_choice' ? 'multipla escolha' : tipo === 'true_false' ? 'verdadeiro ou falso' : 'misturado entre multipla escolha e verdadeiro/falso'}.
+      Para multipla escolha: 4 alternativas, apenas 1 correta.
+      Para verdadeiro/falso: resposta e "true" ou "false".
+      As questoes devem ser educativas, envolventes e adequadas para jovens estudantes.`,
+      schema: z.object({
+        title: z.string(),
+        description: z.string(),
+        questions: z.array(z.object({
+          type: z.enum(['multiple_choice', 'true_false']),
+          question: z.string(),
+          options: z.array(z.string()).optional(),
+          correct: z.string(),
+        }))
+      })
+    });
+    return NextResponse.json({ success: true, quiz: object });
+  } catch (error: any) {
+    console.error('AI quiz generation error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
