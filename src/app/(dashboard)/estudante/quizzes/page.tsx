@@ -10,26 +10,33 @@ export default async function QuizzesPage() {
   if (user) {
     try {
       const { data: student } = await (supabase.from('students') as any)
-        .select('id, class_id').eq('user_id', user.id).single();
+        .select('id').eq('user_id', user.id).single();
 
-      if (student?.class_id) {
-        const { data } = await (supabase.from('quizzes') as any)
-          .select('*, quiz_questions(count), quiz_responses(id)')
-          .eq('class_id', student.class_id)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
+      if (student?.id) {
+        // Busca turmas do aluno via class_students
+        const { data: classStudents } = await (supabase.from('class_students') as any)
+          .select('class_id').eq('student_id', student.id);
 
-        // Verifica quais ja foram respondidos
-        const { data: responses } = await (supabase.from('quiz_responses') as any)
-          .select('quiz_id').eq('student_id', student.id);
+        const classIds = classStudents?.map((cs: any) => cs.class_id) || [];
 
-        const respondedIds = new Set(responses?.map((r: any) => r.quiz_id) || []);
+        if (classIds.length > 0) {
+          const { data } = await (supabase.from('quizzes') as any)
+            .select('*, quiz_questions(count)')
+            .in('class_id', classIds)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
 
-        quizzes = (data || []).map((q: any) => ({
-          ...q,
-          respondido: respondedIds.has(q.id),
-          totalQuestoes: q.quiz_questions?.[0]?.count || 0,
-        }));
+          const { data: responses } = await (supabase.from('quiz_responses') as any)
+            .select('quiz_id').eq('student_id', student.id);
+
+          const respondedIds = new Set(responses?.map((r: any) => r.quiz_id) || []);
+
+          quizzes = (data || []).map((q: any) => ({
+            ...q,
+            respondido: respondedIds.has(q.id),
+            totalQuestoes: q.quiz_questions?.[0]?.count || 0,
+          }));
+        }
       }
     } catch {}
   }
